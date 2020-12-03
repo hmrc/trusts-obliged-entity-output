@@ -27,4 +27,8 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
 
   val auditingEnabled: Boolean = config.get[Boolean]("auditing.enabled")
   val graphiteHost: String     = config.get[String]("microservice.metrics.graphite.host")
+
+  val nrsUrl : String = servicesConfig.baseUrl("nonrep-generate-pdf")
+  val nrsToken: String = config.get[String]("microservice.services.nrs.token")
+  val nrsEnabled: Boolean = config.get[Boolean]("microservice.services.nrs.enabled")
 }
