@@ -22,7 +22,7 @@ import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
 trait NonRepudiationServiceResponse
 
-case class SuccessfulResponse(body: String) extends NonRepudiationServiceResponse
+case object SuccessfulResponse extends NonRepudiationServiceResponse // TODO - make case class when sure what form the response body will be in
 case object BadRequestResponse extends NonRepudiationServiceResponse
 case object UnauthorisedResponse extends NonRepudiationServiceResponse
 case object NotFoundResponse extends NonRepudiationServiceResponse
@@ -33,7 +33,7 @@ object NonRepudiationServiceResponse extends Logging {
   implicit lazy val httpReads: HttpReads[NonRepudiationServiceResponse] = (_: String, _: String, response: HttpResponse) => {
     response.status match {
       case OK =>
-        SuccessfulResponse(response.body)
+        SuccessfulResponse
       case BAD_REQUEST =>
         logger.error(s"Payload does not conform to defined JSON schema - ${response.body}")
         BadRequestResponse

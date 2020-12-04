@@ -26,7 +26,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class NonRepudiationServiceConnectorSpec extends ConnectorSpecHelper {
 
-  private val connector: NonRepudiationServiceConnector = injector.instanceOf[NonRepudiationServiceConnector]
+  private lazy val connector: NonRepudiationServiceConnector = injector.instanceOf[NonRepudiationServiceConnector]
 
   "NonRepudiationService connector" when {
 
@@ -44,8 +44,7 @@ class NonRepudiationServiceConnectorSpec extends ConnectorSpecHelper {
 
         whenReady(connector.getPdf(json)) {
           response =>
-            response.isInstanceOf[SuccessfulResponse] mustBe true
-            response.asInstanceOf[SuccessfulResponse].body mustBe response
+            response mustBe SuccessfulResponse
         }
       }
 
@@ -61,7 +60,7 @@ class NonRepudiationServiceConnectorSpec extends ConnectorSpecHelper {
 
       "return 401 FORBIDDEN" in {
 
-        stubForPost(server, url, Json.stringify(json), FORBIDDEN, "{}")
+        stubForPost(server, url, Json.stringify(json), UNAUTHORIZED, "{}")
 
         whenReady(connector.getPdf(json)) {
           response =>

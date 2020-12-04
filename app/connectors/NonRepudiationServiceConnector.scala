@@ -41,7 +41,7 @@ class NonRepudiationServiceConnector @Inject()(http: HttpClient, config: AppConf
       val url: String = s"${config.nrsUrl}/generate-pdf/template/trusts-5mld-1-0-0/signed-pdf"
       http.POST[JsValue, NonRepudiationServiceResponse](url, payload)
     } else {
-      Future.successful(SuccessfulResponse("fake response"))
+      Future.successful(SuccessfulResponse)
     }
   }
 

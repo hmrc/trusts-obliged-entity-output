@@ -1,6 +1,5 @@
+import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
-
-lazy val IntegrationTest = config("it") extend(Test)
 
 val appName = "trusts-obliged-entity-output"
 
@@ -27,13 +26,5 @@ lazy val microservice = Project(appName, file("."))
     publishingSettings ++ scoverageSettings,
   )
   .configs(IntegrationTest)
-  .settings(inConfig(IntegrationTest)(itSettings): _*)
+  .settings(integrationTestSettings(): _*)
   .settings(resolvers += Resolver.jcenterRepo)
-
-lazy val itSettings = Defaults.itSettings ++ Seq(
-  unmanagedSourceDirectories   := Seq(
-    baseDirectory.value / "it"
-  ),
-  parallelExecution            := false,
-  fork                         := true
-)

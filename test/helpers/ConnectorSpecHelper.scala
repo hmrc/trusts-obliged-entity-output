@@ -43,8 +43,8 @@ class ConnectorSpecHelper extends SpecBase with WireMockHelper with IntegrationP
                   responseBody: String): StubMapping = {
 
     server.stubFor(post(urlEqualTo(url))
-      .withHeader(X_API_KEY, containing(appConfig.nrsToken))
-      .withHeader(CONTENT_TYPE, containing(CONTENT_TYPE_JSON))
+      .withHeader(X_API_KEY, equalTo(appConfig.nrsToken))
+      .withHeader(CONTENT_TYPE, equalTo(CONTENT_TYPE_JSON))
       .withRequestBody(equalTo(requestBody))
       .willReturn(
         aResponse()
