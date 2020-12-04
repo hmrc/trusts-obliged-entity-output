@@ -1,20 +1,20 @@
 import play.core.PlayVersion.current
-import play.sbt.PlayImport._
-import sbt.Keys.libraryDependencies
 import sbt._
 
 object AppDependencies {
 
-  val compile = Seq(
+  val compile: Seq[ModuleID] = Seq(
     "uk.gov.hmrc"             %% "bootstrap-backend-play-27"  % "3.1.0",
     "uk.gov.hmrc"             %% "simple-reactivemongo"       % "7.30.0-play-27"
   )
 
-  val test = Seq(
-    "uk.gov.hmrc"             %% "bootstrap-test-play-27"   % "3.1.0" % Test,
-    "org.scalatest"           %% "scalatest"                % "3.2.3"  % Test,
-    "com.typesafe.play"       %% "play-test"                % current  % Test,
-    "com.vladsch.flexmark"    %  "flexmark-all"             % "0.36.8" % "test, it",
-    "org.scalatestplus.play"  %% "scalatestplus-play"       % "4.0.3"  % "test, it"
-  )
+  val test: Seq[ModuleID] = Seq(
+    "uk.gov.hmrc"             %% "bootstrap-test-play-27"   % "3.1.0",
+    "org.scalatest"           %% "scalatest"                % "3.0.8",
+    "com.typesafe.play"       %% "play-test"                % current,
+    "org.scalatestplus.play"  %% "scalatestplus-play"       % "4.0.3",
+    "org.mockito"             % "mockito-all"               % "1.10.19",
+    "com.github.tomakehurst"  % "wiremock-standalone"       % "2.25.1",
+    "org.pegdown"             % "pegdown"                   % "1.6.0"
+  ).map(_ % Test)
 }
