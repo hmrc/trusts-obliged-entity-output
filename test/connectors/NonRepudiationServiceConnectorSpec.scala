@@ -30,7 +30,7 @@ class NonRepudiationServiceConnectorSpec extends ConnectorSpecHelper {
 
   "NonRepudiationService connector" when {
 
-    ".getPdf" when {
+    ".getPdf" must {
 
       val url: String = "/generate-pdf/template/trusts-5mld-1-0-0/signed-pdf"
 
@@ -38,9 +38,7 @@ class NonRepudiationServiceConnectorSpec extends ConnectorSpecHelper {
 
       "return 200 OK" in {
 
-        val response: String = "some arbitrary response that can be read as base64 encoded binary"
-
-        stubForPost(server, url, Json.stringify(json), OK, response)
+        stubForPost(server, url, Json.stringify(json), OK, "{}")
 
         whenReady(connector.getPdf(json)) {
           response =>
