@@ -17,9 +17,9 @@
 package controllers
 
 import com.google.inject.Inject
-import config.Constants._
+import config.Constants.PDF
 import connectors.NrsConnector
-import controllers.Assets.{InternalServerError, OK}
+import controllers.Assets._
 import models.SuccessfulResponse
 import play.api.Logging
 import play.api.http.HttpEntity
@@ -33,7 +33,7 @@ class PdfController @Inject()(action: DefaultActionBuilder, nrsConnector: NrsCon
   def getPdf(): Action[AnyContent] = action.async {
     implicit request =>
 
-      val payload = Json.toJson("")
+      val payload = Json.toJson("") // TODO - get payload from request.body
 
       nrsConnector.getPdf(payload).map {
         case response@(_: SuccessfulResponse) =>
@@ -43,14 +43,14 @@ class PdfController @Inject()(action: DefaultActionBuilder, nrsConnector: NrsCon
               status = OK,
               headers = Map(
                 CONTENT_DISPOSITION -> "inline; filename.pdf",
-                CONTENT_TYPE -> "application/pdf",
+                CONTENT_TYPE -> PDF,
                 CONTENT_LENGTH -> response.length.toString
               )
             ),
             body = HttpEntity.Streamed(
               data = response.body,
               contentLength = Some(response.length),
-              contentType = Some("application/pdf")
+              contentType = Some(PDF)
             )
           )
         case e =>

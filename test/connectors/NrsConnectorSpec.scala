@@ -17,7 +17,7 @@
 package connectors
 
 import com.github.tomakehurst.wiremock.http.{HttpHeader, HttpHeaders}
-import config.Constants.CONTENT_LENGTH
+import controllers.Assets.CONTENT_LENGTH
 import helpers.ConnectorSpecHelper
 import helpers.JsonHelper._
 import models._
@@ -28,24 +28,24 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class NrsConnectorSpec extends ConnectorSpecHelper {
 
-  lazy val connector: NrsConnector = injector.instanceOf[NrsConnector]
+  private lazy val connector: NrsConnector = injector.instanceOf[NrsConnector]
 
-  val url: String = "/generate-pdf/template/trusts-5mld-1-0-0/signed-pdf"
+  private val url: String = "/generate-pdf/template/trusts-5mld-1-0-0/signed-pdf"
 
-  val json: JsValue = getJsonValueFromFile("nrs-request-body.json")
+  private val json: JsValue = getJsonValueFromFile("nrs-request-body.json")
 
   "NrsConnector" when {
 
     ".getPdf" must {
 
       "return SuccessfulResponse" when {
-        "200 (OK) response received and there is a Content-Length header" in {
+        "200 (OK) response received with a Content-Length header" in {
 
-          val header: HttpHeaders = new HttpHeaders(
+          val headers: HttpHeaders = new HttpHeaders(
             new HttpHeader(CONTENT_LENGTH, "1887445")
           )
 
-          stubForPost(server, url, Json.stringify(json), OK, "", header)
+          stubForPost(url = url, requestBody = Json.stringify(json), returnStatus = OK, responseHeaders = headers)
 
           whenReady(connector.getPdf(json)) {
             response =>
@@ -57,7 +57,7 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
       "return BadRequestResponse" when {
         "400 (BAD_REQUEST) response received" in {
 
-          stubForPost(server, url, Json.stringify(json), BAD_REQUEST, "")
+          stubForPost(url = url, requestBody = Json.stringify(json), returnStatus = BAD_REQUEST)
 
           whenReady(connector.getPdf(json)) {
             response =>
@@ -69,7 +69,7 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
       "return UnauthorisedResponse" when {
         "401 (UNAUTHORISED) response received" in {
 
-          stubForPost(server, url, Json.stringify(json), UNAUTHORIZED, "")
+          stubForPost(url = url, requestBody = Json.stringify(json), returnStatus = UNAUTHORIZED)
 
           whenReady(connector.getPdf(json)) {
             response =>
@@ -81,7 +81,7 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
       "return NotFoundResponse" when {
         "404 (NOT_FOUND) response received" in {
 
-          stubForPost(server, url, Json.stringify(json), NOT_FOUND, "")
+          stubForPost(url = url, requestBody = Json.stringify(json), returnStatus = NOT_FOUND)
 
           whenReady(connector.getPdf(json)) {
             response =>
@@ -94,7 +94,7 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
 
         "5xx response received" in {
 
-          stubForPost(server, url, Json.stringify(json), INTERNAL_SERVER_ERROR, "")
+          stubForPost(url = url, requestBody = Json.stringify(json), returnStatus = INTERNAL_SERVER_ERROR)
 
           whenReady(connector.getPdf(json)) {
             response =>
@@ -102,9 +102,9 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
           }
         }
 
-        "200 (OK) response received but no Content-Length header" in {
+        "200 (OK) response received without a Content-Length header" in {
 
-          stubForPost(server, url, Json.stringify(json), OK, "")
+          stubForPost(url = url, requestBody = Json.stringify(json), returnStatus = OK)
 
           whenReady(connector.getPdf(json)) {
             response =>

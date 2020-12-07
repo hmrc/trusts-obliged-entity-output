@@ -17,11 +17,11 @@
 package helpers
 
 import base.SpecBase
-import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.http.HttpHeaders
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import config.Constants._
+import controllers.Assets.{CONTENT_TYPE, JSON}
 import org.scalatest.concurrent.IntegrationPatience
 import play.api.inject.guice.GuiceApplicationBuilder
 
@@ -36,16 +36,15 @@ class ConnectorSpecHelper extends SpecBase with WireMockHelper with IntegrationP
       )
   }
 
-  def stubForPost(server: WireMockServer,
-                  url: String,
+  def stubForPost(url: String,
                   requestBody: String,
                   returnStatus: Int,
-                  responseBody: String,
+                  responseBody: String = "",
                   responseHeaders: HttpHeaders = HttpHeaders.noHeaders()): StubMapping = {
 
     server.stubFor(post(urlEqualTo(url))
       .withHeader(X_API_KEY, equalTo(appConfig.nrsToken))
-      .withHeader(CONTENT_TYPE, equalTo(CONTENT_TYPE_JSON))
+      .withHeader(CONTENT_TYPE, equalTo(JSON))
       .withRequestBody(equalTo(requestBody))
       .willReturn(
         aResponse()

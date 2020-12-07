@@ -18,10 +18,12 @@ package connectors
 
 import config.AppConfig
 import config.Constants._
+import controllers.Assets._
 import javax.inject.Inject
 import models.NrsResponse
 import play.api.libs.json.JsValue
 import play.api.libs.ws.WSClient
+import uk.gov.hmrc.http.HttpVerbs.POST
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -33,7 +35,7 @@ class NrsConnector @Inject()(ws: WSClient, config: AppConfig) {
     lazy val nrsHeaders: Seq[(String, String)] = {
       Seq(
         X_API_KEY -> s"${config.nrsToken}",
-        CONTENT_TYPE -> CONTENT_TYPE_JSON
+        CONTENT_TYPE -> JSON
       )
     }
 

@@ -16,97 +16,109 @@
 
 package controllers
 
-
-import akka.stream.scaladsl.Source
+import akka.stream.scaladsl.{Sink, Source}
 import akka.util.ByteString
 import base.SpecBase
-import play.api.test.Helpers._
+import config.Constants.PDF
 import connectors.NrsConnector
-import models.{BadRequestResponse, InternalServerErrorResponse, NotFoundResponse, SuccessfulResponse, UnauthorisedResponse}
+import models._
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
+import play.api.Play.materializer
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.mvc.Result
 import play.api.test.FakeRequest
+import play.api.test.Helpers._
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration.Duration
 
 class PdfControllerSpec extends SpecBase {
 
-  val connector = mock[NrsConnector]
+  private val mockConnector: NrsConnector = mock[NrsConnector]
 
   override def applicationBuilder(): GuiceApplicationBuilder = {
     super.applicationBuilder()
       .overrides(
-        bind[NrsConnector].toInstance(connector)
+        bind[NrsConnector].toInstance(mockConnector)
       )
   }
 
-  "getPdf" must {
+  private val controller: PdfController = injector.instanceOf[PdfController]
 
-    "return a successful response when a pdf is generated" in {
+  private def getSourceString(result: Result): String = {
+    val sink = Sink.fold[String, ByteString]("") { case (acc, str) =>
+      acc + str.utf8String
+    }
+    Await.result(result.body.dataStream.runWith(sink), Duration.Inf)
+  }
 
-      when(connector.getPdf(any())(any()))
-        .thenReturn(Future.successful(SuccessfulResponse(Source(List(ByteString.apply("abcdef"))), 12345L)))
+  ".getPdf" must {
 
-      val controller = injector.instanceOf[PdfController]
+    "return a successful response" when {
+      "a pdf is generated" in {
 
-      whenReady(controller.getPdf()(FakeRequest())) { result =>
-        result.header.status mustBe OK
-        result.header.headers mustEqual Map(
-          CONTENT_TYPE -> "application/pdf",
-          CONTENT_LENGTH -> "12345",
-          CONTENT_DISPOSITION -> "inline; filename.pdf"
-        )
+        val responseBody: String = "abcdef"
+        val contentLength: Long = 12345L
+
+        when(mockConnector.getPdf(any())(any()))
+          .thenReturn(Future.successful(SuccessfulResponse(Source(List(ByteString(responseBody))), contentLength)))
+
+        whenReady(controller.getPdf()(FakeRequest())) { result =>
+          result.header.status mustBe OK
+
+          result.header.headers mustEqual Map(
+            CONTENT_TYPE -> PDF,
+            CONTENT_LENGTH -> contentLength.toString,
+            CONTENT_DISPOSITION -> "inline; filename.pdf"
+          )
+
+          getSourceString(result) mustEqual responseBody
+        }
       }
     }
 
-    "return an InternalServerError when a BadRequestResponse is returned from NRS" in {
+    "return an InternalServerError" when {
 
-      when(connector.getPdf(any())(any()))
-        .thenReturn(Future.successful(BadRequestResponse))
+      "a BadRequestResponse is received from NRS" in {
+        when(mockConnector.getPdf(any())(any()))
+          .thenReturn(Future.successful(BadRequestResponse))
 
-      val controller = injector.instanceOf[PdfController]
+        val result: Future[Result] = controller.getPdf()(FakeRequest())
 
-      val result = controller.getPdf()(FakeRequest())
+        status(result) mustBe INTERNAL_SERVER_ERROR
+      }
 
-      status(result) mustBe INTERNAL_SERVER_ERROR
-    }
+      "an UnauthorisedResponse is received from NRS" in {
 
-    "return an InternalServerError when an UnauthorisedResponse is returned from NRS" in {
+        when(mockConnector.getPdf(any())(any()))
+          .thenReturn(Future.successful(UnauthorisedResponse))
 
-      when(connector.getPdf(any())(any()))
-        .thenReturn(Future.successful(UnauthorisedResponse))
+        val result: Future[Result] = controller.getPdf()(FakeRequest())
 
-      val controller = injector.instanceOf[PdfController]
+        status(result) mustBe INTERNAL_SERVER_ERROR
+      }
 
-      val result = controller.getPdf()(FakeRequest())
+      "a NotFoundResponse is received from NRS" in {
 
-      status(result) mustBe INTERNAL_SERVER_ERROR
-    }
+        when(mockConnector.getPdf(any())(any()))
+          .thenReturn(Future.successful(NotFoundResponse))
 
-    "return an InternalServerError when a NotFoundResponse is returned from NRS" in {
+        val result: Future[Result] = controller.getPdf()(FakeRequest())
 
-      when(connector.getPdf(any())(any()))
-        .thenReturn(Future.successful(NotFoundResponse))
+        status(result) mustBe INTERNAL_SERVER_ERROR
+      }
 
-      val controller = injector.instanceOf[PdfController]
+      "an InternalServerErrorResponse is received from NRS" in {
 
-      val result = controller.getPdf()(FakeRequest())
+        when(mockConnector.getPdf(any())(any()))
+          .thenReturn(Future.successful(InternalServerErrorResponse))
 
-      status(result) mustBe INTERNAL_SERVER_ERROR
-    }
+        val result: Future[Result] = controller.getPdf()(FakeRequest())
 
-    "return an InternalServerError when an InternalServerErrorResponse is returned from NRS" in {
-
-      when(connector.getPdf(any())(any()))
-        .thenReturn(Future.successful(InternalServerErrorResponse))
-
-      val controller = injector.instanceOf[PdfController]
-
-      val result = controller.getPdf()(FakeRequest())
-
-      status(result) mustBe INTERNAL_SERVER_ERROR
+        status(result) mustBe INTERNAL_SERVER_ERROR
+      }
     }
   }
 }
