@@ -22,8 +22,6 @@ import config.Constants._
 import play.api.Logging
 import play.api.http.Status._
 import play.api.libs.ws.BodyReadable
-import play.api.libs.ws.ahc.StandaloneAhcWSResponse
-import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
 trait NrsResponse
 
@@ -43,10 +41,9 @@ object NrsResponse extends Logging {
           case Some(Seq(length)) =>
             SuccessfulResponse(response.bodyAsSource, length.toLong)
           case _ =>
-            logger.error("Content-Length is missing")
+            logger.error(s"$CONTENT_LENGTH header is missing.")
             InternalServerErrorResponse
         }
-
       case BAD_REQUEST =>
         logger.error(s"Payload does not conform to defined JSON schema - ${response.body}")
         BadRequestResponse

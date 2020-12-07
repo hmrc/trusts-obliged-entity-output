@@ -16,19 +16,14 @@
 
 package controllers
 
-import akka.stream.scaladsl.Source
-import akka.util.ByteString
 import com.google.inject.Inject
 import config.Constants.{CONTENT_LENGTH, CONTENT_TYPE}
 import connectors.NrsConnector
-import controllers.Assets.{BadGateway, OK}
+import controllers.Assets.OK
 import models.SuccessfulResponse
 import play.api.http.HttpEntity
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, DefaultActionBuilder, Result}
-import play.api.mvc.Results._
-
-import scala.concurrent.{ExecutionContext, Future}
 
 class PdfController @Inject()(action: DefaultActionBuilder, nrsConnector: NrsConnector) {
 

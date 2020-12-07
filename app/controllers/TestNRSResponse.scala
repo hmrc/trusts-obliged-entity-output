@@ -21,15 +21,12 @@ import play.api.http.FileMimeTypes
 import play.api.mvc.Results.Ok
 import play.api.mvc.{Action, AnyContent, DefaultActionBuilder}
 
-import java.nio.file.{Files, Paths}
-
 class TestNRSResponse @Inject()(action: DefaultActionBuilder)(implicit val fileMimeTypes: FileMimeTypes) {
 
   implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
 
   def getPdf: Action[AnyContent] = action {
     implicit request =>
-
 
       Ok.sendFile(
         content = new java.io.File("conf/resources/response.pdf"),

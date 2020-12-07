@@ -22,24 +22,21 @@ import javax.inject.Inject
 import models.NrsResponse
 import play.api.libs.json.JsValue
 import play.api.libs.ws.WSClient
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class NrsConnector @Inject()(http: HttpClient,
-                             ws: WSClient,
-                             config: AppConfig) {
-
-  private lazy val nrsHeaders: Seq[(String, String)] = {
-    Seq(
-      X_API_KEY -> s"${config.nrsToken}",
-      CONTENT_TYPE -> CONTENT_TYPE_JSON
-    )
-  }
-  private lazy val url: String = s"${config.nrsUrl}/generate-pdf/template/trusts-5mld-1-0-0/signed-pdf"
-
+class NrsConnector @Inject()(ws: WSClient, config: AppConfig) {
 
   def getPdf(payload: JsValue)(implicit ec: ExecutionContext): Future[NrsResponse] = {
+    lazy val url: String = s"${config.nrsUrl}/generate-pdf/template/trusts-5mld-1-0-0/signed-pdf"
+
+    lazy val nrsHeaders: Seq[(String, String)] = {
+      Seq(
+        X_API_KEY -> s"${config.nrsToken}",
+        CONTENT_TYPE -> CONTENT_TYPE_JSON
+      )
+    }
+
     ws.url(url).withMethod(POST).withHttpHeaders(nrsHeaders: _*).withBody(payload).stream().map { response =>
       response.body[NrsResponse]
     }

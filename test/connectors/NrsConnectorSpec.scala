@@ -17,7 +17,7 @@
 package connectors
 
 import com.github.tomakehurst.wiremock.http.{HttpHeader, HttpHeaders}
-import config.Constants.{CONTENT_LENGTH, CONTENT_TYPE, CONTENT_TYPE_PDF}
+import config.Constants.CONTENT_LENGTH
 import helpers.ConnectorSpecHelper
 import helpers.JsonHelper._
 import models._
@@ -38,111 +38,78 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
 
     ".getPdf" must {
 
-      "return 200 OK" in {
+      "return SuccessfulResponse" when {
+        "200 (OK) response received and there is a Content-Length header" in {
 
-        val header: HttpHeaders = new HttpHeaders(
-          new HttpHeader(CONTENT_TYPE, CONTENT_TYPE_PDF),
-          new HttpHeader(CONTENT_LENGTH, "1887445")
-        )
+          val header: HttpHeaders = new HttpHeaders(
+            new HttpHeader(CONTENT_LENGTH, "1887445")
+          )
 
-        stubForPost(server, url, Json.stringify(json), OK, "", header)
+          stubForPost(server, url, Json.stringify(json), OK, "", header)
 
-        whenReady(connector.getPdf(json)) {
-          response =>
-            response mustBe a[SuccessfulResponse]
+          whenReady(connector.getPdf(json)) {
+            response =>
+              response mustBe a[SuccessfulResponse]
+          }
         }
       }
 
-      "return 400 BAD_REQUEST" in {
+      "return BadRequestResponse" when {
+        "400 (BAD_REQUEST) response received" in {
 
-        stubForPost(server, url, Json.stringify(json), BAD_REQUEST, "")
+          stubForPost(server, url, Json.stringify(json), BAD_REQUEST, "")
 
-        whenReady(connector.getPdf(json)) {
-          response =>
-            response mustBe BadRequestResponse
+          whenReady(connector.getPdf(json)) {
+            response =>
+              response mustBe BadRequestResponse
+          }
         }
       }
 
-      "return 401 FORBIDDEN" in {
+      "return UnauthorisedResponse" when {
+        "401 (UNAUTHORISED) response received" in {
 
-        stubForPost(server, url, Json.stringify(json), UNAUTHORIZED, "")
+          stubForPost(server, url, Json.stringify(json), UNAUTHORIZED, "")
 
-        whenReady(connector.getPdf(json)) {
-          response =>
-            response mustBe UnauthorisedResponse
+          whenReady(connector.getPdf(json)) {
+            response =>
+              response mustBe UnauthorisedResponse
+          }
         }
       }
 
-      "return 404 NOT_FOUND" in {
+      "return NotFoundResponse" when {
+        "404 (NOT_FOUND) response received" in {
 
-        stubForPost(server, url, Json.stringify(json), NOT_FOUND, "")
+          stubForPost(server, url, Json.stringify(json), NOT_FOUND, "")
 
-        whenReady(connector.getPdf(json)) {
-          response =>
-            response mustBe NotFoundResponse
+          whenReady(connector.getPdf(json)) {
+            response =>
+              response mustBe NotFoundResponse
+          }
         }
       }
 
-      "return 5xx error" in {
+      "return InternalServerErrorResponse" when {
 
-        stubForPost(server, url, Json.stringify(json), INTERNAL_SERVER_ERROR, "")
+        "5xx response received" in {
 
-        whenReady(connector.getPdf(json)) {
-          response =>
-            response mustBe InternalServerErrorResponse
+          stubForPost(server, url, Json.stringify(json), INTERNAL_SERVER_ERROR, "")
+
+          whenReady(connector.getPdf(json)) {
+            response =>
+              response mustBe InternalServerErrorResponse
+          }
         }
-      }
-    }
 
-    ".getPdfStreamed" must {
+        "200 (OK) response received but no Content-Length header" in {
 
-      "return 200 OK" in {
+          stubForPost(server, url, Json.stringify(json), OK, "")
 
-        stubForPost(server, url, Json.stringify(json), OK, "")
-
-        whenReady(connector.getPdfStreamed(json)) {
-          response =>
-            response mustBe a[SuccessfulResponse]
-        }
-      }
-
-      "return 400 BAD_REQUEST" in {
-
-        stubForPost(server, url, Json.stringify(json), BAD_REQUEST, "")
-
-        whenReady(connector.getPdfStreamed(json)) {
-          response =>
-            response mustBe BadRequestResponse
-        }
-      }
-
-      "return 401 FORBIDDEN" in {
-
-        stubForPost(server, url, Json.stringify(json), UNAUTHORIZED, "")
-
-        whenReady(connector.getPdfStreamed(json)) {
-          response =>
-            response mustBe UnauthorisedResponse
-        }
-      }
-
-      "return 404 NOT_FOUND" in {
-
-        stubForPost(server, url, Json.stringify(json), NOT_FOUND, "")
-
-        whenReady(connector.getPdfStreamed(json)) {
-          response =>
-            response mustBe NotFoundResponse
-        }
-      }
-
-      "return 5xx error" in {
-
-        stubForPost(server, url, Json.stringify(json), INTERNAL_SERVER_ERROR, "")
-
-        whenReady(connector.getPdfStreamed(json)) {
-          response =>
-            response mustBe InternalServerErrorResponse
+          whenReady(connector.getPdf(json)) {
+            response =>
+              response mustBe InternalServerErrorResponse
+          }
         }
       }
     }
