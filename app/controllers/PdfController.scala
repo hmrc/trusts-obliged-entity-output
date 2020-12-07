@@ -39,14 +39,8 @@ class PdfController @Inject()(action: DefaultActionBuilder, nrsConnector: NrsCon
 
       val payload = Json.toJson("")
 
-      nrsConnector.getPdfStreamed(payload).map {
+      nrsConnector.getPdf(payload).map {
         case response@(_: SuccessfulResponse) =>
-
-//          Ok(response.body).as("application/pdf").withHeaders(
-//            "Content-Disposition" -> "inline; filename.pdf",
-//            CONTENT_TYPE -> "application/pdf",
-//            CONTENT_LENGTH -> response.length.toString
-//          )
 
           Result(
             header = play.api.mvc.ResponseHeader(
@@ -66,26 +60,4 @@ class PdfController @Inject()(action: DefaultActionBuilder, nrsConnector: NrsCon
       }
   }
 
-//  def pdfStreamed()(implicit ec: ExecutionContext): Action[AnyContent] = action.async {
-//    implicit request =>
-//    // Make the request
-//    nrsConnector.getPdf(Json.toJson("")).stream().map {
-//      case response@(_: SuccessfulResponse) =>
-//        // Get the content type
-//        val contentType = response.headers
-//          .get("Content-Type")
-//          .flatMap(_.headOption)
-//          .getOrElse("application/pdf")
-//
-//        // If there's a content length, send that, otherwise return the body chunked
-//        response.headers.get("Content-Length") match {
-//          case Some(Seq(length)) =>
-//            Ok.sendEntity(HttpEntity.Streamed(response.bodyAsSource, Some(length.toLong), Some(contentType)))
-//          case _ =>
-//            Ok.chunked(response.bodyAsSource).as(contentType)
-//        }
-//      case _ =>
-//        BadGateway
-//    }
-//  }
 }

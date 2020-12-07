@@ -36,16 +36,10 @@ class NrsConnector @Inject()(http: HttpClient,
       CONTENT_TYPE -> CONTENT_TYPE_JSON
     )
   }
+  private lazy val url: String = s"${config.nrsUrl}/generate-pdf/template/trusts-5mld-1-0-0/signed-pdf"
 
-//  private lazy val url: String = s"${config.nrsUrl}/generate-pdf/template/trusts-5mld-1-0-0/signed-pdf"
-  private lazy val url: String = s"http://localhost:9780/trusts-obliged-entity-output/test"
 
-//  def getPdf(payload: JsValue)(implicit ec: ExecutionContext): Future[NrsResponse] = {
-//    implicit val hc: HeaderCarrier = HeaderCarrier(extraHeaders = nrsHeaders)
-//    http.POST[JsValue, NrsResponse](url, payload)
-//  }
-
-  def getPdfStreamed(payload: JsValue)(implicit ec: ExecutionContext): Future[NrsResponse] = {
+  def getPdf(payload: JsValue)(implicit ec: ExecutionContext): Future[NrsResponse] = {
     ws.url(url).withMethod(POST).withHttpHeaders(nrsHeaders: _*).withBody(payload).stream().map { response =>
       response.body[NrsResponse]
     }

@@ -2,4 +2,4 @@
 
 GET        /pdf             controllers.PdfController.pdf()
 
-POST        /test            controllers.TestNRSResponse.getPdf()
+POST        /generate-pdf/template/trusts-5mld-1-0-0/signed-pdf            controllers.TestNRSResponse.getPdf()

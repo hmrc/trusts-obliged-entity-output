@@ -35,37 +35,18 @@ case object InternalServerErrorResponse extends NrsResponse
 
 object NrsResponse extends Logging {
 
-//  implicit val httpReads: HttpReads[NrsResponse] = (_: String, _: String, response: HttpResponse) => {
-//    response.status match {
-//      case OK =>
-//        response.header(CONTENT_LENGTH) match {
-//          case Some(length) => SuccessfulResponse(response., length.toLong)
-//          case _ =>
-//            logger.warn(s"$CONTENT_LENGTH header missing from response.")
-//            SuccessfulResponse(response.body.getBytes, response.body.length.toLong)
-//        }
-//      case BAD_REQUEST =>
-//        logger.error(s"Payload does not conform to defined JSON schema - ${response.body}")
-//        BadRequestResponse
-//      case UNAUTHORIZED =>
-//        logger.error("No X-API-Key provided or it is invalid.")
-//        UnauthorisedResponse
-//      case NOT_FOUND =>
-//        logger.error("Requested PDF template does not exist.")
-//        NotFoundResponse
-//      case _ =>
-//        logger.error("Service unavailable response from NRS.")
-//        InternalServerErrorResponse
-//    }
-//  }
-
   implicit val bodyReadable: BodyReadable[NrsResponse] = BodyReadable[NrsResponse] { response =>
-    import play.shaded.ahc.org.asynchttpclient.{Response => AHCResponse}
-//    val ahcResponse: AHCResponse = response.asInstanceOf[StandaloneAhcWSResponse].underlying[AHCResponse]
 
     response.status match {
       case OK =>
-        SuccessfulResponse(response.bodyAsSource, response.headers.get(CONTENT_LENGTH).map(_.head.toLong).get)
+        response.headers.get(CONTENT_LENGTH) match {
+          case Some(Seq(length)) =>
+            SuccessfulResponse(response.bodyAsSource, length.toLong)
+          case _ =>
+            logger.error("Content-Length is missing")
+            InternalServerErrorResponse
+        }
+
       case BAD_REQUEST =>
         logger.error(s"Payload does not conform to defined JSON schema - ${response.body}")
         BadRequestResponse
