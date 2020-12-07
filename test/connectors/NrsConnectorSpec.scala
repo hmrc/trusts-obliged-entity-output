@@ -16,43 +16,36 @@
 
 package connectors
 
+import com.github.tomakehurst.wiremock.http.{HttpHeader, HttpHeaders}
+import config.Constants.{CONTENT_LENGTH, CONTENT_TYPE, CONTENT_TYPE_PDF}
 import helpers.ConnectorSpecHelper
 import helpers.JsonHelper._
 import models._
 import play.api.http.Status._
-import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-trait NrsConnectorSpec extends ConnectorSpecHelper {
+class NrsConnectorSpec extends ConnectorSpecHelper {
 
-  def buildApplication(nrsEnabled: Boolean): GuiceApplicationBuilder = {
-    super.applicationBuilder()
-      .configure(
-        Seq(
-          "microservice.services.nrs-trusts.enabled" -> nrsEnabled
-        ): _*
-      )
-  }
+  lazy val connector: NrsConnector = injector.instanceOf[NrsConnector]
 
   val url: String = "/generate-pdf/template/trusts-5mld-1-0-0/signed-pdf"
 
   val json: JsValue = getJsonValueFromFile("nrs-request-body.json")
-}
 
-class NrsConnectorSpecEnabled extends NrsConnectorSpec {
-
-  override def applicationBuilder(): GuiceApplicationBuilder = buildApplication(nrsEnabled = true)
-  lazy val connector: NrsConnector = injector.instanceOf[NrsConnector]
-
-  "NonRepudiationService connector" when {
+  "NrsConnector" when {
 
     ".getPdf" must {
 
       "return 200 OK" in {
 
-        stubForPost(server, url, Json.stringify(json), OK, "")
+        val header: HttpHeaders = new HttpHeaders(
+          new HttpHeader(CONTENT_TYPE, CONTENT_TYPE_PDF),
+          new HttpHeader(CONTENT_LENGTH, "1887445")
+        )
+
+        stubForPost(server, url, Json.stringify(json), OK, "", header)
 
         whenReady(connector.getPdf(json)) {
           response =>
@@ -100,23 +93,58 @@ class NrsConnectorSpecEnabled extends NrsConnectorSpec {
         }
       }
     }
-  }
-}
 
-class NrsConnectorSpecDisabled extends NrsConnectorSpec {
+    ".getPdfStreamed" must {
 
-  override def applicationBuilder(): GuiceApplicationBuilder = buildApplication(nrsEnabled = false)
-  lazy val connector: NrsConnector = injector.instanceOf[NrsConnector]
+      "return 200 OK" in {
 
-  ".getPdf" must {
+        stubForPost(server, url, Json.stringify(json), OK, "")
 
-    "return fake response" in {
+        whenReady(connector.getPdfStreamed(json)) {
+          response =>
+            response mustBe a[SuccessfulResponse]
+        }
+      }
 
-      whenReady(connector.getPdf(json)) {
-        response =>
-          response mustBe a[SuccessfulResponse]
+      "return 400 BAD_REQUEST" in {
+
+        stubForPost(server, url, Json.stringify(json), BAD_REQUEST, "")
+
+        whenReady(connector.getPdfStreamed(json)) {
+          response =>
+            response mustBe BadRequestResponse
+        }
+      }
+
+      "return 401 FORBIDDEN" in {
+
+        stubForPost(server, url, Json.stringify(json), UNAUTHORIZED, "")
+
+        whenReady(connector.getPdfStreamed(json)) {
+          response =>
+            response mustBe UnauthorisedResponse
+        }
+      }
+
+      "return 404 NOT_FOUND" in {
+
+        stubForPost(server, url, Json.stringify(json), NOT_FOUND, "")
+
+        whenReady(connector.getPdfStreamed(json)) {
+          response =>
+            response mustBe NotFoundResponse
+        }
+      }
+
+      "return 5xx error" in {
+
+        stubForPost(server, url, Json.stringify(json), INTERNAL_SERVER_ERROR, "")
+
+        whenReady(connector.getPdfStreamed(json)) {
+          response =>
+            response mustBe InternalServerErrorResponse
+        }
       }
     }
   }
-
 }

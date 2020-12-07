@@ -30,5 +30,4 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
 
   val nrsUrl: String = servicesConfig.baseUrl("nrs-trusts")
   val nrsToken: String = config.get[String]("microservice.services.nrs-trusts.token")
-  val nrsEnabled: Boolean = config.get[Boolean]("microservice.services.nrs-trusts.enabled")
 }

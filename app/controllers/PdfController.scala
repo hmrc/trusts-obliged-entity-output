@@ -32,13 +32,21 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class PdfController @Inject()(action: DefaultActionBuilder, nrsConnector: NrsConnector) {
 
-  def pdf()(implicit ec: ExecutionContext): Action[AnyContent] = action.async {
+  implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
+
+  def pdf(): Action[AnyContent] = action.async {
     implicit request =>
 
       val payload = Json.toJson("")
 
-      nrsConnector.getPdf(payload).map {
+      nrsConnector.getPdfStreamed(payload).map {
         case response@(_: SuccessfulResponse) =>
+
+//          Ok(response.body).as("application/pdf").withHeaders(
+//            "Content-Disposition" -> "inline; filename.pdf",
+//            CONTENT_TYPE -> "application/pdf",
+//            CONTENT_LENGTH -> response.length.toString
+//          )
 
           Result(
             header = play.api.mvc.ResponseHeader(
@@ -46,12 +54,12 @@ class PdfController @Inject()(action: DefaultActionBuilder, nrsConnector: NrsCon
               headers = Map(
                 "Content-Disposition" -> "inline; filename.pdf",
                 CONTENT_TYPE -> "application/pdf",
-                CONTENT_LENGTH -> response.contentLength.map(_.head).getOrElse("")
+                CONTENT_LENGTH -> response.length.toString
               )
             ),
             body = HttpEntity.Streamed(
-              data = Source(List(ByteString.apply(response.body))),
-              contentLength = response.contentLength.map(_.head.toLong),
+              data = response.body,
+              contentLength = Some(response.length),
               contentType = Some("application/pdf")
             )
           )

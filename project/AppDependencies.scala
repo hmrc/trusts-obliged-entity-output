@@ -1,11 +1,13 @@
 import play.core.PlayVersion.current
+import play.sbt.PlayImport.ws
 import sbt._
 
 object AppDependencies {
 
   val compile: Seq[ModuleID] = Seq(
     "uk.gov.hmrc"             %% "bootstrap-backend-play-27"  % "3.1.0",
-    "uk.gov.hmrc"             %% "simple-reactivemongo"       % "7.30.0-play-27"
+    "uk.gov.hmrc"             %% "simple-reactivemongo"       % "7.30.0-play-27",
+    ws
   )
 
   val test: Seq[ModuleID] = Seq(

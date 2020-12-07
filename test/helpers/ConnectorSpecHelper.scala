@@ -19,6 +19,7 @@ package helpers
 import base.SpecBase
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.http.HttpHeaders
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import config.Constants._
 import org.scalatest.concurrent.IntegrationPatience
@@ -39,7 +40,8 @@ class ConnectorSpecHelper extends SpecBase with WireMockHelper with IntegrationP
                   url: String,
                   requestBody: String,
                   returnStatus: Int,
-                  responseBody: String): StubMapping = {
+                  responseBody: String,
+                  responseHeaders: HttpHeaders = HttpHeaders.noHeaders()): StubMapping = {
 
     server.stubFor(post(urlEqualTo(url))
       .withHeader(X_API_KEY, equalTo(appConfig.nrsToken))
@@ -48,6 +50,7 @@ class ConnectorSpecHelper extends SpecBase with WireMockHelper with IntegrationP
       .willReturn(
         aResponse()
           .withStatus(returnStatus)
+          .withHeaders(responseHeaders)
           .withBody(responseBody)
           .withFixedDelay(0)
       )
