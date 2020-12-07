@@ -46,7 +46,7 @@ class PdfController @Inject()(action: DefaultActionBuilder,
             header = ResponseHeader(
               status = OK,
               headers = Map(
-                CONTENT_DISPOSITION -> s"${config.inlineOrAttachment}; $fileName.pdf",
+                CONTENT_DISPOSITION -> s"${config.inlineOrAttachment}; filename=$fileName.pdf",
                 CONTENT_TYPE -> PDF,
                 CONTENT_LENGTH -> response.length.toString
               )
