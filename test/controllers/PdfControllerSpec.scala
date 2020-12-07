@@ -59,6 +59,7 @@ class PdfControllerSpec extends SpecBase {
     "return a successful response" when {
       "a pdf is generated" in {
 
+        val fileName: String = "filename"
         val responseBody: String = "abcdef"
         val contentLength: Long = 12345L
 
@@ -71,7 +72,7 @@ class PdfControllerSpec extends SpecBase {
           result.header.headers mustEqual Map(
             CONTENT_TYPE -> PDF,
             CONTENT_LENGTH -> contentLength.toString,
-            CONTENT_DISPOSITION -> "inline; filename.pdf"
+            CONTENT_DISPOSITION -> s"${appConfig.inlineOrAttachment}; $fileName.pdf"
           )
 
           getSourceString(result) mustEqual responseBody

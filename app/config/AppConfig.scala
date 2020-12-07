@@ -40,4 +40,9 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
   }
 
   val nrsToken: String = config.get[String]("microservice.services.nrs-trusts.token")
+
+  /**
+   * Content-Disposition is 'inline' by default. Change to 'attachment' to present the 'Save As' dialog
+   */
+  val inlineOrAttachment: String = config.get[String]("inline-or-attachment")
 }

@@ -17,16 +17,19 @@
 package controllers
 
 import com.google.inject.Inject
-import config.Constants.PDF
+import config.AppConfig
+import config.Constants._
 import connectors.NrsConnector
 import controllers.Assets._
 import models.SuccessfulResponse
 import play.api.Logging
 import play.api.http.HttpEntity
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, DefaultActionBuilder, Result}
+import play.api.mvc._
 
-class PdfController @Inject()(action: DefaultActionBuilder, nrsConnector: NrsConnector) extends Logging {
+class PdfController @Inject()(action: DefaultActionBuilder,
+                              nrsConnector: NrsConnector,
+                              config: AppConfig) extends Logging {
 
   implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
 
@@ -34,15 +37,16 @@ class PdfController @Inject()(action: DefaultActionBuilder, nrsConnector: NrsCon
     implicit request =>
 
       val payload = Json.toJson("") // TODO - get payload from request.body
+      val fileName: String = "filename" // TODO - include useful information in file name. Maybe UTR and the date/time?
 
       nrsConnector.getPdf(payload).map {
         case response@(_: SuccessfulResponse) =>
 
           Result(
-            header = play.api.mvc.ResponseHeader(
+            header = ResponseHeader(
               status = OK,
               headers = Map(
-                CONTENT_DISPOSITION -> "inline; filename.pdf",
+                CONTENT_DISPOSITION -> s"${config.inlineOrAttachment}; $fileName.pdf",
                 CONTENT_TYPE -> PDF,
                 CONTENT_LENGTH -> response.length.toString
               )
