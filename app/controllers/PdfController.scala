@@ -17,19 +17,20 @@
 package controllers
 
 import com.google.inject.Inject
-import config.Constants.{CONTENT_LENGTH, CONTENT_TYPE}
+import config.Constants._
 import connectors.NrsConnector
-import controllers.Assets.OK
+import controllers.Assets.{InternalServerError, OK}
 import models.SuccessfulResponse
+import play.api.Logging
 import play.api.http.HttpEntity
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, DefaultActionBuilder, Result}
 
-class PdfController @Inject()(action: DefaultActionBuilder, nrsConnector: NrsConnector) {
+class PdfController @Inject()(action: DefaultActionBuilder, nrsConnector: NrsConnector) extends Logging {
 
   implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
 
-  def pdf(): Action[AnyContent] = action.async {
+  def getPdf(): Action[AnyContent] = action.async {
     implicit request =>
 
       val payload = Json.toJson("")
@@ -41,7 +42,7 @@ class PdfController @Inject()(action: DefaultActionBuilder, nrsConnector: NrsCon
             header = play.api.mvc.ResponseHeader(
               status = OK,
               headers = Map(
-                "Content-Disposition" -> "inline; filename.pdf",
+                CONTENT_DISPOSITION -> "inline; filename.pdf",
                 CONTENT_TYPE -> "application/pdf",
                 CONTENT_LENGTH -> response.length.toString
               )
@@ -52,6 +53,9 @@ class PdfController @Inject()(action: DefaultActionBuilder, nrsConnector: NrsCon
               contentType = Some("application/pdf")
             )
           )
+        case e =>
+          logger.error(s"Error retrieving PDF from NRS: $e")
+          InternalServerError
       }
   }
 
