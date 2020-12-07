@@ -22,5 +22,9 @@ object Constants {
 
   val CONTENT_TYPE = "Content-Type"
   val CONTENT_TYPE_JSON = "application/json; charset=UTF-8"
+  val CONTENT_TYPE_PDF = "application/pdf"
+  val CONTENT_LENGTH = "Content-Length"
+
+  val POST = "POST"
 
 }

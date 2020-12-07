@@ -16,18 +16,18 @@
 
 package connectors
 
-import java.nio.file.{Files, Paths}
-
 import config.AppConfig
 import config.Constants._
 import javax.inject.Inject
-import models.{NonRepudiationServiceResponse, SuccessfulResponse}
+import models.NrsResponse
 import play.api.libs.json.JsValue
+import play.api.libs.ws.WSClient
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class NrsConnector @Inject()(http: HttpClient,
+                             ws: WSClient,
                              config: AppConfig) {
 
   private lazy val nrsHeaders: Seq[(String, String)] = {
@@ -37,15 +37,16 @@ class NrsConnector @Inject()(http: HttpClient,
     )
   }
 
-  implicit val hc: HeaderCarrier = HeaderCarrier(extraHeaders = nrsHeaders)
+  private lazy val url: String = s"${config.nrsUrl}/generate-pdf/template/trusts-5mld-1-0-0/signed-pdf"
 
-  def getPdf(payload: JsValue)(implicit ec: ExecutionContext): Future[NonRepudiationServiceResponse] = {
-    if (config.nrsEnabled) {
-      val url: String = s"${config.nrsUrl}/generate-pdf/template/trusts-5mld-1-0-0/signed-pdf"
-      http.POST[JsValue, NonRepudiationServiceResponse](url, payload)
-    } else {
-      val byteArray: Array[Byte] = Files.readAllBytes(Paths.get("conf/resources/response.pdf"))
-      Future.successful(SuccessfulResponse(byteArray))
+  def getPdf(payload: JsValue)(implicit ec: ExecutionContext): Future[NrsResponse] = {
+    implicit val hc: HeaderCarrier = HeaderCarrier(extraHeaders = nrsHeaders)
+    http.POST[JsValue, NrsResponse](url, payload)
+  }
+
+  def getPdfStreamed(payload: JsValue)(implicit ec: ExecutionContext): Future[NrsResponse] = {
+    ws.url(url).withMethod(POST).withHttpHeaders(nrsHeaders: _*).withBody(payload).stream().map { response =>
+      response.body[NrsResponse]
     }
   }
 

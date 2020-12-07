@@ -16,26 +16,56 @@
 
 package models
 
+import config.Constants._
 import play.api.Logging
 import play.api.http.Status._
+import play.api.libs.ws.BodyReadable
+import play.api.libs.ws.ahc.StandaloneAhcWSResponse
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
-trait NonRepudiationServiceResponse
+trait NrsResponse
 
-case class SuccessfulResponse(body: Array[Byte]) extends NonRepudiationServiceResponse
-case object BadRequestResponse extends NonRepudiationServiceResponse
-case object UnauthorisedResponse extends NonRepudiationServiceResponse
-case object NotFoundResponse extends NonRepudiationServiceResponse
-case object InternalServerErrorResponse extends NonRepudiationServiceResponse
+case class SuccessfulResponse(body: Array[Byte], length: Long) extends NrsResponse
+case object BadRequestResponse extends NrsResponse
+case object UnauthorisedResponse extends NrsResponse
+case object NotFoundResponse extends NrsResponse
+case object InternalServerErrorResponse extends NrsResponse
 
-object NonRepudiationServiceResponse extends Logging {
+object NrsResponse extends Logging {
 
-  implicit lazy val httpReads: HttpReads[NonRepudiationServiceResponse] = (_: String, _: String, response: HttpResponse) => {
+  implicit val httpReads: HttpReads[NrsResponse] = (_: String, _: String, response: HttpResponse) => {
     response.status match {
       case OK =>
-        SuccessfulResponse(response.body.getBytes)
+        response.header(CONTENT_LENGTH) match {
+          case Some(length) => SuccessfulResponse(response.body.getBytes, length.toLong)
+          case _ =>
+            logger.warn(s"$CONTENT_LENGTH header missing from response.")
+            ???
+        }
       case BAD_REQUEST =>
         logger.error(s"Payload does not conform to defined JSON schema - ${response.body}")
+        BadRequestResponse
+      case UNAUTHORIZED =>
+        logger.error("No X-API-Key provided or it is invalid.")
+        UnauthorisedResponse
+      case NOT_FOUND =>
+        logger.error("Requested PDF template does not exist.")
+        NotFoundResponse
+      case _ =>
+        logger.error("Service unavailable response from NRS.")
+        InternalServerErrorResponse
+    }
+  }
+
+  implicit val bodyReadable: BodyReadable[NrsResponse] = BodyReadable[NrsResponse] { response =>
+    import play.shaded.ahc.org.asynchttpclient.{Response => AHCResponse}
+    val ahcResponse: AHCResponse = response.asInstanceOf[StandaloneAhcWSResponse].underlying[AHCResponse]
+
+    ahcResponse.getStatusCode match {
+      case OK =>
+        SuccessfulResponse(ahcResponse.getResponseBody.getBytes, ahcResponse.getHeaders.get(CONTENT_LENGTH).toLong)
+      case BAD_REQUEST =>
+        logger.error(s"Payload does not conform to defined JSON schema - ${ahcResponse.getResponseBody}")
         BadRequestResponse
       case UNAUTHORIZED =>
         logger.error("No X-API-Key provided or it is invalid.")
