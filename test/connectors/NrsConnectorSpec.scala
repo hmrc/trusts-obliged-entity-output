@@ -24,9 +24,9 @@ import play.api.libs.json.{JsValue, Json}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class NonRepudiationServiceConnectorSpec extends ConnectorSpecHelper {
+class NrsConnectorSpec extends ConnectorSpecHelper {
 
-  private lazy val connector: NonRepudiationServiceConnector = injector.instanceOf[NonRepudiationServiceConnector]
+  private lazy val connector: NrsConnector = injector.instanceOf[NrsConnector]
 
   "NonRepudiationService connector" when {
 
@@ -38,17 +38,17 @@ class NonRepudiationServiceConnectorSpec extends ConnectorSpecHelper {
 
       "return 200 OK" in {
 
-        stubForPost(server, url, Json.stringify(json), OK, "{}")
+        stubForPost(server, url, Json.stringify(json), OK, "response")
 
         whenReady(connector.getPdf(json)) {
           response =>
-            response mustBe SuccessfulResponse
+            response mustBe SuccessfulResponse("response")
         }
       }
 
       "return 400 BAD_REQUEST" in {
 
-        stubForPost(server, url, Json.stringify(json), BAD_REQUEST, "{}")
+        stubForPost(server, url, Json.stringify(json), BAD_REQUEST, "")
 
         whenReady(connector.getPdf(json)) {
           response =>
@@ -58,7 +58,7 @@ class NonRepudiationServiceConnectorSpec extends ConnectorSpecHelper {
 
       "return 401 FORBIDDEN" in {
 
-        stubForPost(server, url, Json.stringify(json), UNAUTHORIZED, "{}")
+        stubForPost(server, url, Json.stringify(json), UNAUTHORIZED, "")
 
         whenReady(connector.getPdf(json)) {
           response =>
@@ -68,7 +68,7 @@ class NonRepudiationServiceConnectorSpec extends ConnectorSpecHelper {
 
       "return 404 NOT_FOUND" in {
 
-        stubForPost(server, url, Json.stringify(json), NOT_FOUND, "{}")
+        stubForPost(server, url, Json.stringify(json), NOT_FOUND, "")
 
         whenReady(connector.getPdf(json)) {
           response =>
@@ -78,7 +78,7 @@ class NonRepudiationServiceConnectorSpec extends ConnectorSpecHelper {
 
       "return 5xx error" in {
 
-        stubForPost(server, url, Json.stringify(json), INTERNAL_SERVER_ERROR, "{}")
+        stubForPost(server, url, Json.stringify(json), INTERNAL_SERVER_ERROR, "")
 
         whenReady(connector.getPdf(json)) {
           response =>

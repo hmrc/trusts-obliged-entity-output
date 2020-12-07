@@ -25,23 +25,23 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class NonRepudiationServiceConnector @Inject()(http: HttpClient, config: AppConfig) {
+class NrsConnector @Inject()(http: HttpClient, config: AppConfig) {
 
-  private def nrsHeaders(): Seq[(String, String)] = {
+  private lazy val nrsHeaders: Seq[(String, String)] = {
     Seq(
       X_API_KEY -> s"${config.nrsToken}",
       CONTENT_TYPE -> CONTENT_TYPE_JSON
     )
   }
 
-  implicit val hc: HeaderCarrier = HeaderCarrier(extraHeaders = nrsHeaders())
+  implicit val hc: HeaderCarrier = HeaderCarrier(extraHeaders = nrsHeaders)
 
   def getPdf(payload: JsValue)(implicit ec: ExecutionContext): Future[NonRepudiationServiceResponse] = {
     if (config.nrsEnabled) {
       val url: String = s"${config.nrsUrl}/generate-pdf/template/trusts-5mld-1-0-0/signed-pdf"
       http.POST[JsValue, NonRepudiationServiceResponse](url, payload)
     } else {
-      Future.successful(SuccessfulResponse)
+      Future.successful(SuccessfulResponse("fake response"))
     }
   }
 
