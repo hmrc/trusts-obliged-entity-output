@@ -20,29 +20,43 @@ import helpers.ConnectorSpecHelper
 import helpers.JsonHelper._
 import models._
 import play.api.http.Status._
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class NrsConnectorSpec extends ConnectorSpecHelper {
+trait NrsConnectorSpec extends ConnectorSpecHelper {
 
-  private lazy val connector: NrsConnector = injector.instanceOf[NrsConnector]
+  def buildApplication(nrsEnabled: Boolean): GuiceApplicationBuilder = {
+    super.applicationBuilder()
+      .configure(
+        Seq(
+          "microservice.services.nrs-trusts.enabled" -> nrsEnabled
+        ): _*
+      )
+  }
+
+  val url: String = "/generate-pdf/template/trusts-5mld-1-0-0/signed-pdf"
+
+  val json: JsValue = getJsonValueFromFile("nrs-request-body.json")
+}
+
+class NrsConnectorSpecEnabled extends NrsConnectorSpec {
+
+  override def applicationBuilder(): GuiceApplicationBuilder = buildApplication(nrsEnabled = true)
+  lazy val connector: NrsConnector = injector.instanceOf[NrsConnector]
 
   "NonRepudiationService connector" when {
 
     ".getPdf" must {
 
-      val url: String = "/generate-pdf/template/trusts-5mld-1-0-0/signed-pdf"
-
-      val json: JsValue = getJsonValueFromFile("nrs-request-body.json")
-
       "return 200 OK" in {
 
-        stubForPost(server, url, Json.stringify(json), OK, "response")
+        stubForPost(server, url, Json.stringify(json), OK, "")
 
         whenReady(connector.getPdf(json)) {
           response =>
-            response mustBe SuccessfulResponse("response")
+            response mustBe a[SuccessfulResponse]
         }
       }
 
@@ -87,4 +101,22 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
       }
     }
   }
+}
+
+class NrsConnectorSpecDisabled extends NrsConnectorSpec {
+
+  override def applicationBuilder(): GuiceApplicationBuilder = buildApplication(nrsEnabled = false)
+  lazy val connector: NrsConnector = injector.instanceOf[NrsConnector]
+
+  ".getPdf" must {
+
+    "return fake response" in {
+
+      whenReady(connector.getPdf(json)) {
+        response =>
+          response mustBe a[SuccessfulResponse]
+      }
+    }
+  }
+
 }

@@ -16,6 +16,8 @@
 
 package connectors
 
+import java.nio.file.{Files, Paths}
+
 import config.AppConfig
 import config.Constants._
 import javax.inject.Inject
@@ -25,7 +27,8 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class NrsConnector @Inject()(http: HttpClient, config: AppConfig) {
+class NrsConnector @Inject()(http: HttpClient,
+                             config: AppConfig) {
 
   private lazy val nrsHeaders: Seq[(String, String)] = {
     Seq(
@@ -41,7 +44,8 @@ class NrsConnector @Inject()(http: HttpClient, config: AppConfig) {
       val url: String = s"${config.nrsUrl}/generate-pdf/template/trusts-5mld-1-0-0/signed-pdf"
       http.POST[JsValue, NonRepudiationServiceResponse](url, payload)
     } else {
-      Future.successful(SuccessfulResponse("fake response"))
+      val byteArray: Array[Byte] = Files.readAllBytes(Paths.get("conf/resources/response.pdf"))
+      Future.successful(SuccessfulResponse(byteArray))
     }
   }
 

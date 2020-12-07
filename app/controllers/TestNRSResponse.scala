@@ -24,11 +24,11 @@ import java.nio.file.{Files, Paths}
 
 class TestNRSResponse @Inject()(action: DefaultActionBuilder) {
 
-  def getPdf(): Action[AnyContent] = action {
+  def getPdf: Action[AnyContent] = action {
     implicit request =>
 
-    val byteArray = Files.readAllBytes(Paths.get("conf/resources/response.pdf"))
-      
+      val byteArray = Files.readAllBytes(Paths.get("conf/resources/response.pdf"))
+
       Ok(byteArray).as("application/pdf")
   }
 
