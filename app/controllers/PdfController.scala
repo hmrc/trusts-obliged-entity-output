@@ -30,15 +30,16 @@ import utils.PdfFileNameGenerator
 
 class PdfController @Inject()(action: DefaultActionBuilder,
                               nrsConnector: NrsConnector,
-                              config: AppConfig) extends Logging {
+                              config: AppConfig,
+                              pdfFileNameGenerator: PdfFileNameGenerator) extends Logging {
 
   implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
 
-  def getPdf(): Action[AnyContent] = action.async {
+  def getPdf: Action[AnyContent] = action.async {
     implicit request =>
 
       val payload = Json.toJson("") // TODO - get payload from request.body
-      val fileName: String = PdfFileNameGenerator.generate(payload)
+      val fileName: String = pdfFileNameGenerator.generate(payload)
 
       nrsConnector.getPdf(payload).map {
         case response@(_: SuccessfulResponse) =>
@@ -47,7 +48,7 @@ class PdfController @Inject()(action: DefaultActionBuilder,
             header = ResponseHeader(
               status = OK,
               headers = Map(
-                CONTENT_DISPOSITION -> s"${config.inlineOrAttachment}; filename=$fileName.pdf",
+                CONTENT_DISPOSITION -> s"${config.inlineOrAttachment}; filename=$fileName",
                 CONTENT_TYPE -> PDF,
                 CONTENT_LENGTH -> response.length.toString
               )

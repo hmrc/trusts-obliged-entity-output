@@ -30,6 +30,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import utils.PdfFileNameGenerator
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
@@ -37,13 +38,18 @@ import scala.concurrent.duration.Duration
 class PdfControllerSpec extends SpecBase {
 
   private val mockConnector: NrsConnector = mock[NrsConnector]
+  private val mockPdfFileNameGenerator: PdfFileNameGenerator = mock[PdfFileNameGenerator]
 
   override def applicationBuilder(): GuiceApplicationBuilder = {
     super.applicationBuilder()
       .overrides(
-        bind[NrsConnector].toInstance(mockConnector)
+        bind[NrsConnector].toInstance(mockConnector),
+        bind[PdfFileNameGenerator].toInstance(mockPdfFileNameGenerator)
       )
   }
+
+  private val fileName: String = "filename.pdf"
+  when(mockPdfFileNameGenerator.generate(any())).thenReturn(fileName)
 
   private val controller: PdfController = injector.instanceOf[PdfController]
 
@@ -59,7 +65,6 @@ class PdfControllerSpec extends SpecBase {
     "return a successful response" when {
       "a pdf is generated" in {
 
-        val fileName: String = "filename"
         val responseBody: String = "abcdef"
         val contentLength: Long = 12345L
 
@@ -72,7 +77,7 @@ class PdfControllerSpec extends SpecBase {
           result.header.headers mustEqual Map(
             CONTENT_TYPE -> PDF,
             CONTENT_LENGTH -> contentLength.toString,
-            CONTENT_DISPOSITION -> s"${appConfig.inlineOrAttachment}; filename=$fileName.pdf"
+            CONTENT_DISPOSITION -> s"${appConfig.inlineOrAttachment}; filename=$fileName"
           )
 
           getSourceString(result) mustEqual responseBody
