@@ -26,6 +26,7 @@ import play.api.Logging
 import play.api.http.HttpEntity
 import play.api.libs.json.Json
 import play.api.mvc._
+import utils.PdfFileNameGenerator
 
 class PdfController @Inject()(action: DefaultActionBuilder,
                               nrsConnector: NrsConnector,
@@ -37,7 +38,7 @@ class PdfController @Inject()(action: DefaultActionBuilder,
     implicit request =>
 
       val payload = Json.toJson("") // TODO - get payload from request.body
-      val fileName: String = "filename" // TODO - include useful information in file name. Maybe UTR and the date/time?
+      val fileName: String = PdfFileNameGenerator.generate(payload)
 
       nrsConnector.getPdf(payload).map {
         case response@(_: SuccessfulResponse) =>
