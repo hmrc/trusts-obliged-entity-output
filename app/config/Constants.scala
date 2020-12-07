@@ -21,6 +21,7 @@ object Constants {
   val X_API_KEY = "X-API-Key"
 
   val CONTENT_TYPE = "Content-Type"
+  val CONTENT_LENGTH = "Content-Length"
   val CONTENT_TYPE_JSON = "application/json; charset=UTF-8"
 
 }

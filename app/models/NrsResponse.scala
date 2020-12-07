@@ -16,13 +16,15 @@
 
 package models
 
+import config.Constants.{CONTENT_LENGTH, CONTENT_TYPE}
 import play.api.Logging
 import play.api.http.Status._
+import play.api.mvc.Headers
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
 trait NonRepudiationServiceResponse
 
-case class SuccessfulResponse(body: Array[Byte]) extends NonRepudiationServiceResponse
+case class SuccessfulResponse(contentLength: Option[Seq[String]], body: Array[Byte]) extends NonRepudiationServiceResponse
 case object BadRequestResponse extends NonRepudiationServiceResponse
 case object UnauthorisedResponse extends NonRepudiationServiceResponse
 case object NotFoundResponse extends NonRepudiationServiceResponse
@@ -33,7 +35,7 @@ object NonRepudiationServiceResponse extends Logging {
   implicit lazy val httpReads: HttpReads[NonRepudiationServiceResponse] = (_: String, _: String, response: HttpResponse) => {
     response.status match {
       case OK =>
-        SuccessfulResponse(response.body.getBytes)
+        SuccessfulResponse(response.headers.get(CONTENT_LENGTH), response.body.getBytes)
       case BAD_REQUEST =>
         logger.error(s"Payload does not conform to defined JSON schema - ${response.body}")
         BadRequestResponse

@@ -45,7 +45,7 @@ class NrsConnector @Inject()(http: HttpClient,
       http.POST[JsValue, NonRepudiationServiceResponse](url, payload)
     } else {
       val byteArray: Array[Byte] = Files.readAllBytes(Paths.get("conf/resources/response.pdf"))
-      Future.successful(SuccessfulResponse(byteArray))
+      Future.successful(SuccessfulResponse(Some(Seq(s"${byteArray.length}")), byteArray))
     }
   }
 
