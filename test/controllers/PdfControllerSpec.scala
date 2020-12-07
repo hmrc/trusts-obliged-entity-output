@@ -72,7 +72,7 @@ class PdfControllerSpec extends SpecBase {
           result.header.headers mustEqual Map(
             CONTENT_TYPE -> PDF,
             CONTENT_LENGTH -> contentLength.toString,
-            CONTENT_DISPOSITION -> s"${appConfig.inlineOrAttachment}; $fileName.pdf"
+            CONTENT_DISPOSITION -> s"${appConfig.inlineOrAttachment}; filename=$fileName.pdf"
           )
 
           getSourceString(result) mustEqual responseBody
