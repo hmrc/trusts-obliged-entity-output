@@ -1,3 +1,5 @@
 # microservice specific routes
 
 GET        /pdf             controllers.PdfController.pdf()
+
+POST        /test            controllers.TestNRSResponse.getPdf()
