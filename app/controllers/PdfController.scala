@@ -21,6 +21,7 @@ import config.AppConfig
 import config.Constants._
 import connectors.NrsConnector
 import controllers.Assets._
+import controllers.actions.IdentifierActionProvider
 import models.SuccessfulResponse
 import play.api.Logging
 import play.api.http.HttpEntity
@@ -30,14 +31,14 @@ import utils.PdfFileNameGenerator
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class PdfController @Inject()(action: DefaultActionBuilder,
+class PdfController @Inject()(identifierAction: IdentifierActionProvider,
                               nrsConnector: NrsConnector,
                               config: AppConfig,
                               pdfFileNameGenerator: PdfFileNameGenerator) extends Logging {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
-  def getPdf: Action[AnyContent] = action.async {
+  def getPdf(identifier: String): Action[AnyContent] = identifierAction(identifier).async {
     implicit request =>
 
       val payload: JsValue = Json.parse(

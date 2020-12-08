@@ -17,6 +17,7 @@
 package helpers
 
 import base.SpecBase
+import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.http.HttpHeaders
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
@@ -32,9 +33,21 @@ class ConnectorSpecHelper extends SpecBase with WireMockHelper with IntegrationP
       .configure(
         Seq(
           "microservice.services.nrs-trusts.port" -> server.port(),
+          "microservice.services.trust-data.port" -> server.port(),
           "pdf-test-endpoint-enabled" -> false
         ): _*
       )
+  }
+
+  def stubForGet(url: String,
+                 returnStatus: Int,
+                 responseBody: String,
+                 delayResponse: Int = 0): StubMapping = {
+    server.stubFor(get(urlEqualTo(url))
+      .willReturn(
+        aResponse()
+          .withStatus(returnStatus)
+          .withBody(responseBody).withFixedDelay(delayResponse)))
   }
 
   def stubForPost(url: String,

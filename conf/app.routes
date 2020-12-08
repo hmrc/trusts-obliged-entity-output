@@ -1,5 +1,5 @@
 # microservice specific routes
 
-GET         /get-pdf                                                        controllers.PdfController.getPdf
+GET         /get-pdf/:identifier                                           controllers.PdfController.getPdf(identifier)
 
-POST        /generate-pdf/template/trusts-5mld-1-0-0/signed-pdf             controllers.TestNRSResponse.getPdf
+POST        /generate-pdf/template/trusts-5mld-1-0-0/signed-pdf            controllers.TestNRSResponse.getPdf

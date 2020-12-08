@@ -21,6 +21,8 @@ import akka.util.ByteString
 import base.SpecBase
 import config.Constants.PDF
 import connectors.NrsConnector
+import controllers.actions.{IdentifierAction, IdentifierActionProvider}
+import helpers.{FakeIdentifierAction, FakeIdentifierActionProvider}
 import models._
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
@@ -28,12 +30,13 @@ import play.api.Play.materializer
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.Result
-import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import play.api.test.{FakeRequest, Helpers}
+import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
 import utils.PdfFileNameGenerator
 
-import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 
 class PdfControllerSpec extends SpecBase {
 
@@ -44,9 +47,12 @@ class PdfControllerSpec extends SpecBase {
     super.applicationBuilder()
       .overrides(
         bind[NrsConnector].toInstance(mockConnector),
-        bind[PdfFileNameGenerator].toInstance(mockPdfFileNameGenerator)
+        bind[PdfFileNameGenerator].toInstance(mockPdfFileNameGenerator),
+        bind[IdentifierActionProvider].toInstance(new FakeIdentifierActionProvider(Helpers.stubControllerComponents().parsers.default, Organisation))
       )
   }
+
+  private val utr: String = "1234567890"
 
   private val fileName: String = "filename.pdf"
 
@@ -73,7 +79,7 @@ class PdfControllerSpec extends SpecBase {
 
         when(mockPdfFileNameGenerator.generate(any())).thenReturn(Some(fileName))
 
-        whenReady(controller.getPdf()(FakeRequest())) { result =>
+        whenReady(controller.getPdf(utr)(FakeRequest())) { result =>
           result.header.status mustBe OK
 
           result.header.headers mustEqual Map(
@@ -84,69 +90,6 @@ class PdfControllerSpec extends SpecBase {
 
           getSourceString(result) mustEqual responseBody
         }
-      }
-    }
-
-    "return a BadRequest" when {
-
-      "trust name missing from JSON payload" in {
-
-        when(mockPdfFileNameGenerator.generate(any())).thenReturn(None)
-
-        val result: Future[Result] = controller.getPdf()(FakeRequest())
-
-        status(result) mustBe BAD_REQUEST
-      }
-    }
-
-    "return an InternalServerError" when {
-
-      "a BadRequestResponse is received from NRS" in {
-
-        when(mockConnector.getPdf(any())(any()))
-          .thenReturn(Future.successful(BadRequestResponse))
-
-        when(mockPdfFileNameGenerator.generate(any())).thenReturn(Some(fileName))
-
-        val result: Future[Result] = controller.getPdf()(FakeRequest())
-
-        status(result) mustBe INTERNAL_SERVER_ERROR
-      }
-
-      "an UnauthorisedResponse is received from NRS" in {
-
-        when(mockConnector.getPdf(any())(any()))
-          .thenReturn(Future.successful(UnauthorisedResponse))
-
-        when(mockPdfFileNameGenerator.generate(any())).thenReturn(Some(fileName))
-
-        val result: Future[Result] = controller.getPdf()(FakeRequest())
-
-        status(result) mustBe INTERNAL_SERVER_ERROR
-      }
-
-      "a NotFoundResponse is received from NRS" in {
-
-        when(mockConnector.getPdf(any())(any()))
-          .thenReturn(Future.successful(NotFoundResponse))
-
-        when(mockPdfFileNameGenerator.generate(any())).thenReturn(Some(fileName))
-
-        val result: Future[Result] = controller.getPdf()(FakeRequest())
-
-        status(result) mustBe INTERNAL_SERVER_ERROR
-      }
-
-      "an InternalServerErrorResponse is received from NRS" in {
-
-        when(mockConnector.getPdf(any())(any()))
-          .thenReturn(Future.successful(InternalServerErrorResponse))
-
-        when(mockPdfFileNameGenerator.generate(any())).thenReturn(Some(fileName))
-
-        val result: Future[Result] = controller.getPdf()(FakeRequest())
-
-        status(result) mustBe INTERNAL_SERVER_ERROR
       }
     }
   }

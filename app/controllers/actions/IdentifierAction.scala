@@ -17,8 +17,9 @@
 package controllers.actions
 
 import com.google.inject.Inject
+import models.requests.IdentifierRequest
+import models.{URN, UTR}
 import play.api.Logging
-import play.api.libs.json.Json
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result, _}
 import uk.gov.hmrc.auth.core.AffinityGroup.{Agent, Organisation}
@@ -27,14 +28,16 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.HeaderCarrierConverter
-import models.requests.IdentifierRequest
 import utils.Session
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.matching.Regex
 
-class AuthenticatedIdentifierAction @Inject()(override val authConnector: AuthConnector,
-                                              val parser: BodyParsers.Default)
-                                             (implicit val executionContext: ExecutionContext)
+
+class AuthenticatedIdentifierAction @Inject()(identifier: String)
+                                             (implicit val authConnector: AuthConnector,
+                                              val parser: BodyParsers.Default,
+                                              val executionContext: ExecutionContext)
   extends IdentifierAction with AuthorisedFunctions with Logging {
 
   def invokeBlock[A](request: Request[A],
@@ -45,11 +48,17 @@ class AuthenticatedIdentifierAction @Inject()(override val authConnector: AuthCo
 
     implicit val hc : HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers)
 
+    val id = identifier match {
+      case Identifiers.UtrPattern(_) => UTR(identifier)
+      case Identifiers.UrnPattern(_) => URN(identifier)
+      case _ => throw new Exception
+    }
+
     authorised().retrieve(retrievals) {
       case Some(internalId) ~ Some(Agent) =>
-        block(IdentifierRequest(request, internalId, Session.id(hc), Agent))
+        block(IdentifierRequest(request, internalId, id, Session.id(hc), Agent))
       case Some(internalId) ~ Some(Organisation) =>
-        block(IdentifierRequest(request, internalId, Session.id(hc), Organisation))
+        block(IdentifierRequest(request, internalId, id, Session.id(hc), Organisation))
       case _ =>
         logger.info(s"[Session ID: ${Session.id(hc)}] Insufficient enrolment")
         Future.successful(Unauthorized)
@@ -63,3 +72,10 @@ class AuthenticatedIdentifierAction @Inject()(override val authConnector: AuthCo
 }
 
 trait IdentifierAction extends ActionBuilder[IdentifierRequest, AnyContent]
+
+object Identifiers {
+
+  val UtrPattern: Regex = "^([0-9]){10}$".r
+  val UrnPattern: Regex = "^([A-Z0-9]){15}$".r
+
+}

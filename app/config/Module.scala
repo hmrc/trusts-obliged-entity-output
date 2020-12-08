@@ -14,22 +14,16 @@
  * limitations under the License.
  */
 
-package connectors
+package config
 
-import config.AppConfig
-import models.Identifier
-import play.api.libs.json.JsValue
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import com.google.inject.AbstractModule
+import controllers.actions.{AuthenticatedIdentifierAction, AuthenticatedIdentifierActionProvider, IdentifierAction, IdentifierActionProvider}
 
-import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+class Module extends AbstractModule {
 
-class TrustDataConnector @Inject()(http: HttpClient, config: AppConfig) {
-
-  def getTrustJson(identifier: Identifier)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[JsValue] = {
-    lazy val url: String = s"${config.trustDataUrl}/trusts/obliged-entities/$identifier/${identifier.value}"
-
-      http.GET[JsValue](url)
+  override def configure(): Unit = {
+    // For session based storage instead of cred based, change to SessionIdentifierAction
+    bind(classOf[IdentifierAction]).to(classOf[AuthenticatedIdentifierAction]).asEagerSingleton()
+    bind(classOf[IdentifierActionProvider]).to(classOf[AuthenticatedIdentifierActionProvider]).asEagerSingleton()
   }
-
 }

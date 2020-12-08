@@ -16,6 +16,11 @@
 
 package models
 
-sealed trait IdType
-case object UTR extends IdType
-case object URN extends IdType
+sealed trait Identifier {
+  val value: String
+
+  override def toString: String = this.getClass.getSimpleName
+}
+
+case class UTR(override val value: String) extends Identifier
+case class URN(override val value: String) extends Identifier
