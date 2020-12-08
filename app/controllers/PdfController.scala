@@ -28,14 +28,14 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
 import utils.PdfFileNameGenerator
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class PdfController @Inject()(action: DefaultActionBuilder,
                               nrsConnector: NrsConnector,
                               config: AppConfig,
                               pdfFileNameGenerator: PdfFileNameGenerator) extends Logging {
 
-  implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
+  implicit val ec: ExecutionContext = ExecutionContext.global
 
   def getPdf: Action[AnyContent] = action.async {
     implicit request =>
