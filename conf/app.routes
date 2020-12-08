@@ -1,3 +1,5 @@
 # microservice specific routes
 
-GET        /hello-world             uk.gov.hmrc.trustsobligedentityoutput.controllers.MicroserviceHelloWorldController.hello
+GET         /get-pdf                                                        controllers.PdfController.getPdf()
+
+POST        /generate-pdf/template/trusts-5mld-1-0-0/signed-pdf             controllers.TestNRSResponse.getPdf()

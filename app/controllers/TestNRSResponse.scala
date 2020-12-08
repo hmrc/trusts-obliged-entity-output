@@ -14,17 +14,24 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.trustsobligedentityoutput.config
+package controllers
 
-import javax.inject.{Inject, Singleton}
-import play.api.Configuration
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import com.google.inject.Inject
+import play.api.http.FileMimeTypes
+import play.api.mvc.Results.Ok
+import play.api.mvc.{Action, AnyContent, DefaultActionBuilder}
 
-@Singleton
-class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig) {
+import scala.concurrent.ExecutionContext
 
-  val authBaseUrl: String = servicesConfig.baseUrl("auth")
+class TestNRSResponse @Inject()(action: DefaultActionBuilder)(implicit val fileMimeTypes: FileMimeTypes) {
 
-  val auditingEnabled: Boolean = config.get[Boolean]("auditing.enabled")
-  val graphiteHost: String     = config.get[String]("microservice.metrics.graphite.host")
+  implicit val ec: ExecutionContext = ExecutionContext.global
+
+  def getPdf: Action[AnyContent] = action {
+      Ok.sendFile(
+        content = new java.io.File("conf/resources/response.pdf"),
+        fileName = _ => "response.pdf"
+      )
+  }
+
 }

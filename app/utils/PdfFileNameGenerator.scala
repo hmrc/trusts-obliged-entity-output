@@ -14,20 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.trustsobligedentityoutput.controllers
+package utils
 
-import javax.inject.{Inject, Singleton}
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.trustsobligedentityoutput.config.AppConfig
+import play.api.libs.json.JsValue
 
-import scala.concurrent.Future
+object PdfFileNameGenerator {
 
-@Singleton()
-class MicroserviceHelloWorldController @Inject()(appConfig: AppConfig, cc: ControllerComponents)
-    extends BackendController(cc) {
-
-  def hello(): Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Ok("Hello world"))
+  def generate(payload: JsValue): String = {
+    "filename" // TODO - include useful information in file name. Maybe UTR and the date/time?
   }
 }
