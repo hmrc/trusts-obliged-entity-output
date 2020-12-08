@@ -16,11 +16,28 @@
 
 package utils
 
-import play.api.libs.json.JsValue
+import javax.inject.Inject
+import play.api.libs.json.{JsPath, JsString, JsSuccess, JsValue}
+import services.LocalDateTimeService
 
-object PdfFileNameGenerator {
+class PdfFileNameGenerator @Inject()(localDateTimeService: LocalDateTimeService) {
 
-  def generate(payload: JsValue): String = {
-    "filename" // TODO - include useful information in file name. Maybe UTR and the date/time?
+  def generate(payload: JsValue): Option[String] = {
+
+    val maybeTrustName: Option[String] = {
+      val path: JsPath = JsPath \ "trustName"
+      payload.transform(path.json.pick) match {
+        case JsSuccess(JsString(trustName), _) => Some(trustName.replaceAll(" ", "_"))
+        case _ => None
+      }
+    }
+
+    maybeTrustName match {
+      case Some(trustName) =>
+        val timestamp: String = localDateTimeService.nowFormatted
+        Some(s"$trustName--$timestamp.pdf")
+      case _ =>
+        None
+    }
   }
 }

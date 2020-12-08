@@ -30,6 +30,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import utils.PdfFileNameGenerator
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
@@ -37,13 +38,17 @@ import scala.concurrent.duration.Duration
 class PdfControllerSpec extends SpecBase {
 
   private val mockConnector: NrsConnector = mock[NrsConnector]
+  private val mockPdfFileNameGenerator: PdfFileNameGenerator = mock[PdfFileNameGenerator]
 
   override def applicationBuilder(): GuiceApplicationBuilder = {
     super.applicationBuilder()
       .overrides(
-        bind[NrsConnector].toInstance(mockConnector)
+        bind[NrsConnector].toInstance(mockConnector),
+        bind[PdfFileNameGenerator].toInstance(mockPdfFileNameGenerator)
       )
   }
+
+  private val fileName: String = "filename.pdf"
 
   private val controller: PdfController = injector.instanceOf[PdfController]
 
@@ -57,14 +62,16 @@ class PdfControllerSpec extends SpecBase {
   ".getPdf" must {
 
     "return a successful response" when {
+
       "a pdf is generated" in {
 
-        val fileName: String = "filename"
         val responseBody: String = "abcdef"
         val contentLength: Long = 12345L
 
         when(mockConnector.getPdf(any())(any()))
           .thenReturn(Future.successful(SuccessfulResponse(Source(List(ByteString(responseBody))), contentLength)))
+
+        when(mockPdfFileNameGenerator.generate(any())).thenReturn(Some(fileName))
 
         whenReady(controller.getPdf()(FakeRequest())) { result =>
           result.header.status mustBe OK
@@ -72,7 +79,7 @@ class PdfControllerSpec extends SpecBase {
           result.header.headers mustEqual Map(
             CONTENT_TYPE -> PDF,
             CONTENT_LENGTH -> contentLength.toString,
-            CONTENT_DISPOSITION -> s"${appConfig.inlineOrAttachment}; filename=$fileName.pdf"
+            CONTENT_DISPOSITION -> s"${appConfig.inlineOrAttachment}; filename=$fileName"
           )
 
           getSourceString(result) mustEqual responseBody
@@ -80,11 +87,26 @@ class PdfControllerSpec extends SpecBase {
       }
     }
 
+    "return a BadRequest" when {
+
+      "trust name missing from JSON payload" in {
+
+        when(mockPdfFileNameGenerator.generate(any())).thenReturn(None)
+
+        val result: Future[Result] = controller.getPdf()(FakeRequest())
+
+        status(result) mustBe BAD_REQUEST
+      }
+    }
+
     "return an InternalServerError" when {
 
       "a BadRequestResponse is received from NRS" in {
+
         when(mockConnector.getPdf(any())(any()))
           .thenReturn(Future.successful(BadRequestResponse))
+
+        when(mockPdfFileNameGenerator.generate(any())).thenReturn(Some(fileName))
 
         val result: Future[Result] = controller.getPdf()(FakeRequest())
 
@@ -96,6 +118,8 @@ class PdfControllerSpec extends SpecBase {
         when(mockConnector.getPdf(any())(any()))
           .thenReturn(Future.successful(UnauthorisedResponse))
 
+        when(mockPdfFileNameGenerator.generate(any())).thenReturn(Some(fileName))
+
         val result: Future[Result] = controller.getPdf()(FakeRequest())
 
         status(result) mustBe INTERNAL_SERVER_ERROR
@@ -106,6 +130,8 @@ class PdfControllerSpec extends SpecBase {
         when(mockConnector.getPdf(any())(any()))
           .thenReturn(Future.successful(NotFoundResponse))
 
+        when(mockPdfFileNameGenerator.generate(any())).thenReturn(Some(fileName))
+
         val result: Future[Result] = controller.getPdf()(FakeRequest())
 
         status(result) mustBe INTERNAL_SERVER_ERROR
@@ -115,6 +141,8 @@ class PdfControllerSpec extends SpecBase {
 
         when(mockConnector.getPdf(any())(any()))
           .thenReturn(Future.successful(InternalServerErrorResponse))
+
+        when(mockPdfFileNameGenerator.generate(any())).thenReturn(Some(fileName))
 
         val result: Future[Result] = controller.getPdf()(FakeRequest())
 
