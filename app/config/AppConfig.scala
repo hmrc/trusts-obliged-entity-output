@@ -30,6 +30,8 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
 
   val pdfTestEndpointEnabled: Boolean = config.get[Boolean]("pdf-test-endpoint-enabled")
 
+  val trustDataUrl: String = servicesConfig.baseUrl("trust-data")
+
   val nrsUrl: String = {
     if (pdfTestEndpointEnabled) {
       servicesConfig.baseUrl("pdf-test") + "/trusts-obliged-entity-output"
