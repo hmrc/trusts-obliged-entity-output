@@ -24,7 +24,7 @@ import controllers.Assets._
 import models.SuccessfulResponse
 import play.api.Logging
 import play.api.http.HttpEntity
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
 import utils.PdfFileNameGenerator
 
@@ -40,7 +40,13 @@ class PdfController @Inject()(action: DefaultActionBuilder,
   def getPdf: Action[AnyContent] = action.async {
     implicit request =>
 
-      val payload = Json.toJson("") // TODO - get payload from request.body
+      val payload: JsValue = Json.parse(
+        """
+          |{
+          | "trustName": "TRUST NAME"
+          |}
+          |""".stripMargin) // TODO - get payload from request.body
+
       pdfFileNameGenerator.generate(payload) match {
         case Some(fileName) =>
           nrsConnector.getPdf(payload).map {
@@ -69,8 +75,5 @@ class PdfController @Inject()(action: DefaultActionBuilder,
           logger.error(s"Trust name not found in payload")
           Future.successful(BadRequest)
       }
-
-
   }
-
 }
