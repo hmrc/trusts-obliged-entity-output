@@ -28,7 +28,7 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
 
   private lazy val connector: TrustDataConnector = injector.instanceOf[TrustDataConnector]
 
-  val identifier = UTR("1234567890")
+  private val identifier: Identifier = UTR("1234567890")
 
   private val url: String = s"/trusts/obliged-entities/$identifier/${identifier.value}"
 

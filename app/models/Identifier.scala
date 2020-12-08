@@ -18,7 +18,6 @@ package models
 
 sealed trait Identifier {
   val value: String
-
   override def toString: String = this.getClass.getSimpleName
 }
 

@@ -33,7 +33,6 @@ import utils.Session
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
 
-
 class AuthenticatedIdentifierAction @Inject()(identifier: String)
                                              (implicit val authConnector: AuthConnector,
                                               val parser: BodyParsers.Default,
@@ -49,8 +48,8 @@ class AuthenticatedIdentifierAction @Inject()(identifier: String)
     implicit val hc : HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers)
 
     val id = identifier match {
-      case Identifiers.UtrPattern(_) => UTR(identifier)
-      case Identifiers.UrnPattern(_) => URN(identifier)
+      case Identifiers.utrPattern(_) => UTR(identifier)
+      case Identifiers.urnPattern(_) => URN(identifier)
       case _ => throw new Exception
     }
 
@@ -68,14 +67,11 @@ class AuthenticatedIdentifierAction @Inject()(identifier: String)
         Future.successful(Unauthorized)
     }
   }
-
 }
 
 trait IdentifierAction extends ActionBuilder[IdentifierRequest, AnyContent]
 
 object Identifiers {
-
-  val UtrPattern: Regex = "^([0-9]){10}$".r
-  val UrnPattern: Regex = "^([A-Z0-9]){15}$".r
-
+  val utrPattern: Regex = "^([0-9]){10}$".r
+  val urnPattern: Regex = "^([A-Z0-9]){15}$".r
 }

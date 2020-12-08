@@ -29,7 +29,9 @@ class IdentifierSpec extends SpecBase with ScalaCheckPropertyChecks {
         "return UTR" in {
           forAll(arbitrary[String]) {
             str =>
-              UTR(str).toString mustEqual "UTR"
+              val identifier: Identifier = UTR(str)
+              identifier.toString mustEqual "UTR"
+              s"$identifier" mustEqual "UTR"
           }
         }
       }
@@ -40,7 +42,9 @@ class IdentifierSpec extends SpecBase with ScalaCheckPropertyChecks {
         "return URN" in {
           forAll(arbitrary[String]) {
             str =>
-              URN(str).toString mustEqual "URN"
+              val identifier: Identifier = URN(str)
+              identifier.toString mustEqual "URN"
+              s"$identifier" mustEqual "URN"
           }
         }
       }

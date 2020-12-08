@@ -21,8 +21,8 @@ import akka.util.ByteString
 import base.SpecBase
 import config.Constants.PDF
 import connectors.NrsConnector
-import controllers.actions.{IdentifierAction, IdentifierActionProvider}
-import helpers.{FakeIdentifierAction, FakeIdentifierActionProvider}
+import controllers.actions.IdentifierActionProvider
+import helpers.FakeIdentifierActionProvider
 import models._
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when

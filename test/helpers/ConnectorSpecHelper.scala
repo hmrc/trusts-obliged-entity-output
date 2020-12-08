@@ -17,7 +17,6 @@
 package helpers
 
 import base.SpecBase
-import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.http.HttpHeaders
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
@@ -43,18 +42,23 @@ class ConnectorSpecHelper extends SpecBase with WireMockHelper with IntegrationP
                  returnStatus: Int,
                  responseBody: String,
                  delayResponse: Int = 0): StubMapping = {
+
     server.stubFor(get(urlEqualTo(url))
       .willReturn(
         aResponse()
           .withStatus(returnStatus)
-          .withBody(responseBody).withFixedDelay(delayResponse)))
+          .withBody(responseBody)
+          .withFixedDelay(delayResponse)
+      )
+    )
   }
 
   def stubForPost(url: String,
                   requestBody: String,
                   returnStatus: Int,
                   responseBody: String = "",
-                  responseHeaders: HttpHeaders = HttpHeaders.noHeaders()): StubMapping = {
+                  responseHeaders: HttpHeaders = HttpHeaders.noHeaders(),
+                  delayResponse: Int = 0): StubMapping = {
 
     server.stubFor(post(urlEqualTo(url))
       .withHeader(X_API_KEY, equalTo(appConfig.nrsToken))
@@ -65,7 +69,7 @@ class ConnectorSpecHelper extends SpecBase with WireMockHelper with IntegrationP
           .withStatus(returnStatus)
           .withHeaders(responseHeaders)
           .withBody(responseBody)
-          .withFixedDelay(0)
+          .withFixedDelay(delayResponse)
       )
     )
   }

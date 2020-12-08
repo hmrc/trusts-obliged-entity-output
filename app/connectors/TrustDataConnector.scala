@@ -17,19 +17,19 @@
 package connectors
 
 import config.AppConfig
+import javax.inject.Inject
 import models.Identifier
 import play.api.libs.json.JsValue
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
-import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class TrustDataConnector @Inject()(http: HttpClient, config: AppConfig) {
 
   def getTrustJson(identifier: Identifier)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[JsValue] = {
     lazy val url: String = s"${config.trustDataUrl}/trusts/obliged-entities/$identifier/${identifier.value}"
-
-      http.GET[JsValue](url)
+    http.GET[JsValue](url)
   }
 
 }
