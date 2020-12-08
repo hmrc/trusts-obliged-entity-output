@@ -24,46 +24,56 @@ import controllers.Assets._
 import models.SuccessfulResponse
 import play.api.Logging
 import play.api.http.HttpEntity
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
 import utils.PdfFileNameGenerator
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class PdfController @Inject()(action: DefaultActionBuilder,
                               nrsConnector: NrsConnector,
-                              config: AppConfig) extends Logging {
+                              config: AppConfig,
+                              pdfFileNameGenerator: PdfFileNameGenerator) extends Logging {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
-  def getPdf(): Action[AnyContent] = action.async {
+  def getPdf: Action[AnyContent] = action.async {
     implicit request =>
 
-      val payload = Json.toJson("") // TODO - get payload from request.body
-      val fileName: String = PdfFileNameGenerator.generate(payload)
+      val payload: JsValue = Json.parse(
+        """
+          |{
+          | "trustName": "TRUST NAME"
+          |}
+          |""".stripMargin) // TODO - get payload from request.body
 
-      nrsConnector.getPdf(payload).map {
-        case response@(_: SuccessfulResponse) =>
+      pdfFileNameGenerator.generate(payload) match {
+        case Some(fileName) =>
+          nrsConnector.getPdf(payload).map {
+            case response@(_: SuccessfulResponse) =>
 
-          Result(
-            header = ResponseHeader(
-              status = OK,
-              headers = Map(
-                CONTENT_DISPOSITION -> s"${config.inlineOrAttachment}; filename=$fileName.pdf",
-                CONTENT_TYPE -> PDF,
-                CONTENT_LENGTH -> response.length.toString
+              Result(
+                header = ResponseHeader(
+                  status = OK,
+                  headers = Map(
+                    CONTENT_DISPOSITION -> s"${config.inlineOrAttachment}; filename=$fileName",
+                    CONTENT_TYPE -> PDF,
+                    CONTENT_LENGTH -> response.length.toString
+                  )
+                ),
+                body = HttpEntity.Streamed(
+                  data = response.body,
+                  contentLength = Some(response.length),
+                  contentType = Some(PDF)
+                )
               )
-            ),
-            body = HttpEntity.Streamed(
-              data = response.body,
-              contentLength = Some(response.length),
-              contentType = Some(PDF)
-            )
-          )
-        case e =>
-          logger.error(s"Error retrieving PDF from NRS: $e")
-          InternalServerError
+            case e =>
+              logger.error(s"Error retrieving PDF from NRS: $e")
+              InternalServerError
+          }
+        case _ =>
+          logger.error(s"Trust name not found in payload")
+          Future.successful(BadRequest)
       }
   }
-
 }
