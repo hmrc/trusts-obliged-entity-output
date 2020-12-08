@@ -34,14 +34,14 @@ class PdfFileNameGeneratorSpec extends SpecBase {
 
           val payload: JsValue = getJsonValueFromFile("nrs-request-body.json")
 
-          pdfFileNameGenerator.generate(payload) mustEqual "TRUST_NAME--2020-04-01--09-30-00.pdf"
+          pdfFileNameGenerator.generate(payload) mustBe Some("TRUST_NAME--2020-04-01--09-30-00.pdf")
         }
       }
 
       "payload does not have trust name" must {
         "generate file name with timestamp" in {
 
-          pdfFileNameGenerator.generate(Json.obj()) mustEqual "2020-04-01--09-30-00.pdf"
+          pdfFileNameGenerator.generate(Json.obj()) mustBe None
         }
       }
     }
