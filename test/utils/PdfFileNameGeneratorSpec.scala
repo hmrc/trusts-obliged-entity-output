@@ -18,13 +18,15 @@ package utils
 
 import base.SpecBase
 import helpers.JsonHelper.getJsonValueFromFile
-import helpers.LocalDateTimeServiceHelper
+import org.mockito.Mockito.when
 import play.api.libs.json.{JsValue, Json}
+import services.LocalDateTimeService
 
 class PdfFileNameGeneratorSpec extends SpecBase {
 
-  private val localDateService: LocalDateTimeServiceHelper = new LocalDateTimeServiceHelper()
-  private val pdfFileNameGenerator: PdfFileNameGenerator = new PdfFileNameGenerator(localDateService)
+  private val mockLocalDateTimeService: LocalDateTimeService = mock[LocalDateTimeService]
+  when(mockLocalDateTimeService.nowFormatted).thenReturn("2020-04-01--09-30-00")
+  private val pdfFileNameGenerator: PdfFileNameGenerator = new PdfFileNameGenerator(mockLocalDateTimeService)
 
   "PdfFileNameGenerator" when {
 
