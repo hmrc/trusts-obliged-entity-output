@@ -23,7 +23,6 @@ import repositories.{MongoDriver, ObligedEntityMongoDriver}
 class Module extends AbstractModule {
 
   override def configure(): Unit = {
-    // For session based storage instead of cred based, change to SessionIdentifierAction
     bind(classOf[IdentifierAction]).to(classOf[AuthenticatedIdentifierAction]).asEagerSingleton()
     bind(classOf[IdentifierActionProvider]).to(classOf[AuthenticatedIdentifierActionProvider]).asEagerSingleton()
     bind(classOf[MongoDriver]).to(classOf[ObligedEntityMongoDriver]).asEagerSingleton()
