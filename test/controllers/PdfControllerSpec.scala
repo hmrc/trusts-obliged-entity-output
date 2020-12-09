@@ -80,7 +80,7 @@ class PdfControllerSpec extends SpecBase {
 
         val trustJson: JsValue = getJsonValueFromFile("nrs-request-body.json")
 
-        when(mockTrustDataConnector.getTrustJson(any())(any()))
+        when(mockTrustDataConnector.getTrustJson(any())(any(), any()))
           .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
 
         when(mockNrsConnector.getPdf(any())(any()))

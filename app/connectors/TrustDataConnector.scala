@@ -28,7 +28,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class TrustDataConnector @Inject()(http: HttpClient, config: AppConfig) {
 
-  def getTrustJson(identifier: Identifier)(implicit ec: ExecutionContext): Future[TrustDataResponse] = {
+  def getTrustJson(identifier: Identifier)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[TrustDataResponse] = {
     lazy val url: String = s"${config.trustDataUrl}/trusts/obliged-entities/$identifier/${identifier.value}"
 
     lazy val headers: Seq[(String, String)] = {
@@ -38,9 +38,9 @@ class TrustDataConnector @Inject()(http: HttpClient, config: AppConfig) {
       )
     }
 
-    implicit val hc: HeaderCarrier = HeaderCarrier(extraHeaders = headers)
+    val hcExtra: HeaderCarrier = hc.withExtraHeaders(headers: _*)
 
-    http.GET[TrustDataResponse](url)
+    http.GET[TrustDataResponse](url)(TrustDataResponse.httpReads, hcExtra, ec)
   }
 
 }
