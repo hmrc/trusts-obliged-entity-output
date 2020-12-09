@@ -49,4 +49,6 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
    * Content-Disposition is 'inline' by default. Change to 'attachment' to download the file with no preview
    */
   val inlineOrAttachment: String = config.get[String]("inline-or-attachment")
+
+  val lockTtlInSeconds: Int = config.get[Int]("mongodb.lock.ttlSeconds")
 }

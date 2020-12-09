@@ -21,8 +21,7 @@ import akka.util.ByteString
 import base.SpecBase
 import config.Constants.PDF
 import connectors.{NrsConnector, TrustDataConnector}
-import controllers.actions.IdentifierActionProvider
-import helpers.FakeIdentifierActionProvider
+import controllers.actions.{FakeIdentifierActionProvider, IdentifierActionProvider}
 import helpers.JsonHelper.getJsonValueFromFile
 import models._
 import org.mockito.Matchers.any
@@ -34,6 +33,7 @@ import play.api.libs.json.JsValue
 import play.api.mvc.Result
 import play.api.test.Helpers._
 import play.api.test.{FakeRequest, Helpers}
+import repositories.NrsLockRepository
 import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
 import utils.PdfFileNameGenerator
 
@@ -45,6 +45,7 @@ class PdfControllerSpec extends SpecBase {
   private val mockTrustDataConnector: TrustDataConnector = mock[TrustDataConnector]
   private val mockPdfFileNameGenerator: PdfFileNameGenerator = mock[PdfFileNameGenerator]
   private val mockNrsConnector: NrsConnector = mock[NrsConnector]
+  val nrsLockRepository = mock[NrsLockRepository]
 
   override def applicationBuilder(): GuiceApplicationBuilder = {
     super.applicationBuilder()
@@ -52,6 +53,7 @@ class PdfControllerSpec extends SpecBase {
         bind[TrustDataConnector].toInstance(mockTrustDataConnector),
         bind[PdfFileNameGenerator].toInstance(mockPdfFileNameGenerator),
         bind[NrsConnector].toInstance(mockNrsConnector),
+        bind[NrsLockRepository].toInstance(nrsLockRepository),
         bind[IdentifierActionProvider].toInstance(new FakeIdentifierActionProvider(Helpers.stubControllerComponents().parsers.default, Organisation))
       )
   }
@@ -71,76 +73,98 @@ class PdfControllerSpec extends SpecBase {
     Await.result(result.body.dataStream.runWith(sink), Duration.Inf)
   }
 
-  ".getPdf" must {
+  when(nrsLockRepository.setLock(any(), any())).thenReturn(Future.successful(true))
 
-    "return a successful response" when {
+  ".getPdf" when {
+    "there is no lock in mongo" must {
+      "return a successful response" when {
 
-      "a pdf is generated" in {
+        "a pdf is generated" in {
 
-        val responseBody: String = "abcdef"
-        val contentLength: Long = 12345L
+          val responseBody: String = "abcdef"
+          val contentLength: Long = 12345L
 
-        when(mockTrustDataConnector.getTrustJson(any())(any(), any()))
-          .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
+          when(nrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
 
-        when(mockPdfFileNameGenerator.generate(any())).thenReturn(Some(fileName))
+          when(mockTrustDataConnector.getTrustJson(any())(any(), any()))
+            .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
 
-        when(mockNrsConnector.getPdf(any())(any()))
-          .thenReturn(Future.successful(SuccessfulResponse(Source(List(ByteString(responseBody))), contentLength)))
+          when(mockPdfFileNameGenerator.generate(any())).thenReturn(Some(fileName))
 
-        whenReady(controller.getPdf(utr)(FakeRequest())) { result =>
-          result.header.status mustBe OK
+          when(mockNrsConnector.getPdf(any())(any()))
+            .thenReturn(Future.successful(SuccessfulResponse(Source(List(ByteString(responseBody))), contentLength)))
 
-          result.header.headers mustEqual Map(
-            CONTENT_TYPE -> PDF,
-            CONTENT_LENGTH -> contentLength.toString,
-            CONTENT_DISPOSITION -> s"${appConfig.inlineOrAttachment}; filename=$fileName"
-          )
+          whenReady(controller.getPdf(utr)(FakeRequest())) { result =>
+            result.header.status mustBe OK
 
-          getSourceString(result) mustEqual responseBody
+            result.header.headers mustEqual Map(
+              CONTENT_TYPE -> PDF,
+              CONTENT_LENGTH -> contentLength.toString,
+              CONTENT_DISPOSITION -> s"${appConfig.inlineOrAttachment}; filename=$fileName"
+            )
+
+            getSourceString(result) mustEqual responseBody
+          }
+        }
+      }
+
+      "return an InternalServerError" when {
+
+        "error retrieving trust data from IF" in {
+
+          when(nrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
+
+          when(mockTrustDataConnector.getTrustJson(any())(any(), any()))
+            .thenReturn(Future.successful(InternalServerErrorTrustDataResponse))
+
+          whenReady(controller.getPdf(utr)(FakeRequest())) { result =>
+            result.header.status mustBe INTERNAL_SERVER_ERROR
+          }
+        }
+
+        "error retrieving PDF from NRS" in {
+
+          when(nrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
+
+          when(mockTrustDataConnector.getTrustJson(any())(any(), any()))
+            .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
+
+          when(mockPdfFileNameGenerator.generate(any())).thenReturn(Some(fileName))
+
+          when(mockNrsConnector.getPdf(any())(any()))
+            .thenReturn(Future.successful(InternalServerErrorResponse))
+
+          whenReady(controller.getPdf(utr)(FakeRequest())) { result =>
+            result.header.status mustBe INTERNAL_SERVER_ERROR
+          }
+        }
+      }
+
+      "return a BadRequest" when {
+
+        "trust name not found in payload" in {
+
+          when(nrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
+
+          when(mockTrustDataConnector.getTrustJson(any())(any(), any()))
+            .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
+
+          when(mockPdfFileNameGenerator.generate(any())).thenReturn(None)
+
+          whenReady(controller.getPdf(utr)(FakeRequest())) { result =>
+            result.header.status mustBe BAD_REQUEST
+          }
         }
       }
     }
 
-    "return an InternalServerError" when {
-
-      "error retrieving trust data from IF" in {
-
-        when(mockTrustDataConnector.getTrustJson(any())(any(), any()))
-          .thenReturn(Future.successful(InternalServerErrorTrustDataResponse))
+    "there is a lock in mongo" must {
+      "return a 429 (TOO_MANY_REQUESTS) response" in {
+        when(nrsLockRepository.getLock(any()))
+          .thenReturn(Future.successful(Some(NrsLock(true))))
 
         whenReady(controller.getPdf(utr)(FakeRequest())) { result =>
-          result.header.status mustBe INTERNAL_SERVER_ERROR
-        }
-      }
-
-      "error retrieving PDF from NRS" in {
-
-        when(mockTrustDataConnector.getTrustJson(any())(any(), any()))
-          .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
-
-        when(mockPdfFileNameGenerator.generate(any())).thenReturn(Some(fileName))
-
-        when(mockNrsConnector.getPdf(any())(any()))
-          .thenReturn(Future.successful(InternalServerErrorResponse))
-
-        whenReady(controller.getPdf(utr)(FakeRequest())) { result =>
-          result.header.status mustBe INTERNAL_SERVER_ERROR
-        }
-      }
-    }
-
-    "return a BadRequest" when {
-
-      "trust name not found in payload" in {
-
-        when(mockTrustDataConnector.getTrustJson(any())(any(), any()))
-          .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
-
-        when(mockPdfFileNameGenerator.generate(any())).thenReturn(None)
-
-        whenReady(controller.getPdf(utr)(FakeRequest())) { result =>
-          result.header.status mustBe BAD_REQUEST
+          result.header.status mustBe TOO_MANY_REQUESTS
         }
       }
     }

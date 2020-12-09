@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package helpers
+package controllers.actions
 
-import controllers.actions.{IdentifierAction, IdentifierActionProvider}
-import javax.inject.Inject
 import models.UTR
 import models.requests.IdentifierRequest
 import play.api.mvc.{AnyContent, BodyParser, Request, Result}
 import uk.gov.hmrc.auth.core.AffinityGroup
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class FakeIdentifierActionProvider @Inject()(bodyParsers: BodyParser[AnyContent], affinityGroup: AffinityGroup) extends IdentifierActionProvider {

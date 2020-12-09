@@ -21,10 +21,11 @@ import config.AppConfig
 import config.Constants._
 import connectors.{NrsConnector, TrustDataConnector}
 import controllers.actions.IdentifierActionProvider
-import models.{SuccessfulResponse, SuccessfulTrustDataResponse}
+import models.{NrsLock, SuccessfulResponse, SuccessfulTrustDataResponse}
 import play.api.Logging
 import play.api.http.HttpEntity
 import play.api.mvc._
+import repositories.NrsLockRepository
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.PdfFileNameGenerator
 
@@ -33,6 +34,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class PdfController @Inject()(identifierAction: IdentifierActionProvider,
                               nrsConnector: NrsConnector,
                               trustDataConnector: TrustDataConnector,
+                              nrsLockRepository: NrsLockRepository,
                               config: AppConfig,
                               cc: ControllerComponents,
                               pdfFileNameGenerator: PdfFileNameGenerator) extends BackendController(cc) with Logging {
@@ -44,38 +46,46 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
 
       lazy val logInfo: String = s"[SessionId: ${request.sessionId}][${request.identifier}: ${request.identifier.value}]"
 
-      trustDataConnector.getTrustJson(request.identifier) flatMap {
-        case SuccessfulTrustDataResponse(payload) =>
-          pdfFileNameGenerator.generate(payload) match {
-            case Some(fileName) =>
-              nrsConnector.getPdf(payload).map {
-                case response: SuccessfulResponse =>
-                  Result(
-                    header = ResponseHeader(
-                      status = OK,
-                      headers = Map(
-                        CONTENT_DISPOSITION -> s"${config.inlineOrAttachment}; filename=$fileName",
-                        CONTENT_TYPE -> PDF,
-                        CONTENT_LENGTH -> response.length.toString
-                      )
-                    ),
-                    body = HttpEntity.Streamed(
-                      data = response.body,
-                      contentLength = Some(response.length),
-                      contentType = Some(PDF)
-                    )
-                  )
-                case e =>
-                  logger.error(s"$logInfo Error retrieving PDF from NRS: $e.")
-                  InternalServerError
-              }
-            case _ =>
-              logger.error(s"$logInfo Trust name not found in payload.")
-              Future.successful(BadRequest)
+      nrsLockRepository.getLock(identifier).flatMap {
+        case Some(NrsLock(true)) => Future.successful(TooManyRequests)
+        case _ =>
+          nrsLockRepository.setLock(identifier, locked = NrsLock(true)).flatMap { _ =>
+            trustDataConnector.getTrustJson(request.identifier) flatMap {
+              case SuccessfulTrustDataResponse(payload) =>
+                pdfFileNameGenerator.generate(payload) match {
+                  case Some(fileName) =>
+                    nrsConnector.getPdf(payload).flatMap {
+                      case response: SuccessfulResponse =>
+                        nrsLockRepository.setLock(identifier, locked = NrsLock(false)).map { _ =>
+                          Result(
+                            header = ResponseHeader(
+                              status = OK,
+                              headers = Map(
+                                CONTENT_DISPOSITION -> s"${config.inlineOrAttachment}; filename=$fileName",
+                                CONTENT_TYPE -> PDF,
+                                CONTENT_LENGTH -> response.length.toString
+                              )
+                            ),
+                            body = HttpEntity.Streamed(
+                              data = response.body,
+                              contentLength = Some(response.length),
+                              contentType = Some(PDF)
+                            )
+                          )
+                        }
+                      case e =>
+                        logger.error(s"$logInfo Error retrieving PDF from NRS: $e.")
+                        Future.successful(InternalServerError)
+                    }
+                  case _ =>
+                    logger.error(s"$logInfo Trust name not found in payload.")
+                    Future.successful(BadRequest)
+                }
+              case e =>
+                logger.error(s"$logInfo Error retrieving trust data from IF: $e.")
+                Future.successful(InternalServerError)
+            }
           }
-        case e =>
-          logger.error(s"$logInfo Error retrieving trust data from IF: $e.")
-          Future.successful(InternalServerError)
       }
   }
 }
