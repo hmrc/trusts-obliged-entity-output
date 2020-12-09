@@ -42,7 +42,7 @@ class AuthenticatedIdentifierActionProvider @Inject()()(implicit val authConnect
                                            val parser: BodyParsers.Default,
                                            executionContext: ExecutionContext) extends IdentifierActionProvider{
 
-  def apply(identifier: String): IdentifierAction = new AuthenticatedIdentifierAction(identifier)
+  def apply(identifier: String): IdentifierAction = new AuthenticatedIdentifierAction(identifier, authConnector)
 }
 
 trait IdentifierActionProvider {

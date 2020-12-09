@@ -19,7 +19,7 @@ package controllers
 import com.google.inject.Inject
 import config.AppConfig
 import config.Constants._
-import connectors.NrsConnector
+import connectors.{NrsConnector, TrustDataConnector}
 import controllers.Assets._
 import controllers.actions.IdentifierActionProvider
 import models.SuccessfulResponse
@@ -33,6 +33,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class PdfController @Inject()(identifierAction: IdentifierActionProvider,
                               nrsConnector: NrsConnector,
+                              trustDataConnector: TrustDataConnector,
                               config: AppConfig,
                               pdfFileNameGenerator: PdfFileNameGenerator) extends Logging {
 
@@ -47,6 +48,7 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
           | "trustName": "TRUST NAME"
           |}
           |""".stripMargin) // TODO - get payload from request.body
+
 
       pdfFileNameGenerator.generate(payload) match {
         case Some(fileName) =>

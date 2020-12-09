@@ -33,9 +33,9 @@ import utils.Session
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
 
-class AuthenticatedIdentifierAction @Inject()(identifier: String)
-                                             (implicit val authConnector: AuthConnector,
-                                              val parser: BodyParsers.Default,
+class AuthenticatedIdentifierAction @Inject()(identifier: String,
+                                              override val authConnector: AuthConnector)
+                                             (implicit val parser: BodyParsers.Default,
                                               val executionContext: ExecutionContext)
   extends IdentifierAction with AuthorisedFunctions with Logging {
 
