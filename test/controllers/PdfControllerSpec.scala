@@ -43,15 +43,15 @@ import scala.concurrent.{Await, Future}
 class PdfControllerSpec extends SpecBase {
 
   private val mockTrustDataConnector: TrustDataConnector = mock[TrustDataConnector]
-  private val mockNrsConnector: NrsConnector = mock[NrsConnector]
   private val mockPdfFileNameGenerator: PdfFileNameGenerator = mock[PdfFileNameGenerator]
+  private val mockNrsConnector: NrsConnector = mock[NrsConnector]
 
   override def applicationBuilder(): GuiceApplicationBuilder = {
     super.applicationBuilder()
       .overrides(
         bind[TrustDataConnector].toInstance(mockTrustDataConnector),
-        bind[NrsConnector].toInstance(mockNrsConnector),
         bind[PdfFileNameGenerator].toInstance(mockPdfFileNameGenerator),
+        bind[NrsConnector].toInstance(mockNrsConnector),
         bind[IdentifierActionProvider].toInstance(new FakeIdentifierActionProvider(Helpers.stubControllerComponents().parsers.default, Organisation))
       )
   }
@@ -59,6 +59,8 @@ class PdfControllerSpec extends SpecBase {
   private val utr: String = "1234567890"
 
   private val fileName: String = "filename.pdf"
+
+  private val trustJson: JsValue = getJsonValueFromFile("nrs-request-body.json")
 
   private val controller: PdfController = injector.instanceOf[PdfController]
 
@@ -78,15 +80,13 @@ class PdfControllerSpec extends SpecBase {
         val responseBody: String = "abcdef"
         val contentLength: Long = 12345L
 
-        val trustJson: JsValue = getJsonValueFromFile("nrs-request-body.json")
-
         when(mockTrustDataConnector.getTrustJson(any())(any(), any()))
           .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
 
+        when(mockPdfFileNameGenerator.generate(any())).thenReturn(Some(fileName))
+
         when(mockNrsConnector.getPdf(any())(any()))
           .thenReturn(Future.successful(SuccessfulResponse(Source(List(ByteString(responseBody))), contentLength)))
-
-        when(mockPdfFileNameGenerator.generate(any())).thenReturn(Some(fileName))
 
         whenReady(controller.getPdf(utr)(FakeRequest())) { result =>
           result.header.status mustBe OK
@@ -98,6 +98,49 @@ class PdfControllerSpec extends SpecBase {
           )
 
           getSourceString(result) mustEqual responseBody
+        }
+      }
+    }
+
+    "return an InternalServerError" when {
+
+      "error retrieving trust data from IF" in {
+
+        when(mockTrustDataConnector.getTrustJson(any())(any(), any()))
+          .thenReturn(Future.successful(InternalServerErrorTrustDataResponse))
+
+        whenReady(controller.getPdf(utr)(FakeRequest())) { result =>
+          result.header.status mustBe INTERNAL_SERVER_ERROR
+        }
+      }
+
+      "error retrieving PDF from NRS" in {
+
+        when(mockTrustDataConnector.getTrustJson(any())(any(), any()))
+          .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
+
+        when(mockPdfFileNameGenerator.generate(any())).thenReturn(Some(fileName))
+
+        when(mockNrsConnector.getPdf(any())(any()))
+          .thenReturn(Future.successful(InternalServerErrorResponse))
+
+        whenReady(controller.getPdf(utr)(FakeRequest())) { result =>
+          result.header.status mustBe INTERNAL_SERVER_ERROR
+        }
+      }
+    }
+
+    "return a BadRequest" when {
+
+      "trust name not found in payload" in {
+
+        when(mockTrustDataConnector.getTrustJson(any())(any(), any()))
+          .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
+
+        when(mockPdfFileNameGenerator.generate(any())).thenReturn(None)
+
+        whenReady(controller.getPdf(utr)(FakeRequest())) { result =>
+          result.header.status mustBe BAD_REQUEST
         }
       }
     }
