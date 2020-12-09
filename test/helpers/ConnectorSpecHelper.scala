@@ -49,8 +49,8 @@ class ConnectorSpecHelper extends SpecBase with WireMockHelper with IntegrationP
                  delayResponse: Int = 0): StubMapping = {
 
     server.stubFor(
-      requestHeaders.foldLeft[MappingBuilder](get(urlEqualTo(url)))((acc, header) => {
-        acc.withHeader(header._1, containing(header._2))
+      requestHeaders.foldLeft[MappingBuilder](get(urlEqualTo(url)))((mappingBuilder, header) => {
+        mappingBuilder.withHeader(header._1, containing(header._2))
       }).willReturn(
         aResponse()
           .withStatus(responseStatus)
