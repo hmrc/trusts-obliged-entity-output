@@ -18,7 +18,7 @@ package connectors
 
 import helpers.ConnectorSpecHelper
 import helpers.JsonHelper._
-import models._
+import models.{BadRequestTrustDataResponse, _}
 import play.api.http.Status._
 import play.api.libs.json.{JsValue, Json}
 
@@ -28,9 +28,11 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
 
   private lazy val connector: TrustDataConnector = injector.instanceOf[TrustDataConnector]
 
-  private val identifier: Identifier = UTR("1234567890")
+  private val utrIdentifier: Identifier = UTR("2134514321")
+  private val urnIdentifier: Identifier = URN("XATRUST80000001")
+  private val invalidIdentifier: Identifier = UTR("1234567890abcdefg")
 
-  private val url: String = s"/trusts/obliged-entities/$identifier/${identifier.value}"
+  private def url(identifier: Identifier): String = s"/trusts/obliged-entities/$identifier/${identifier.value}"
 
   private val json: JsValue = getJsonValueFromFile("nrs-request-body.json")
 
@@ -38,76 +40,102 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
 
     ".getTrustJson" must {
 
-      "return a JsValue" when {
-        "200 (OK) response received" in {
+      "return a SuccessfulTrustDataResponse with a Json payload" when {
+        "a valid UTR is sent" in {
+          stubForGet(url = url(utrIdentifier), returnStatus = OK, responseBody = Json.stringify(json))
 
-          stubForGet(url = url, returnStatus = OK, responseBody = Json.stringify(json))
-
-          whenReady(connector.getTrustJson(identifier)) {
+          whenReady(connector.getTrustJson(utrIdentifier)) {
             response =>
-              response mustEqual json
+              response mustBe SuccessfulTrustDataResponse(json)
+          }
+        }
+
+        "a valid URN is sent" in {
+          stubForGet(url = url(urnIdentifier), returnStatus = OK, responseBody = Json.stringify(json))
+
+          whenReady(connector.getTrustJson(urnIdentifier)) {
+            response =>
+              response mustBe SuccessfulTrustDataResponse(json)
           }
         }
       }
-//
-//      "return BadRequestResponse" when {
-//        "400 (BAD_REQUEST) response received" in {
-//
-//          stubForPost(url = url, requestBody = Json.stringify(json), returnStatus = BAD_REQUEST)
-//
-//          whenReady(connector.getPdf(json)) {
-//            response =>
-//              response mustBe BadRequestResponse
-//          }
-//        }
-//      }
-//
-//      "return UnauthorisedResponse" when {
-//        "401 (UNAUTHORISED) response received" in {
-//
-//          stubForPost(url = url, requestBody = Json.stringify(json), returnStatus = UNAUTHORIZED)
-//
-//          whenReady(connector.getPdf(json)) {
-//            response =>
-//              response mustBe UnauthorisedResponse
-//          }
-//        }
-//      }
-//
-//      "return NotFoundResponse" when {
-//        "404 (NOT_FOUND) response received" in {
-//
-//          stubForPost(url = url, requestBody = Json.stringify(json), returnStatus = NOT_FOUND)
-//
-//          whenReady(connector.getPdf(json)) {
-//            response =>
-//              response mustBe NotFoundResponse
-//          }
-//        }
-//      }
-//
-//      "return InternalServerErrorResponse" when {
-//
-//        "5xx response received" in {
-//
-//          stubForPost(url = url, requestBody = Json.stringify(json), returnStatus = INTERNAL_SERVER_ERROR)
-//
-//          whenReady(connector.getPdf(json)) {
-//            response =>
-//              response mustBe InternalServerErrorResponse
-//          }
-//        }
-//
-//        "200 (OK) response received without a Content-Length header" in {
-//
-//          stubForPost(url = url, requestBody = Json.stringify(json), returnStatus = OK)
-//
-//          whenReady(connector.getPdf(json)) {
-//            response =>
-//              response mustBe InternalServerErrorResponse
-//          }
-//        }
-//      }
+
+      "return BadRequestTrustDataResponse" when {
+        "an invalid identifier is sent" in {
+          stubForGet(url = url(invalidIdentifier), returnStatus = BAD_REQUEST, responseBody = "")
+
+          whenReady(connector.getTrustJson(invalidIdentifier)) {
+            response =>
+              response mustBe BadRequestTrustDataResponse
+          }
+        }
+      }
+
+      "return UnprocessableEntityTrustDataResponse" when {
+        "422 (UNPROCESSABLE_ENTITY) response received" in {
+          stubForGet(url = url(utrIdentifier), returnStatus = UNPROCESSABLE_ENTITY, responseBody = "")
+
+          whenReady(connector.getTrustJson(utrIdentifier)) {
+            response =>
+              response mustBe UnprocessableEntityTrustDataResponse
+          }
+        }
+      }
+
+      "return ServiceUnavailableTrustDataResponse" when {
+        "503 (SERVICE_UNAVAILABLE) response received" in {
+          stubForGet(url = url(utrIdentifier), returnStatus = SERVICE_UNAVAILABLE, responseBody = "")
+
+          whenReady(connector.getTrustJson(utrIdentifier)) {
+            response =>
+              response mustBe ServiceUnavailableTrustDataResponse
+          }
+        }
+      }
+
+      "return UnauthorisedTrustDataResponse" when {
+        "401 (UNAUTHORISED) response received" in {
+          stubForGet(url = url(utrIdentifier), returnStatus = UNAUTHORIZED, responseBody = "")
+
+          whenReady(connector.getTrustJson(utrIdentifier)) {
+            response =>
+              response mustBe UnauthorisedTrustDataResponse
+          }
+        }
+      }
+
+      "return ForbiddenTrustDataResponse" when {
+        "403 (FORBIDDEN) response received" in {
+          stubForGet(url = url(utrIdentifier), returnStatus = FORBIDDEN, responseBody = "")
+
+          whenReady(connector.getTrustJson(utrIdentifier)) {
+            response =>
+              response mustBe ForbiddenTrustDataResponse
+          }
+        }
+      }
+
+      "return NotFoundTrustDataResponse" when {
+        "404 (NOT_FOUND) response received" in {
+          stubForGet(url = url(utrIdentifier), returnStatus = NOT_FOUND, responseBody = "")
+
+          whenReady(connector.getTrustJson(utrIdentifier)) {
+            response =>
+              response mustBe NotFoundTrustDataResponse
+          }
+        }
+      }
+
+      "return InternalServerErrorTrustDataResponse" when {
+        "500 response received" in {
+          stubForGet(url = url(utrIdentifier), returnStatus = INTERNAL_SERVER_ERROR, responseBody = "")
+
+          whenReady(connector.getTrustJson(utrIdentifier)) {
+            response =>
+              response mustBe InternalServerErrorTrustDataResponse
+          }
+        }
+      }
     }
   }
 }
