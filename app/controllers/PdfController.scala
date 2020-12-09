@@ -20,13 +20,12 @@ import com.google.inject.Inject
 import config.AppConfig
 import config.Constants._
 import connectors.{NrsConnector, TrustDataConnector}
-import controllers.Assets._
 import controllers.actions.IdentifierActionProvider
-import models.SuccessfulResponse
+import models.{SuccessfulResponse, SuccessfulTrustDataResponse}
 import play.api.Logging
 import play.api.http.HttpEntity
-import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.PdfFileNameGenerator
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -35,48 +34,48 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
                               nrsConnector: NrsConnector,
                               trustDataConnector: TrustDataConnector,
                               config: AppConfig,
-                              pdfFileNameGenerator: PdfFileNameGenerator) extends Logging {
+                              cc: ControllerComponents,
+                              pdfFileNameGenerator: PdfFileNameGenerator) extends BackendController(cc) with Logging {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
   def getPdf(identifier: String): Action[AnyContent] = identifierAction(identifier).async {
     implicit request =>
 
-      val payload: JsValue = Json.parse(
-        """
-          |{
-          | "trustName": "TRUST NAME"
-          |}
-          |""".stripMargin) // TODO - get payload from request.body
+      lazy val logInfo: String = s"[SessionId: ${request.sessionId}][${request.identifier}: ${request.identifier.value}]"
 
-
-      pdfFileNameGenerator.generate(payload) match {
-        case Some(fileName) =>
-          nrsConnector.getPdf(payload).map {
-            case response@(_: SuccessfulResponse) =>
-
-              Result(
-                header = ResponseHeader(
-                  status = OK,
-                  headers = Map(
-                    CONTENT_DISPOSITION -> s"${config.inlineOrAttachment}; filename=$fileName",
-                    CONTENT_TYPE -> PDF,
-                    CONTENT_LENGTH -> response.length.toString
+      trustDataConnector.getTrustJson(request.identifier) flatMap {
+        case SuccessfulTrustDataResponse(payload) =>
+          pdfFileNameGenerator.generate(payload) match {
+            case Some(fileName) =>
+              nrsConnector.getPdf(payload).map {
+                case response: SuccessfulResponse =>
+                  Result(
+                    header = ResponseHeader(
+                      status = OK,
+                      headers = Map(
+                        CONTENT_DISPOSITION -> s"${config.inlineOrAttachment}; filename=$fileName",
+                        CONTENT_TYPE -> PDF,
+                        CONTENT_LENGTH -> response.length.toString
+                      )
+                    ),
+                    body = HttpEntity.Streamed(
+                      data = response.body,
+                      contentLength = Some(response.length),
+                      contentType = Some(PDF)
+                    )
                   )
-                ),
-                body = HttpEntity.Streamed(
-                  data = response.body,
-                  contentLength = Some(response.length),
-                  contentType = Some(PDF)
-                )
-              )
-            case e =>
-              logger.error(s"Error retrieving PDF from NRS: $e")
-              InternalServerError
+                case e =>
+                  logger.error(s"$logInfo Error retrieving PDF from NRS: $e.")
+                  InternalServerError
+              }
+            case _ =>
+              logger.error(s"$logInfo Trust name not found in payload.")
+              Future.successful(BadRequest)
           }
-        case _ =>
-          logger.error(s"Trust name not found in payload")
-          Future.successful(BadRequest)
+        case e =>
+          logger.error(s"$logInfo Error retrieving trust data from IF: $e.")
+          Future.successful(InternalServerError)
       }
   }
 }

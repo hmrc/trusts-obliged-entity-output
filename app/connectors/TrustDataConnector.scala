@@ -16,17 +16,30 @@
 
 package connectors
 
+import java.util.UUID
+
 import config.AppConfig
+import config.Constants._
+import javax.inject.Inject
 import models.{Identifier, TrustDataResponse}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
-import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class TrustDataConnector @Inject()(http: HttpClient, config: AppConfig) {
 
-  def getTrustJson(identifier: Identifier)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[TrustDataResponse] = {
+  def getTrustJson(identifier: Identifier)(implicit ec: ExecutionContext): Future[TrustDataResponse] = {
     lazy val url: String = s"${config.trustDataUrl}/trusts/obliged-entities/$identifier/${identifier.value}"
+
+    lazy val headers: Seq[(String, String)] = {
+      Seq(
+        ENVIRONMENT -> config.trustDataEnvironment,
+        CORRELATION_ID -> UUID.randomUUID().toString
+      )
+    }
+
+    implicit val hc: HeaderCarrier = HeaderCarrier(extraHeaders = headers)
+
     http.GET[TrustDataResponse](url)
   }
 

@@ -22,4 +22,8 @@ object Constants {
 
   val PDF = "application/pdf"
 
+  val ENVIRONMENT = "Environment"
+
+  val CORRELATION_ID = "CorrelationId"
+
 }

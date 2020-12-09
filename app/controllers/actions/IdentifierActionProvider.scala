@@ -39,10 +39,10 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import scala.concurrent.ExecutionContext
 
 class AuthenticatedIdentifierActionProvider @Inject()()(implicit val authConnector: AuthConnector,
-                                           val parser: BodyParsers.Default,
-                                           executionContext: ExecutionContext) extends IdentifierActionProvider{
+                                                        val parser: BodyParsers.Default,
+                                                        executionContext: ExecutionContext) extends IdentifierActionProvider {
 
-  def apply(identifier: String): IdentifierAction = new AuthenticatedIdentifierAction(identifier, authConnector)
+  override def apply(identifier: String): IdentifierAction = new AuthenticatedIdentifierAction(identifier, authConnector)
 }
 
 trait IdentifierActionProvider {

@@ -20,15 +20,17 @@ import akka.stream.scaladsl.{Sink, Source}
 import akka.util.ByteString
 import base.SpecBase
 import config.Constants.PDF
-import connectors.NrsConnector
+import connectors.{NrsConnector, TrustDataConnector}
 import controllers.actions.IdentifierActionProvider
 import helpers.FakeIdentifierActionProvider
+import helpers.JsonHelper.getJsonValueFromFile
 import models._
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import play.api.Play.materializer
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.libs.json.JsValue
 import play.api.mvc.Result
 import play.api.test.Helpers._
 import play.api.test.{FakeRequest, Helpers}
@@ -40,13 +42,15 @@ import scala.concurrent.{Await, Future}
 
 class PdfControllerSpec extends SpecBase {
 
-  private val mockConnector: NrsConnector = mock[NrsConnector]
+  private val mockTrustDataConnector: TrustDataConnector = mock[TrustDataConnector]
+  private val mockNrsConnector: NrsConnector = mock[NrsConnector]
   private val mockPdfFileNameGenerator: PdfFileNameGenerator = mock[PdfFileNameGenerator]
 
   override def applicationBuilder(): GuiceApplicationBuilder = {
     super.applicationBuilder()
       .overrides(
-        bind[NrsConnector].toInstance(mockConnector),
+        bind[TrustDataConnector].toInstance(mockTrustDataConnector),
+        bind[NrsConnector].toInstance(mockNrsConnector),
         bind[PdfFileNameGenerator].toInstance(mockPdfFileNameGenerator),
         bind[IdentifierActionProvider].toInstance(new FakeIdentifierActionProvider(Helpers.stubControllerComponents().parsers.default, Organisation))
       )
@@ -74,7 +78,12 @@ class PdfControllerSpec extends SpecBase {
         val responseBody: String = "abcdef"
         val contentLength: Long = 12345L
 
-        when(mockConnector.getPdf(any())(any()))
+        val trustJson: JsValue = getJsonValueFromFile("nrs-request-body.json")
+
+        when(mockTrustDataConnector.getTrustJson(any())(any()))
+          .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
+
+        when(mockNrsConnector.getPdf(any())(any()))
           .thenReturn(Future.successful(SuccessfulResponse(Source(List(ByteString(responseBody))), contentLength)))
 
         when(mockPdfFileNameGenerator.generate(any())).thenReturn(Some(fileName))
