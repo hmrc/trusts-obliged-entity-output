@@ -17,6 +17,7 @@
 package helpers
 
 import base.SpecBase
+import com.github.tomakehurst.wiremock.client.MappingBuilder
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.http.HttpHeaders
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
@@ -26,6 +27,9 @@ import org.scalatest.concurrent.IntegrationPatience
 import play.api.inject.guice.GuiceApplicationBuilder
 
 class ConnectorSpecHelper extends SpecBase with WireMockHelper with IntegrationPatience {
+
+  val fakeCorrelationId: String = "bcda2e24-13c2-4fee-9243-cd9835426559"
+  val fakeBearerToken: String = "Bearer 12345"
 
   override def applicationBuilder(): GuiceApplicationBuilder = {
     super.applicationBuilder()
@@ -39,14 +43,17 @@ class ConnectorSpecHelper extends SpecBase with WireMockHelper with IntegrationP
   }
 
   def stubForGet(url: String,
-                 returnStatus: Int,
+                 requestHeaders: Seq[(String, String)] = Seq(),
+                 responseStatus: Int,
                  responseBody: String,
                  delayResponse: Int = 0): StubMapping = {
 
-    server.stubFor(get(urlEqualTo(url))
-      .willReturn(
+    server.stubFor(
+      requestHeaders.foldLeft[MappingBuilder](get(urlEqualTo(url)))((acc, header) => {
+        acc.withHeader(header._1, containing(header._2))
+      }).willReturn(
         aResponse()
-          .withStatus(returnStatus)
+          .withStatus(responseStatus)
           .withBody(responseBody)
           .withFixedDelay(delayResponse)
       )
@@ -55,7 +62,7 @@ class ConnectorSpecHelper extends SpecBase with WireMockHelper with IntegrationP
 
   def stubForPost(url: String,
                   requestBody: String,
-                  returnStatus: Int,
+                  responseStatus: Int,
                   responseBody: String = "",
                   responseHeaders: HttpHeaders = HttpHeaders.noHeaders(),
                   delayResponse: Int = 0): StubMapping = {
@@ -66,7 +73,7 @@ class ConnectorSpecHelper extends SpecBase with WireMockHelper with IntegrationP
       .withRequestBody(equalTo(requestBody))
       .willReturn(
         aResponse()
-          .withStatus(returnStatus)
+          .withStatus(responseStatus)
           .withHeaders(responseHeaders)
           .withBody(responseBody)
           .withFixedDelay(delayResponse)

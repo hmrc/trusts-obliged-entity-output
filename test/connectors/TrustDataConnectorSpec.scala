@@ -16,13 +16,16 @@
 
 package connectors
 
+import config.Constants._
+import controllers.Assets.AUTHORIZATION
 import helpers.ConnectorSpecHelper
 import helpers.JsonHelper._
 import models.{BadRequestTrustDataResponse, _}
 import play.api.http.Status._
 import play.api.libs.json.{JsValue, Json}
+import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext
 
 class TrustDataConnectorSpec extends ConnectorSpecHelper {
 
@@ -36,13 +39,25 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
 
   private val json: JsValue = getJsonValueFromFile("nrs-request-body.json")
 
+  private implicit val ec: ExecutionContext = ExecutionContext.global
+
   "TrustDataConnector" when {
 
     ".getTrustJson" must {
 
       "return a SuccessfulTrustDataResponse with a Json payload" when {
+
+        lazy val headers: Seq[(String, String)] = Seq(
+          ENVIRONMENT -> appConfig.trustDataEnvironment,
+          CORRELATION_ID -> fakeCorrelationId,
+          AUTHORIZATION -> fakeBearerToken
+        )
+
+        implicit lazy val hc: HeaderCarrier = HeaderCarrier(extraHeaders = headers)
+
         "a valid UTR is sent" in {
-          stubForGet(url = url(utrIdentifier), returnStatus = OK, responseBody = Json.stringify(json))
+
+          stubForGet(url = url(utrIdentifier), requestHeaders = headers, responseStatus = OK, responseBody = Json.stringify(json))
 
           whenReady(connector.getTrustJson(utrIdentifier)) {
             response =>
@@ -51,7 +66,8 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
         }
 
         "a valid URN is sent" in {
-          stubForGet(url = url(urnIdentifier), returnStatus = OK, responseBody = Json.stringify(json))
+
+          stubForGet(url = url(urnIdentifier), requestHeaders = headers, responseStatus = OK, responseBody = Json.stringify(json))
 
           whenReady(connector.getTrustJson(urnIdentifier)) {
             response =>
@@ -62,7 +78,8 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
 
       "return BadRequestTrustDataResponse" when {
         "an invalid identifier is sent" in {
-          stubForGet(url = url(invalidIdentifier), returnStatus = BAD_REQUEST, responseBody = "")
+
+          stubForGet(url = url(invalidIdentifier), responseStatus = BAD_REQUEST, responseBody = "")
 
           whenReady(connector.getTrustJson(invalidIdentifier)) {
             response =>
@@ -73,7 +90,8 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
 
       "return UnprocessableEntityTrustDataResponse" when {
         "422 (UNPROCESSABLE_ENTITY) response received" in {
-          stubForGet(url = url(utrIdentifier), returnStatus = UNPROCESSABLE_ENTITY, responseBody = "")
+
+          stubForGet(url = url(utrIdentifier), responseStatus = UNPROCESSABLE_ENTITY, responseBody = "")
 
           whenReady(connector.getTrustJson(utrIdentifier)) {
             response =>
@@ -84,7 +102,8 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
 
       "return ServiceUnavailableTrustDataResponse" when {
         "503 (SERVICE_UNAVAILABLE) response received" in {
-          stubForGet(url = url(utrIdentifier), returnStatus = SERVICE_UNAVAILABLE, responseBody = "")
+
+          stubForGet(url = url(utrIdentifier), responseStatus = SERVICE_UNAVAILABLE, responseBody = "")
 
           whenReady(connector.getTrustJson(utrIdentifier)) {
             response =>
@@ -94,30 +113,84 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
       }
 
       "return UnauthorisedTrustDataResponse" when {
-        "401 (UNAUTHORISED) response received" in {
-          stubForGet(url = url(utrIdentifier), returnStatus = UNAUTHORIZED, responseBody = "")
+        "401 (UNAUTHORISED) response received" when {
+          "authorization header missing" in {
 
-          whenReady(connector.getTrustJson(utrIdentifier)) {
-            response =>
-              response mustBe UnauthorisedTrustDataResponse
+            lazy val headers: Seq[(String, String)] = Seq(
+              ENVIRONMENT -> appConfig.trustDataEnvironment,
+              CORRELATION_ID -> fakeCorrelationId
+            )
+
+            implicit lazy val hc: HeaderCarrier = HeaderCarrier(extraHeaders = headers)
+
+            stubForGet(url = url(utrIdentifier), requestHeaders = headers, responseStatus = UNAUTHORIZED, responseBody = "")
+
+            whenReady(connector.getTrustJson(utrIdentifier)) {
+              response =>
+                response mustBe UnauthorisedTrustDataResponse
+            }
           }
         }
       }
 
       "return ForbiddenTrustDataResponse" when {
-        "403 (FORBIDDEN) response received" in {
-          stubForGet(url = url(utrIdentifier), returnStatus = FORBIDDEN, responseBody = "")
+        "403 (FORBIDDEN) response received" when {
+          "environment and authorization headers missing" in {
 
-          whenReady(connector.getTrustJson(utrIdentifier)) {
-            response =>
-              response mustBe ForbiddenTrustDataResponse
+            lazy val headers: Seq[(String, String)] = Seq(
+              CORRELATION_ID -> fakeCorrelationId
+            )
+
+            implicit lazy val hc: HeaderCarrier = HeaderCarrier(extraHeaders = headers)
+
+            stubForGet(url = url(utrIdentifier), requestHeaders = headers, responseStatus = FORBIDDEN, responseBody = "")
+
+            whenReady(connector.getTrustJson(utrIdentifier)) {
+              response =>
+                response mustBe ForbiddenTrustDataResponse
+            }
+          }
+
+          "environment header missing" in {
+
+            lazy val headers: Seq[(String, String)] = Seq(
+              CORRELATION_ID -> fakeCorrelationId,
+              AUTHORIZATION -> fakeBearerToken
+            )
+
+            implicit lazy val hc: HeaderCarrier = HeaderCarrier(extraHeaders = headers)
+
+            stubForGet(url = url(utrIdentifier), requestHeaders = headers, responseStatus = FORBIDDEN, responseBody = "")
+
+            whenReady(connector.getTrustJson(utrIdentifier)) {
+              response =>
+                response mustBe ForbiddenTrustDataResponse
+            }
+          }
+
+          "correlation ID header missing" in {
+
+            lazy val headers: Seq[(String, String)] = Seq(
+              ENVIRONMENT -> appConfig.trustDataEnvironment,
+              AUTHORIZATION -> fakeBearerToken
+            )
+
+            implicit lazy val hc: HeaderCarrier = HeaderCarrier(extraHeaders = headers)
+
+            stubForGet(url = url(utrIdentifier), requestHeaders = headers, responseStatus = FORBIDDEN, responseBody = "")
+
+            whenReady(connector.getTrustJson(utrIdentifier)) {
+              response =>
+                response mustBe ForbiddenTrustDataResponse
+            }
           }
         }
       }
 
       "return NotFoundTrustDataResponse" when {
         "404 (NOT_FOUND) response received" in {
-          stubForGet(url = url(utrIdentifier), returnStatus = NOT_FOUND, responseBody = "")
+
+          stubForGet(url = url(utrIdentifier), responseStatus = NOT_FOUND, responseBody = "")
 
           whenReady(connector.getTrustJson(utrIdentifier)) {
             response =>
@@ -128,7 +201,8 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
 
       "return InternalServerErrorTrustDataResponse" when {
         "500 response received" in {
-          stubForGet(url = url(utrIdentifier), returnStatus = INTERNAL_SERVER_ERROR, responseBody = "")
+
+          stubForGet(url = url(utrIdentifier), responseStatus = INTERNAL_SERVER_ERROR, responseBody = "")
 
           whenReady(connector.getTrustJson(utrIdentifier)) {
             response =>
