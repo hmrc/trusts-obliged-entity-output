@@ -20,8 +20,8 @@ import javax.inject.{Inject, Singleton}
 import play.modules.reactivemongo.ReactiveMongoApi
 
 @Singleton
-class ObligedEntityMongoDriver @Inject()(val api : ReactiveMongoApi) extends MongoDriver
+class ObligedEntityMongoDriver @Inject()(val api: ReactiveMongoApi) extends MongoDriver
 
 sealed trait MongoDriver {
-  val api : ReactiveMongoApi
+  val api: ReactiveMongoApi
 }

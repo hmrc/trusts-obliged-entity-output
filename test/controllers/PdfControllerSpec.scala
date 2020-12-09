@@ -16,6 +16,8 @@
 
 package controllers
 
+import java.time.LocalDateTime
+
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.ByteString
 import base.SpecBase
@@ -45,7 +47,7 @@ class PdfControllerSpec extends SpecBase {
   private val mockTrustDataConnector: TrustDataConnector = mock[TrustDataConnector]
   private val mockPdfFileNameGenerator: PdfFileNameGenerator = mock[PdfFileNameGenerator]
   private val mockNrsConnector: NrsConnector = mock[NrsConnector]
-  val nrsLockRepository = mock[NrsLockRepository]
+  private val nrsLockRepository: NrsLockRepository = mock[NrsLockRepository]
 
   override def applicationBuilder(): GuiceApplicationBuilder = {
     super.applicationBuilder()
@@ -63,6 +65,8 @@ class PdfControllerSpec extends SpecBase {
   private val fileName: String = "filename.pdf"
 
   private val trustJson: JsValue = getJsonValueFromFile("nrs-request-body.json")
+
+  private val testDateTime: LocalDateTime = LocalDateTime.now()
 
   private val controller: PdfController = injector.instanceOf[PdfController]
 
@@ -161,7 +165,7 @@ class PdfControllerSpec extends SpecBase {
     "there is a lock in mongo" must {
       "return a 429 (TOO_MANY_REQUESTS) response" in {
         when(nrsLockRepository.getLock(any()))
-          .thenReturn(Future.successful(Some(NrsLock(true))))
+          .thenReturn(Future.successful(Some(NrsLock(locked = true, createdAt = testDateTime))))
 
         whenReady(controller.getPdf(utr)(FakeRequest())) { result =>
           result.header.status mustBe TOO_MANY_REQUESTS

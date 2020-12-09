@@ -14,24 +14,25 @@
  * limitations under the License.
  */
 
-package controllers
+package models
 
-import com.google.inject.Inject
-import play.api.http.FileMimeTypes
-import play.api.mvc.Results.Ok
-import play.api.mvc.{Action, AnyContent, DefaultActionBuilder}
+import java.time.{Instant, LocalDateTime, ZoneOffset}
 
-import scala.concurrent.ExecutionContext
+import play.api.libs.json._
 
-class TestNRSResponse @Inject()(action: DefaultActionBuilder)(implicit val fileMimeTypes: FileMimeTypes) {
+trait MongoDateTimeFormats {
 
-  implicit val ec: ExecutionContext = ExecutionContext.global
-
-  def getPdf: Action[AnyContent] = action {
-      Ok.sendFile(
-        content = new java.io.File("conf/resources/response.pdf"),
-        fileName = _ => "response.pdf"
-      )
+  implicit val localDateTimeRead: Reads[LocalDateTime] = {
+    (__ \ "$date").read[Long].map {
+      millis =>
+        LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneOffset.UTC)
+    }
   }
 
+  implicit val localDateTimeWrite: Writes[LocalDateTime] = (dateTime: LocalDateTime) => Json.obj(
+    "$date" -> dateTime.atZone(ZoneOffset.UTC).toInstant.toEpochMilli
+  )
+
 }
+
+object MongoDateTimeFormats extends MongoDateTimeFormats

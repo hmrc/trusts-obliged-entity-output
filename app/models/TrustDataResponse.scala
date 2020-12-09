@@ -40,13 +40,13 @@ object TrustDataResponse extends Logging {
       case OK =>
         SuccessfulTrustDataResponse(Json.parse(response.body))
       case BAD_REQUEST =>
-        logger.error(s"Invalid Identifier - ${response.body}")
+        logger.error(s"Invalid Identifier - ${response.body}.")
         BadRequestTrustDataResponse
       case UNPROCESSABLE_ENTITY =>
-        logger.error(s"Could not be processed - ${response.body}")
+        logger.error(s"Could not be processed - ${response.body}.")
         UnprocessableEntityTrustDataResponse
       case SERVICE_UNAVAILABLE =>
-        logger.error(s"Service Unavailable - ${response.body}")
+        logger.error(s"Service Unavailable - ${response.body}.")
         ServiceUnavailableTrustDataResponse
       case UNAUTHORIZED =>
         logger.error("No Bearer token provided or it is invalid.")

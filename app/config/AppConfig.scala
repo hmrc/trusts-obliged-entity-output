@@ -28,18 +28,9 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
   val auditingEnabled: Boolean = config.get[Boolean]("auditing.enabled")
   val graphiteHost: String = config.get[String]("microservice.metrics.graphite.host")
 
-  val pdfTestEndpointEnabled: Boolean = config.get[Boolean]("pdf-test-endpoint-enabled")
-
   val trustDataUrl: String = servicesConfig.baseUrl("trust-data")
 
-  val nrsUrl: String = {
-    if (pdfTestEndpointEnabled) {
-      servicesConfig.baseUrl("pdf-test") + "/trusts-obliged-entity-output"
-    }
-    else {
-      servicesConfig.baseUrl("nrs-trusts")
-    }
-  }
+  val nrsUrl: String = servicesConfig.baseUrl("nrs-trusts")
 
   val nrsToken: String = config.get[String]("microservice.services.nrs-trusts.token")
 

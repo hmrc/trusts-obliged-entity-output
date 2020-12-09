@@ -36,8 +36,7 @@ class ConnectorSpecHelper extends SpecBase with WireMockHelper with IntegrationP
       .configure(
         Seq(
           "microservice.services.nrs-trusts.port" -> server.port(),
-          "microservice.services.trust-data.port" -> server.port(),
-          "pdf-test-endpoint-enabled" -> false
+          "microservice.services.trust-data.port" -> server.port()
         ): _*
       )
   }

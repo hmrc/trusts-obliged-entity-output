@@ -16,6 +16,8 @@
 
 package controllers
 
+import java.time.LocalDateTime
+
 import com.google.inject.Inject
 import config.AppConfig
 import config.Constants._
@@ -47,16 +49,16 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
       lazy val logInfo: String = s"[SessionId: ${request.sessionId}][${request.identifier}: ${request.identifier.value}]"
 
       nrsLockRepository.getLock(identifier).flatMap {
-        case Some(NrsLock(true)) => Future.successful(TooManyRequests)
+        case Some(NrsLock(true, _)) => Future.successful(TooManyRequests)
         case _ =>
-          nrsLockRepository.setLock(identifier, locked = NrsLock(true)).flatMap { _ =>
+          nrsLockRepository.setLock(identifier, lock = NrsLock(locked = true, createdAt = LocalDateTime.now())).flatMap { _ =>
             trustDataConnector.getTrustJson(request.identifier) flatMap {
               case SuccessfulTrustDataResponse(payload) =>
                 pdfFileNameGenerator.generate(payload) match {
                   case Some(fileName) =>
                     nrsConnector.getPdf(payload).flatMap {
                       case response: SuccessfulResponse =>
-                        nrsLockRepository.setLock(identifier, locked = NrsLock(false)).map { _ =>
+                        nrsLockRepository.setLock(identifier, lock = NrsLock(locked = false, createdAt = LocalDateTime.now())).map { _ =>
                           Result(
                             header = ResponseHeader(
                               status = OK,

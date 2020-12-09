@@ -29,14 +29,13 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 
-class NrsLockRepository @Inject()(
-                                          mongo: MongoDriver,
-                                          config: AppConfig
-                                        )(implicit ec: ExecutionContext) extends Logging {
+class NrsLockRepository @Inject()(mongo: MongoDriver,
+                                  config: AppConfig)
+                                 (implicit ec: ExecutionContext) extends Logging {
 
   private val collectionName: String = "nrs-lock"
 
-  private val cacheTtl = config.lockTtlInSeconds
+  private val cacheTtl: Int = config.lockTtlInSeconds
 
   private def collection: Future[JSONCollection] =
     for {
@@ -44,48 +43,49 @@ class NrsLockRepository @Inject()(
       res <- mongo.api.database.map(_.collection[JSONCollection](collectionName))
     } yield res
 
-  private val createdAtIndex = Index(
+  private val createdAtIndex: Index = Index(
     key = Seq("createdAt" -> IndexType.Ascending),
     name = Some("ui-state-created-at-index"),
     options = BSONDocument("expireAfterSeconds" -> cacheTtl)
   )
 
-
-
-  private lazy val ensureIndexes = {
+  private lazy val ensureIndexes: Future[Boolean] = {
     logger.info("Ensuring collection indexes")
     for {
-      collection              <- mongo.api.database.map(_.collection[JSONCollection](collectionName))
+      collection <- mongo.api.database.map(_.collection[JSONCollection](collectionName))
       createdCreatedIndex <- collection.indexesManager.ensure(createdAtIndex)
     } yield createdCreatedIndex
   }
 
-  def setLock(identifier: String, locked: NrsLock): Future[Boolean] = {
+  def setLock(identifier: String, lock: NrsLock): Future[Boolean] = {
 
     val selector = Json.obj(
       "identifier" -> identifier
     )
 
     val modifier = Json.obj(
-      "$set" -> locked
-
+      "$set" -> lock
     )
 
-    collection.flatMap {
-      _.update(ordered = false).one(selector, modifier, upsert = true).map {
-        lastError =>
-          lastError.ok
-      }
-    }
+    collection.flatMap(_.update(
+      ordered = false
+    ).one(
+      q = selector,
+      u = modifier,
+      upsert = true
+    ).map(_.ok))
   }
 
   def getLock(identifier: String): Future[Option[NrsLock]] = {
+
     val selector = Json.obj(
       "identifier" -> identifier
     )
 
     collection.flatMap(_.find(
-      selector = selector, None).one[NrsLock])
+      selector = selector,
+      projection = None
+    ).one[NrsLock])
   }
 
 }
