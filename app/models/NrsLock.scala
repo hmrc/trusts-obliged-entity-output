@@ -21,7 +21,8 @@ import java.time.LocalDateTime
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{Reads, Writes, __}
 
-case class NrsLock(locked: Boolean, createdAt: LocalDateTime)
+case class NrsLock(locked: Boolean,
+                   createdAt: LocalDateTime)
 
 object NrsLock {
 
@@ -36,6 +37,6 @@ object NrsLock {
     (
       (__ \ "locked").write[Boolean] and
       (__ \ "createdAt").write(MongoDateTimeFormats.localDateTimeWrite)
-    ) (unlift(NrsLock.unapply))
+    )(unlift(NrsLock.unapply))
   }
 }
