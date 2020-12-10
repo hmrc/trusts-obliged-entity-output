@@ -65,10 +65,7 @@ class AuthActionSpec extends SpecBase {
         val result = controller.onSubmit()(fakeRequest)
 
         status(result) mustBe OK
-
-
       }
-
     }
 
     "Org user with no enrolments" must {
@@ -80,10 +77,7 @@ class AuthActionSpec extends SpecBase {
         val result = controller.onSubmit()(fakeRequest)
 
         status(result) mustBe OK
-
-
       }
-
     }
 
     "Individual user" must {
@@ -94,10 +88,7 @@ class AuthActionSpec extends SpecBase {
         val controller = new Harness(authAction)
         val result = controller.onSubmit()(fakeRequest)
         status(result) mustBe UNAUTHORIZED
-
-
       }
-
     }
 
     "the user hasn't logged in" must {
@@ -109,8 +100,6 @@ class AuthActionSpec extends SpecBase {
         val result = controller.onSubmit()(fakeRequest)
 
         status(result) mustBe UNAUTHORIZED
-
-
       }
     }
 
@@ -123,8 +112,6 @@ class AuthActionSpec extends SpecBase {
         val result = controller.onSubmit()(fakeRequest)
 
         status(result) mustBe UNAUTHORIZED
-
-
       }
     }
   }
@@ -133,8 +120,10 @@ class AuthActionSpec extends SpecBase {
 class FakeFailingAuthConnector @Inject()(exceptionToReturn: Throwable) extends AuthConnector {
   val serviceUrl: String = ""
 
-  override def authorise[A](predicate: Predicate, retrieval: Retrieval[A])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[A] =
+  override def authorise[A](predicate: Predicate, retrieval: Retrieval[A])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[A] = {
     Future.failed(exceptionToReturn)
+  }
+  
 }
 
 class FakeAuthConnector(stubbedRetrievalResult: Future[_]) extends AuthConnector {
@@ -144,4 +133,3 @@ class FakeAuthConnector(stubbedRetrievalResult: Future[_]) extends AuthConnector
   }
 
 }
-
