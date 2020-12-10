@@ -18,13 +18,11 @@ package config
 
 import com.google.inject.AbstractModule
 import controllers.actions.{AuthenticatedIdentifierAction, AuthenticatedIdentifierActionProvider, IdentifierAction, IdentifierActionProvider}
-import repositories.{MongoDriver, ObligedEntityMongoDriver}
 
 class Module extends AbstractModule {
 
   override def configure(): Unit = {
     bind(classOf[IdentifierAction]).to(classOf[AuthenticatedIdentifierAction]).asEagerSingleton()
     bind(classOf[IdentifierActionProvider]).to(classOf[AuthenticatedIdentifierActionProvider]).asEagerSingleton()
-    bind(classOf[MongoDriver]).to(classOf[ObligedEntityMongoDriver]).asEagerSingleton()
   }
 }

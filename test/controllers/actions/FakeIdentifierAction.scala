@@ -36,5 +36,5 @@ class FakeIdentifierAction @Inject()(bodyParsers: BodyParser[AnyContent], affini
 
   override def parser: BodyParser[AnyContent] = bodyParsers
 
-  override protected def executionContext: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+  override protected def executionContext: ExecutionContext = ExecutionContext.Implicits.global
 }

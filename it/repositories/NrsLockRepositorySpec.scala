@@ -16,18 +16,18 @@
 
 package repositories
 
-import java.time.LocalDateTime
 import base.IntegrationTestBase
 import models.NrsLock
 import org.scalatest.{AsyncFreeSpec, MustMatchers}
-import play.api.libs.json.Json
+
+import java.time.LocalDateTime
 
 class NrsLockRepositorySpec extends AsyncFreeSpec with MustMatchers with IntegrationTestBase {
 
   private val identifier1: String = "1234567890"
   private val identifier2: String = "0987654321"
 
-  private val testDateTime: LocalDateTime = Json.toJson(LocalDateTime.now()).as[LocalDateTime]
+  private val testDateTime: LocalDateTime = LocalDateTime.now()
 
   "NrsLockRepository" - {
 

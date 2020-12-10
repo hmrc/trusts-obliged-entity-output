@@ -1,43 +1,33 @@
 package base
 
+import controllers.actions.{FakeIdentifierAction, FakeIdentifierActionProvider, IdentifierAction, IdentifierActionProvider}
 import org.scalatest.Assertion
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Seconds, Span}
-import play.api.{Application, Play}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import reactivemongo.api.{DefaultDB, MongoConnection}
-import uk.gov.hmrc.auth.core.AffinityGroup.Agent
-import controllers.actions.{FakeIdentifierAction, IdentifierAction}
 import play.api.mvc.ControllerComponents
-import repositories.ObligedEntityMongoDriver
 import play.api.test.Helpers.stubControllerComponents
+import play.api.{Application, Play}
+import play.modules.reactivemongo.ReactiveMongoApi
+import reactivemongo.play.json.collection.JSONCollection
+import uk.gov.hmrc.auth.core.AffinityGroup.Agent
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
-import scala.util.Try
 
 trait IntegrationTestBase extends ScalaFutures {
 
   implicit val defaultPatience: PatienceConfig = PatienceConfig(timeout = Span(30, Seconds), interval = Span(15, Millis))
 
-  private val connectionString: String = "mongodb://localhost:27017/trusts-obliged-entity-output"
+  private val connectionString: String = "mongodb://localhost:27017/trusts-obliged-entity-output-integration"
 
-  def getDatabase(connection: MongoConnection): DefaultDB = {
-    Await.result(connection.database("nrs-lock"), Duration.Inf)
-  }
-
-  private def getConnection(application: Application): Try[MongoConnection] = {
-    val mongoDriver = application.injector.instanceOf[ObligedEntityMongoDriver]
-    for {
-      uri <- MongoConnection.parseURI(connectionString)
-      connection: MongoConnection <- mongoDriver.api.driver.connection(parsedURI = uri, strictUri = true)
-    } yield connection
-  }
-
-  private def dropTheDatabase(connection: MongoConnection): Unit = {
-    Await.result(getDatabase(connection).drop(), Duration.Inf)
+  private def dropTheDatabase(application: Application): Future[Boolean] = {
+    val mongoDriver = application.injector.instanceOf[ReactiveMongoApi]
+    mongoDriver.database.map(_.collection[JSONCollection]("nrs-lock")).flatMap { db =>
+      db.drop(failIfNotFound = false)
+    }
   }
 
   private val cc: ControllerComponents = stubControllerComponents()
@@ -53,6 +43,7 @@ trait IntegrationTestBase extends ScalaFutures {
 
   def createApplication : Application = applicationBuilder
     .overrides(
+      bind[IdentifierActionProvider].toInstance(new FakeIdentifierActionProvider(cc.parsers.default, Agent)),
       bind[IdentifierAction].toInstance(new FakeIdentifierAction(cc.parsers.default, Agent))
     ).build()
 
@@ -62,8 +53,7 @@ trait IntegrationTestBase extends ScalaFutures {
 
     try {
       val f: Future[Assertion] = for {
-        connection <- Future.fromTry(getConnection(application))
-        _ = dropTheDatabase(connection)
+        _ <- dropTheDatabase(application)
       } yield {
         block(application)
       }

@@ -20,6 +20,7 @@ import config.AppConfig
 import models.NrsLock
 import play.api.Logging
 import play.api.libs.json._
+import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.indexes.{Index, IndexType}
 import reactivemongo.bson.BSONDocument
 import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
@@ -29,7 +30,7 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 
-class NrsLockRepository @Inject()(mongo: MongoDriver,
+class NrsLockRepository @Inject()(mongo: ReactiveMongoApi,
                                   config: AppConfig)
                                  (implicit ec: ExecutionContext) extends Logging {
 
@@ -40,7 +41,7 @@ class NrsLockRepository @Inject()(mongo: MongoDriver,
   private def collection: Future[JSONCollection] =
     for {
       _ <- ensureIndexes
-      res <- mongo.api.database.map(_.collection[JSONCollection](collectionName))
+      res <- mongo.database.map(_.collection[JSONCollection](collectionName))
     } yield res
 
   private val createdAtIndex: Index = Index(
@@ -52,7 +53,7 @@ class NrsLockRepository @Inject()(mongo: MongoDriver,
   private lazy val ensureIndexes: Future[Boolean] = {
     logger.info("Ensuring collection indexes")
     for {
-      collection <- mongo.api.database.map(_.collection[JSONCollection](collectionName))
+      collection <- mongo.database.map(_.collection[JSONCollection](collectionName))
       createdIndex <- collection.indexesManager.ensure(createdAtIndex)
     } yield createdIndex
   }
