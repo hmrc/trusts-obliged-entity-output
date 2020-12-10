@@ -110,7 +110,7 @@ class PdfControllerSpec extends SpecBase {
           }
         }
 
-        "return an ServiceUnavailable error" when {
+        "return a ServiceUnavailable error" when {
 
           "IF is unavailable" in {
 
