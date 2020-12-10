@@ -40,25 +40,25 @@ object TrustDataResponse extends Logging {
       case OK =>
         SuccessfulTrustDataResponse(Json.parse(response.body))
       case BAD_REQUEST =>
-        logger.error(s"Invalid Identifier - ${response.body}.")
+        logger.error(s"Invalid identifier - ${response.body}.")
         BadRequestTrustDataResponse
       case UNPROCESSABLE_ENTITY =>
         logger.error(s"Could not be processed - ${response.body}.")
         UnprocessableEntityTrustDataResponse
       case SERVICE_UNAVAILABLE =>
-        logger.error(s"Service Unavailable - ${response.body}.")
+        logger.error(s"IF service unavailable - ${response.body}.")
         ServiceUnavailableTrustDataResponse
       case UNAUTHORIZED =>
-        logger.error("No Bearer token provided or it is invalid.")
+        logger.error("No Authorization header (bearer token) provided or it is invalid.")
         UnauthorisedTrustDataResponse
       case FORBIDDEN =>
         logger.error("No Environment header provided or it is invalid.")
         ForbiddenTrustDataResponse
       case NOT_FOUND =>
-        logger.error("Resource does not exist for the identifier provided.")
+        logger.error("Resource not found for the provided identifier.")
         NotFoundTrustDataResponse
       case _ =>
-        logger.error("Internal Server Error response from IF.")
+        logger.error("Internal server error response from IF.")
         InternalServerErrorTrustDataResponse
     }
   }
