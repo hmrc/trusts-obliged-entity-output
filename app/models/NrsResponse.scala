@@ -55,10 +55,10 @@ object NrsResponse extends Logging {
         logger.error("Requested PDF template does not exist.")
         NotFoundResponse
       case SERVICE_UNAVAILABLE =>
-        logger.error(s"Service Unavailable - ${response.body}.")
+        logger.error(s"NRS service unavailable - ${response.body}.")
         ServiceUnavailableResponse
       case _ =>
-        logger.error("Service unavailable response from NRS.")
+        logger.error("Internal server error response from NRS.")
         InternalServerErrorResponse
     }
   }
