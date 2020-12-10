@@ -14,24 +14,12 @@
  * limitations under the License.
  */
 
-package controllers
+package models
 
-import com.google.inject.Inject
-import play.api.http.FileMimeTypes
-import play.api.mvc.Results.Ok
-import play.api.mvc.{Action, AnyContent, DefaultActionBuilder}
-
-import scala.concurrent.ExecutionContext
-
-class TestNRSResponse @Inject()(action: DefaultActionBuilder)(implicit val fileMimeTypes: FileMimeTypes) {
-
-  implicit val ec: ExecutionContext = ExecutionContext.global
-
-  def getPdf: Action[AnyContent] = action {
-      Ok.sendFile(
-        content = new java.io.File("conf/resources/response.pdf"),
-        fileName = _ => "response.pdf"
-      )
-  }
-
+sealed trait Identifier {
+  val value: String
+  override def toString: String = this.getClass.getSimpleName
 }
+
+case class UTR(override val value: String) extends Identifier
+case class URN(override val value: String) extends Identifier

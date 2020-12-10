@@ -14,16 +14,25 @@
  * limitations under the License.
  */
 
-package config
+package models
 
-object Constants {
+import java.time.{Instant, LocalDateTime, ZoneOffset}
 
-  val X_API_KEY = "X-API-Key"
+import play.api.libs.json._
 
-  val PDF = "application/pdf"
+trait MongoDateTimeFormats {
 
-  val ENVIRONMENT = "Environment"
+  implicit val localDateTimeRead: Reads[LocalDateTime] = {
+    (__ \ "$date").read[Long].map {
+      millis =>
+        LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneOffset.UTC)
+    }
+  }
 
-  val CORRELATION_ID = "CorrelationId"
+  implicit val localDateTimeWrite: Writes[LocalDateTime] = (dateTime: LocalDateTime) => Json.obj(
+    "$date" -> dateTime.atZone(ZoneOffset.UTC).toInstant.toEpochMilli
+  )
 
 }
+
+object MongoDateTimeFormats extends MongoDateTimeFormats

@@ -45,7 +45,7 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
             new HttpHeader(CONTENT_LENGTH, "1887445")
           )
 
-          stubForPost(url = url, requestBody = Json.stringify(json), returnStatus = OK, responseHeaders = headers)
+          stubForPost(url = url, requestBody = Json.stringify(json), responseStatus = OK, responseHeaders = headers)
 
           whenReady(connector.getPdf(json)) {
             response =>
@@ -57,7 +57,7 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
       "return BadRequestResponse" when {
         "400 (BAD_REQUEST) response received" in {
 
-          stubForPost(url = url, requestBody = Json.stringify(json), returnStatus = BAD_REQUEST)
+          stubForPost(url = url, requestBody = Json.stringify(json), responseStatus = BAD_REQUEST)
 
           whenReady(connector.getPdf(json)) {
             response =>
@@ -69,7 +69,7 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
       "return UnauthorisedResponse" when {
         "401 (UNAUTHORISED) response received" in {
 
-          stubForPost(url = url, requestBody = Json.stringify(json), returnStatus = UNAUTHORIZED)
+          stubForPost(url = url, requestBody = Json.stringify(json), responseStatus = UNAUTHORIZED)
 
           whenReady(connector.getPdf(json)) {
             response =>
@@ -81,7 +81,7 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
       "return NotFoundResponse" when {
         "404 (NOT_FOUND) response received" in {
 
-          stubForPost(url = url, requestBody = Json.stringify(json), returnStatus = NOT_FOUND)
+          stubForPost(url = url, requestBody = Json.stringify(json), responseStatus = NOT_FOUND)
 
           whenReady(connector.getPdf(json)) {
             response =>
@@ -94,7 +94,7 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
 
         "5xx response received" in {
 
-          stubForPost(url = url, requestBody = Json.stringify(json), returnStatus = INTERNAL_SERVER_ERROR)
+          stubForPost(url = url, requestBody = Json.stringify(json), responseStatus = INTERNAL_SERVER_ERROR)
 
           whenReady(connector.getPdf(json)) {
             response =>
@@ -104,7 +104,7 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
 
         "200 (OK) response received without a Content-Length header" in {
 
-          stubForPost(url = url, requestBody = Json.stringify(json), returnStatus = OK)
+          stubForPost(url = url, requestBody = Json.stringify(json), responseStatus = OK)
 
           whenReady(connector.getPdf(json)) {
             response =>

@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-package config
+package models.requests
 
-object Constants {
+import models.Identifier
+import play.api.mvc.{Request, WrappedRequest}
+import uk.gov.hmrc.auth.core.AffinityGroup
 
-  val X_API_KEY = "X-API-Key"
-
-  val PDF = "application/pdf"
-
-  val ENVIRONMENT = "Environment"
-
-  val CORRELATION_ID = "CorrelationId"
-
-}
+case class IdentifierRequest[A](request: Request[A],
+                                internalId: String,
+                                identifier: Identifier,
+                                sessionId: String,
+                                affinityGroup: AffinityGroup) extends WrappedRequest[A](request)

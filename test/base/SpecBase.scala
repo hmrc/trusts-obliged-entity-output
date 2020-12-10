@@ -17,13 +17,16 @@
 package base
 
 import config.AppConfig
+import controllers.actions.{FakeIdentifierActionProvider, IdentifierActionProvider}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfter, Inside, MustMatchers, WordSpec}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Application
-import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.inject.{Injector, bind}
+import play.api.test.Helpers
+import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
 import uk.gov.hmrc.http.HeaderCarrier
 
 class SpecBase extends WordSpec
@@ -49,7 +52,8 @@ class SpecBase extends WordSpec
           "metrics.enabled" -> false,
           "auditing.enabled" -> false
         ): _*
-      )
+      ).overrides(
+      bind[IdentifierActionProvider].toInstance(new FakeIdentifierActionProvider(Helpers.stubControllerComponents().parsers.default, Organisation))
+    )
   }
-
 }

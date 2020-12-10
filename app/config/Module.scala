@@ -16,14 +16,13 @@
 
 package config
 
-object Constants {
+import com.google.inject.AbstractModule
+import controllers.actions.{AuthenticatedIdentifierAction, AuthenticatedIdentifierActionProvider, IdentifierAction, IdentifierActionProvider}
 
-  val X_API_KEY = "X-API-Key"
+class Module extends AbstractModule {
 
-  val PDF = "application/pdf"
-
-  val ENVIRONMENT = "Environment"
-
-  val CORRELATION_ID = "CorrelationId"
-
+  override def configure(): Unit = {
+    bind(classOf[IdentifierAction]).to(classOf[AuthenticatedIdentifierAction]).asEagerSingleton()
+    bind(classOf[IdentifierActionProvider]).to(classOf[AuthenticatedIdentifierActionProvider]).asEagerSingleton()
+  }
 }

@@ -14,16 +14,10 @@
  * limitations under the License.
  */
 
-package config
+package utils
 
-object Constants {
+import uk.gov.hmrc.http.HeaderCarrier
 
-  val X_API_KEY = "X-API-Key"
-
-  val PDF = "application/pdf"
-
-  val ENVIRONMENT = "Environment"
-
-  val CORRELATION_ID = "CorrelationId"
-
+object Session {
+  def id(hc: HeaderCarrier): String = hc.sessionId.map(_.value).getOrElse("No Session ID available")
 }

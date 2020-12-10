@@ -19,61 +19,108 @@ package controllers
 import com.google.inject.Inject
 import config.AppConfig
 import config.Constants._
-import connectors.NrsConnector
-import controllers.Assets._
-import models.SuccessfulResponse
+import connectors.{NrsConnector, TrustDataConnector}
+import controllers.actions.IdentifierActionProvider
+import models.requests.IdentifierRequest
+import models._
 import play.api.Logging
 import play.api.http.HttpEntity
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.JsValue
 import play.api.mvc._
+import repositories.NrsLockRepository
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.PdfFileNameGenerator
 
+import java.time.LocalDateTime
 import scala.concurrent.{ExecutionContext, Future}
 
-class PdfController @Inject()(action: DefaultActionBuilder,
+class PdfController @Inject()(identifierAction: IdentifierActionProvider,
                               nrsConnector: NrsConnector,
+                              trustDataConnector: TrustDataConnector,
+                              nrsLockRepository: NrsLockRepository,
                               config: AppConfig,
-                              pdfFileNameGenerator: PdfFileNameGenerator) extends Logging {
+                              cc: ControllerComponents,
+                              pdfFileNameGenerator: PdfFileNameGenerator) extends BackendController(cc) with Logging {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
-  def getPdf: Action[AnyContent] = action.async {
+  def getPdf(identifier: String): Action[AnyContent] = identifierAction(identifier).async {
     implicit request =>
 
-      val payload: JsValue = Json.parse(
-        """
-          |{
-          | "trustName": "TRUST NAME"
-          |}
-          |""".stripMargin) // TODO - get payload from request.body
-
-      pdfFileNameGenerator.generate(payload) match {
-        case Some(fileName) =>
-          nrsConnector.getPdf(payload).map {
-            case response@(_: SuccessfulResponse) =>
-
-              Result(
-                header = ResponseHeader(
-                  status = OK,
-                  headers = Map(
-                    CONTENT_DISPOSITION -> s"${config.inlineOrAttachment}; filename=$fileName",
-                    CONTENT_TYPE -> PDF,
-                    CONTENT_LENGTH -> response.length.toString
-                  )
-                ),
-                body = HttpEntity.Streamed(
-                  data = response.body,
-                  contentLength = Some(response.length),
-                  contentType = Some(PDF)
-                )
-              )
-            case e =>
-              logger.error(s"Error retrieving PDF from NRS: $e")
-              InternalServerError
-          }
+      nrsLockRepository.getLock(identifier).flatMap {
+        case Some(NrsLock(true, _)) =>
+          Future.successful(TooManyRequests)
         case _ =>
-          logger.error(s"Trust name not found in payload")
-          Future.successful(BadRequest)
+          setLock(identifier, lock = true).flatMap { _ =>
+            getTrustJson(identifier)
+          }
       }
+  }
+
+  private def logInfo(implicit request: IdentifierRequest[AnyContent]): String = {
+    s"[SessionId: ${request.sessionId}][${request.identifier}: ${request.identifier.value}]"
+  }
+
+  private def setLock(identifier: String, lock: Boolean): Future[Boolean] = {
+    nrsLockRepository.setLock(identifier, NrsLock(lock, LocalDateTime.now()))
+  }
+
+  private def getTrustJson(identifier: String)
+                          (implicit request: IdentifierRequest[AnyContent]): Future[Result] = {
+    trustDataConnector.getTrustJson(request.identifier) flatMap {
+      case SuccessfulTrustDataResponse(payload) =>
+        generateFileName(identifier, payload)
+      case ServiceUnavailableTrustDataResponse =>
+        logger.error(s"$logInfo Service Unavailable returned from IF.")
+        Future.successful(ServiceUnavailable)
+      case e =>
+        logger.error(s"$logInfo Error retrieving trust data from IF: $e.")
+        Future.successful(InternalServerError)
+    }
+  }
+
+  private def generateFileName(identifier: String, payload: JsValue)
+                              (implicit request: IdentifierRequest[AnyContent]): Future[Result] = {
+    pdfFileNameGenerator.generate(payload) match {
+      case Some(fileName) =>
+        getPdf(identifier, payload, fileName)
+      case _ =>
+        logger.error(s"$logInfo Trust name not found in payload.")
+        Future.successful(BadRequest)
+    }
+  }
+
+  private def getPdf(identifier: String, payload: JsValue, fileName: String)
+                    (implicit request: IdentifierRequest[AnyContent]): Future[Result] = {
+    nrsConnector.getPdf(payload).flatMap {
+      case response: SuccessfulResponse =>
+        setLock(identifier, lock = false).map { _ =>
+          pdf(fileName, response)
+        }
+      case ServiceUnavailableResponse =>
+        logger.error(s"$logInfo Service Unavailable returned from NRS.")
+        Future.successful(ServiceUnavailable)
+      case e =>
+        logger.error(s"$logInfo Error retrieving PDF from NRS: $e.")
+        Future.successful(InternalServerError)
+    }
+  }
+
+  private def pdf(fileName: String, response: SuccessfulResponse): Result = {
+    Result(
+      header = ResponseHeader(
+        status = OK,
+        headers = Map(
+          CONTENT_DISPOSITION -> s"${config.inlineOrAttachment}; filename=$fileName",
+          CONTENT_TYPE -> PDF,
+          CONTENT_LENGTH -> response.length.toString
+        )
+      ),
+      body = HttpEntity.Streamed(
+        data = response.body,
+        contentLength = Some(response.length),
+        contentType = Some(PDF)
+      )
+    )
   }
 }
