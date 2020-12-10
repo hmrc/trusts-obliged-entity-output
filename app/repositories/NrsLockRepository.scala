@@ -35,7 +35,7 @@ class NrsLockRepository @Inject()(mongo: MongoDriver,
 
   private val collectionName: String = "nrs-lock"
 
-  private val cacheTtl: Int = config.lockTtlInSeconds
+  private val lockTtl: Int = config.lockTtlInSeconds
 
   private def collection: Future[JSONCollection] =
     for {
@@ -45,16 +45,16 @@ class NrsLockRepository @Inject()(mongo: MongoDriver,
 
   private val createdAtIndex: Index = Index(
     key = Seq("createdAt" -> IndexType.Ascending),
-    name = Some("ui-state-created-at-index"),
-    options = BSONDocument("expireAfterSeconds" -> cacheTtl)
+    name = Some("created-at-index"),
+    options = BSONDocument("expireAfterSeconds" -> lockTtl)
   )
 
   private lazy val ensureIndexes: Future[Boolean] = {
     logger.info("Ensuring collection indexes")
     for {
       collection <- mongo.api.database.map(_.collection[JSONCollection](collectionName))
-      createdCreatedIndex <- collection.indexesManager.ensure(createdAtIndex)
-    } yield createdCreatedIndex
+      createdIndex <- collection.indexesManager.ensure(createdAtIndex)
+    } yield createdIndex
   }
 
   def setLock(identifier: String, lock: NrsLock): Future[Boolean] = {
