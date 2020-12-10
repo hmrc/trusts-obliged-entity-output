@@ -29,6 +29,7 @@ case class SuccessfulResponse(body: Source[ByteString, _], length: Long) extends
 case object BadRequestResponse extends NrsResponse
 case object UnauthorisedResponse extends NrsResponse
 case object NotFoundResponse extends NrsResponse
+case object ServiceUnavailableResponse extends NrsResponse
 case object InternalServerErrorResponse extends NrsResponse
 
 object NrsResponse extends Logging {
@@ -53,6 +54,9 @@ object NrsResponse extends Logging {
       case NOT_FOUND =>
         logger.error("Requested PDF template does not exist.")
         NotFoundResponse
+      case SERVICE_UNAVAILABLE =>
+        logger.error(s"Service Unavailable - ${response.body}.")
+        ServiceUnavailableResponse
       case _ =>
         logger.error("Service unavailable response from NRS.")
         InternalServerErrorResponse

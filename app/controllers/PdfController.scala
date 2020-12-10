@@ -16,15 +16,13 @@
 
 package controllers
 
-import java.time.LocalDateTime
-
 import com.google.inject.Inject
 import config.AppConfig
 import config.Constants._
 import connectors.{NrsConnector, TrustDataConnector}
 import controllers.actions.IdentifierActionProvider
 import models.requests.IdentifierRequest
-import models.{NrsLock, SuccessfulResponse, SuccessfulTrustDataResponse}
+import models._
 import play.api.Logging
 import play.api.http.HttpEntity
 import play.api.libs.json.JsValue
@@ -33,6 +31,7 @@ import repositories.NrsLockRepository
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.PdfFileNameGenerator
 
+import java.time.LocalDateTime
 import scala.concurrent.{ExecutionContext, Future}
 
 class PdfController @Inject()(identifierAction: IdentifierActionProvider,
@@ -71,6 +70,9 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
     trustDataConnector.getTrustJson(request.identifier) flatMap {
       case SuccessfulTrustDataResponse(payload) =>
         generateFileName(identifier, payload)
+      case ServiceUnavailableTrustDataResponse =>
+        logger.error(s"$logInfo Service Unavailable returned from IF.")
+        Future.successful(ServiceUnavailable)
       case e =>
         logger.error(s"$logInfo Error retrieving trust data from IF: $e.")
         Future.successful(InternalServerError)
@@ -95,6 +97,9 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
         setLock(identifier, lock = false).map { _ =>
           pdf(fileName, response)
         }
+      case ServiceUnavailableResponse =>
+        logger.error(s"$logInfo Service Unavailable returned from NRS.")
+        Future.successful(ServiceUnavailable)
       case e =>
         logger.error(s"$logInfo Error retrieving PDF from NRS: $e.")
         Future.successful(InternalServerError)

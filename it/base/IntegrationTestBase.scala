@@ -53,7 +53,7 @@ trait IntegrationTestBase extends ScalaFutures {
 
     try {
       val f: Future[Assertion] = dropTheDatabase(application).map(_ => block(application))
-      
+
       // We need to force the assertion to resolve here.
       // Otherwise, the test block may never be run at all.
       val assertion = Await.result(f, Duration.Inf)

@@ -17,7 +17,6 @@
 package controllers
 
 import java.time.LocalDateTime
-
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.ByteString
 import base.SpecBase
@@ -28,6 +27,7 @@ import models._
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import play.api.Play.materializer
+import play.api.http.Status.SERVICE_UNAVAILABLE
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.JsValue
@@ -106,6 +106,38 @@ class PdfControllerSpec extends SpecBase {
               )
 
               getSourceString(result) mustEqual responseBody
+            }
+          }
+        }
+
+        "return an ServiceUnavailable error" when {
+
+          "IF is unavailable" in {
+
+            when(nrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
+
+            when(mockTrustDataConnector.getTrustJson(any())(any(), any()))
+              .thenReturn(Future.successful(ServiceUnavailableTrustDataResponse))
+
+            whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
+              result.header.status mustBe SERVICE_UNAVAILABLE
+            }
+          }
+
+          "NRS is unavailable" in {
+
+            when(nrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
+
+            when(mockTrustDataConnector.getTrustJson(any())(any(), any()))
+              .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
+
+            when(mockPdfFileNameGenerator.generate(any())).thenReturn(Some(fileName))
+
+            when(mockNrsConnector.getPdf(any())(any()))
+              .thenReturn(Future.successful(ServiceUnavailableResponse))
+
+            whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
+              result.header.status mustBe SERVICE_UNAVAILABLE
             }
           }
         }

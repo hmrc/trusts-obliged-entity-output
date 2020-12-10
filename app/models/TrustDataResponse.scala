@@ -58,7 +58,7 @@ object TrustDataResponse extends Logging {
         logger.error("Resource does not exist for the identifier provided.")
         NotFoundTrustDataResponse
       case _ =>
-        logger.error("Service unavailable response from IF.")
+        logger.error("Internal Server Error response from IF.")
         InternalServerErrorTrustDataResponse
     }
   }
