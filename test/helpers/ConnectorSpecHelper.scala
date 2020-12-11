@@ -44,7 +44,7 @@ class ConnectorSpecHelper extends SpecBase with WireMockHelper with IntegrationP
   def stubForGet(url: String,
                  requestHeaders: Seq[(String, String)] = Seq(),
                  responseStatus: Int,
-                 responseBody: String,
+                 responseBody: String = "",
                  delayResponse: Int = 0): StubMapping = {
 
     server.stubFor(

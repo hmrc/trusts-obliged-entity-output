@@ -46,32 +46,46 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
 
   def getPdf(identifier: String): Action[AnyContent] = identifierAction(identifier).async {
     implicit request =>
-
-      nrsLockRepository.getLock(identifier).flatMap {
-        case Some(NrsLock(true, _)) =>
-          Future.successful(TooManyRequests)
-        case _ =>
-          setLock(identifier, lock = true).flatMap { _ =>
-            getTrustJson(identifier)
-          }
-      }
+      pingNrs(identifier)
   }
 
   private def logInfo(implicit request: IdentifierRequest[AnyContent]): String = {
     s"[SessionId: ${request.sessionId}][${request.identifier}: ${request.identifier.value}]"
   }
 
-  private def setLock(identifier: String, lock: Boolean): Future[Boolean] = {
+  private def pingNrs(identifier: String)(implicit request: IdentifierRequest[AnyContent]): Future[Result] = {
+    nrsConnector.ping().flatMap {
+      case true =>
+        logger.info(s"$logInfo Successfully pinged NRS.")
+        getLockStatus(identifier)
+      case _ =>
+        logger.error(s"$logInfo Failed to ping NRS. Aborted PDF request.")
+        Future.successful(ServiceUnavailable)
+    }
+  }
+
+  private def getLockStatus(identifier: String)(implicit request: IdentifierRequest[AnyContent]): Future[Result] = {
+    nrsLockRepository.getLock(identifier).flatMap {
+      case Some(NrsLock(true, _)) =>
+        Future.successful(TooManyRequests)
+      case _ =>
+        setLockStatus(identifier, lock = true).flatMap { _ =>
+          getTrustJson(identifier)
+        }
+    }
+  }
+
+  private def setLockStatus(identifier: String, lock: Boolean): Future[Boolean] = {
     nrsLockRepository.setLock(identifier, NrsLock(lock, LocalDateTime.now()))
   }
 
   private def getTrustJson(identifier: String)
                           (implicit request: IdentifierRequest[AnyContent]): Future[Result] = {
-    trustDataConnector.getTrustJson(request.identifier) flatMap {
+    trustDataConnector.getTrustJson(request.identifier).flatMap {
       case SuccessfulTrustDataResponse(payload) =>
         generateFileName(identifier, payload)
       case ServiceUnavailableTrustDataResponse =>
-        logger.error(s"$logInfo Service Unavailable returned from IF.")
+        logger.error(s"$logInfo ServiceUnavailable returned from IF.")
         Future.successful(ServiceUnavailable)
       case e =>
         logger.error(s"$logInfo Error retrieving trust data from IF: $e.")
@@ -85,7 +99,7 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
       case Some(fileName) =>
         getPdf(identifier, payload, fileName)
       case _ =>
-        logger.error(s"$logInfo Trust name not found in payload.")
+        logger.error(s"$logInfo Trust name not found in trust data.")
         Future.successful(BadRequest)
     }
   }
@@ -94,11 +108,11 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
                     (implicit request: IdentifierRequest[AnyContent]): Future[Result] = {
     nrsConnector.getPdf(payload).flatMap {
       case response: SuccessfulResponse =>
-        setLock(identifier, lock = false).map { _ =>
+        setLockStatus(identifier, lock = false).map { _ =>
           pdf(fileName, response)
         }
       case ServiceUnavailableResponse =>
-        logger.error(s"$logInfo Service Unavailable returned from NRS.")
+        logger.error(s"$logInfo ServiceUnavailable returned from NRS.")
         Future.successful(ServiceUnavailable)
       case e =>
         logger.error(s"$logInfo Error retrieving PDF from NRS: $e.")

@@ -86,6 +86,8 @@ class PdfControllerSpec extends SpecBase {
             val responseBody: String = "abcdef"
             val contentLength: Long = 12345L
 
+            when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
+
             when(nrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
 
             when(mockTrustDataConnector.getTrustJson(any())(any(), any()))
@@ -114,6 +116,8 @@ class PdfControllerSpec extends SpecBase {
 
           "IF is unavailable" in {
 
+            when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
+
             when(nrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
 
             when(mockTrustDataConnector.getTrustJson(any())(any(), any()))
@@ -124,7 +128,9 @@ class PdfControllerSpec extends SpecBase {
             }
           }
 
-          "NRS is unavailable" in {
+          "NRS pings successfully but is unavailable when the getPdf call is made" in {
+
+            when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
 
             when(nrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
 
@@ -140,11 +146,22 @@ class PdfControllerSpec extends SpecBase {
               result.header.status mustBe SERVICE_UNAVAILABLE
             }
           }
+
+          "NRS ping fails" in {
+
+            when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(false))
+
+            whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
+              result.header.status mustBe SERVICE_UNAVAILABLE
+            }
+          }
         }
 
         "return an InternalServerError" when {
 
           "error retrieving trust data from IF" in {
+
+            when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
 
             when(nrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
 
@@ -157,6 +174,8 @@ class PdfControllerSpec extends SpecBase {
           }
 
           "error retrieving PDF from NRS" in {
+
+            when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
 
             when(nrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
 
@@ -178,6 +197,8 @@ class PdfControllerSpec extends SpecBase {
 
           "trust name not found in payload" in {
 
+            when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
+
             when(nrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
 
             when(mockTrustDataConnector.getTrustJson(any())(any(), any()))
@@ -194,6 +215,8 @@ class PdfControllerSpec extends SpecBase {
 
       "there is a lock in mongo" must {
         "return a 429 (TOO_MANY_REQUESTS) response" in {
+          when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
+
           when(nrsLockRepository.getLock(any()))
             .thenReturn(Future.successful(Some(NrsLock(locked = true, createdAt = testDateTime))))
 

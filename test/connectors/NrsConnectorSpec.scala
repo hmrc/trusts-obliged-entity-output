@@ -21,6 +21,8 @@ import controllers.Assets.CONTENT_LENGTH
 import helpers.ConnectorSpecHelper
 import helpers.JsonHelper._
 import models._
+import org.scalacheck.Gen
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks.forAll
 import play.api.http.Status._
 import play.api.libs.json.{JsValue, Json}
 
@@ -30,13 +32,13 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
 
   private lazy val connector: NrsConnector = injector.instanceOf[NrsConnector]
 
-  private val url: String = "/generate-pdf/template/trusts-5mld-1-0-0/signed-pdf"
-
-  private val json: JsValue = getJsonValueFromFile("nrs-request-body.json")
-
   "NrsConnector" when {
 
     ".getPdf" must {
+
+      val url: String = "/generate-pdf/template/trusts-5mld-1-0-0/signed-pdf"
+
+      val json: JsValue = getJsonValueFromFile("nrs-request-body.json")
 
       "return SuccessfulResponse" when {
         "200 (OK) response received with a Content-Length header" in {
@@ -109,6 +111,41 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
           whenReady(connector.getPdf(json)) {
             response =>
               response mustBe InternalServerErrorResponse
+          }
+        }
+      }
+    }
+
+    ".ping" must {
+
+      val url: String = "/generate-pdf/ping"
+
+      "return true" when {
+        "200 (OK) response received" in {
+
+          stubForGet(url = url, responseStatus = OK)
+
+          whenReady(connector.ping()) {
+            response =>
+              response mustBe true
+          }
+        }
+      }
+
+      "return false" when {
+        "non-200 response received" in {
+
+          val statuses = Gen.choose(OK, NETWORK_AUTHENTICATION_REQUIRED)
+
+          forAll(statuses.suchThat(_ != OK)) {
+            status =>
+
+              stubForGet(url = url, responseStatus = status)
+
+              whenReady(connector.ping()) {
+                response =>
+                  response mustBe false
+              }
           }
         }
       }
