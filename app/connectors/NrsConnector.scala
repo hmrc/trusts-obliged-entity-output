@@ -48,14 +48,8 @@ class NrsConnector @Inject()(ws: WSClient, config: AppConfig) {
   def ping()(implicit ec: ExecutionContext): Future[Boolean] = {
     lazy val url: String = s"${config.nrsUrl}/generate-pdf/ping"
 
-    lazy val nrsHeaders: Seq[(String, String)] = {
-      Seq(
-        CONTENT_TYPE -> JSON
-      )
-    }
-
-    ws.url(url).withMethod(GET).withHttpHeaders(nrsHeaders: _*).stream().map { response =>
-      response.status.equals(OK)
+    ws.url(url).withMethod(GET).stream().map { response =>
+      response.status == OK
     }
   }
 
