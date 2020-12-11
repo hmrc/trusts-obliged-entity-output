@@ -46,14 +46,20 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
 
   def getPdf(identifier: String): Action[AnyContent] = identifierAction(identifier).async {
     implicit request =>
-
-      nrsLockRepository.getLock(identifier).flatMap {
-        case Some(NrsLock(true, _)) =>
-          Future.successful(TooManyRequests)
-        case _ =>
-          setLock(identifier, lock = true).flatMap { _ =>
-            getTrustJson(identifier)
+      nrsConnector.ping().flatMap {
+        case true =>
+          logger.info(s"$logInfo Successfully pinged NRS.")
+          nrsLockRepository.getLock(identifier).flatMap {
+            case Some(NrsLock(true, _)) =>
+              Future.successful(TooManyRequests)
+            case _ =>
+              setLock(identifier, lock = true).flatMap { _ =>
+                getTrustJson(identifier)
+              }
           }
+        case _ =>
+          logger.error(s"$logInfo Failed to ping NRS. Aborted call to IF for trust data")
+          Future.successful(ServiceUnavailable)
       }
   }
 
@@ -64,6 +70,7 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
   private def setLock(identifier: String, lock: Boolean): Future[Boolean] = {
     nrsLockRepository.setLock(identifier, NrsLock(lock, LocalDateTime.now()))
   }
+
 
   private def getTrustJson(identifier: String)
                           (implicit request: IdentifierRequest[AnyContent]): Future[Result] = {

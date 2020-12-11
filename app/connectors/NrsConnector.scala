@@ -19,11 +19,12 @@ package connectors
 import config.AppConfig
 import config.Constants._
 import controllers.Assets._
+
 import javax.inject.Inject
 import models.NrsResponse
 import play.api.libs.json.JsValue
 import play.api.libs.ws.WSClient
-import uk.gov.hmrc.http.HttpVerbs.POST
+import uk.gov.hmrc.http.HttpVerbs.{GET, POST}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -41,6 +42,20 @@ class NrsConnector @Inject()(ws: WSClient, config: AppConfig) {
 
     ws.url(url).withMethod(POST).withHttpHeaders(nrsHeaders: _*).withBody(payload).stream().map { response =>
       response.body[NrsResponse]
+    }
+  }
+
+  def ping()(implicit ec: ExecutionContext): Future[Boolean] = {
+    lazy val url: String = s"${config.nrsUrl}/generate-pdf/ping"
+
+    lazy val nrsHeaders: Seq[(String, String)] = {
+      Seq(
+        CONTENT_TYPE -> JSON
+      )
+    }
+
+    ws.url(url).withMethod(GET).withHttpHeaders(nrsHeaders: _*).stream().map { response =>
+      response.status.equals(OK)
     }
   }
 
