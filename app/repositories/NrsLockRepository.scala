@@ -21,11 +21,7 @@ import models.NrsLock
 import play.api.Logging
 import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoApi
-import reactivemongo.api.indexes.{Index, IndexType}
-import reactivemongo.bson.BSONDocument
-import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
 import reactivemongo.play.json.collection.JSONCollection
-
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -33,6 +29,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class NrsLockRepository @Inject()(mongo: ReactiveMongoApi,
                                   config: AppConfig)
                                  (implicit ec: ExecutionContext) extends Logging {
+
+  implicit final val jsObjectWrites: OWrites[JsObject] = OWrites[JsObject](identity)
 
   private val collectionName: String = "nrs-lock"
 
@@ -44,10 +42,10 @@ class NrsLockRepository @Inject()(mongo: ReactiveMongoApi,
       res <- mongo.database.map(_.collection[JSONCollection](collectionName))
     } yield res
 
-  private val createdAtIndex: Index = Index(
-    key = Seq("createdAt" -> IndexType.Ascending),
-    name = Some("created-at-index"),
-    options = BSONDocument("expireAfterSeconds" -> lockTtl)
+  private lazy val createdAtIndex = MongoIndex(
+    key = "createdAt",
+    name = "created-at-index",
+    expireAfterSeconds = Some(lockTtl)
   )
 
   private lazy val ensureIndexes: Future[Boolean] = {
