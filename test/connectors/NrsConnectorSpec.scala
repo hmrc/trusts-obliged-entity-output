@@ -36,7 +36,7 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
 
     ".getPdf" must {
 
-      val url: String = "/generate-pdf/template/trusts-5mld-1-0-0/signed-pdf"
+      val url: String = "/generate-pdf/template/trusts-5mld-1-1-0/signed-pdf"
 
       val json: JsValue = getJsonValueFromFile("nrs-request-body.json")
 
