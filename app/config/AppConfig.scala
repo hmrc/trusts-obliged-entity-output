@@ -35,7 +35,7 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
   val nrsToken: String = config.get[String]("microservice.services.nrs-trusts.token")
 
   val trustDataEnvironment: String = config.get[String]("microservice.services.trust-data.environment")
-
+  val trustDataToken: String = config.get[String]("microservice.services.trust-data.token")
   /**
    * Content-Disposition is 'inline' by default. Change to 'attachment' to download the file with no preview
    */

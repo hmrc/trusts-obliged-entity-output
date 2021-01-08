@@ -22,6 +22,7 @@ import config.AppConfig
 import config.Constants._
 import javax.inject.Inject
 import models.{Identifier, TrustDataResponse}
+import play.api.http.HeaderNames
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -33,6 +34,8 @@ class TrustDataConnector @Inject()(http: HttpClient, config: AppConfig) {
 
     lazy val headers: Seq[(String, String)] = {
       Seq(
+        HeaderNames.AUTHORIZATION -> s"Bearer ${config.trustDataToken}",
+        CONTENT_TYPE -> CONTENT_TYPE_JSON,
         ENVIRONMENT -> config.trustDataEnvironment,
         CORRELATION_ID -> UUID.randomUUID().toString
       )
