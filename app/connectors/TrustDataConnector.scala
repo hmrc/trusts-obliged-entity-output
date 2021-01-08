@@ -20,6 +20,7 @@ import java.util.UUID
 
 import config.AppConfig
 import config.Constants._
+import controllers.Assets.CONTENT_TYPE
 import javax.inject.Inject
 import models.{Identifier, TrustDataResponse}
 import play.api.http.HeaderNames
