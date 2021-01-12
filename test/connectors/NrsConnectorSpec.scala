@@ -42,7 +42,6 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
 
       "return SuccessfulResponse" when {
         "200 (OK) response received with a Content-Length header" in {
-
           val headers: HttpHeaders = new HttpHeaders(
             new HttpHeader(CONTENT_LENGTH, "1887445")
           )
@@ -58,7 +57,6 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
 
       "return BadRequestResponse" when {
         "400 (BAD_REQUEST) response received" in {
-
           stubForPost(url = url, requestBody = Json.stringify(json), responseStatus = BAD_REQUEST)
 
           whenReady(connector.getPdf(json)) {
@@ -70,7 +68,6 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
 
       "return UnauthorisedResponse" when {
         "401 (UNAUTHORISED) response received" in {
-
           stubForPost(url = url, requestBody = Json.stringify(json), responseStatus = UNAUTHORIZED)
 
           whenReady(connector.getPdf(json)) {
@@ -82,7 +79,6 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
 
       "return NotFoundResponse" when {
         "404 (NOT_FOUND) response received" in {
-
           stubForPost(url = url, requestBody = Json.stringify(json), responseStatus = NOT_FOUND)
 
           whenReady(connector.getPdf(json)) {
@@ -95,7 +91,6 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
       "return InternalServerErrorResponse" when {
 
         "5xx response received" in {
-
           stubForPost(url = url, requestBody = Json.stringify(json), responseStatus = INTERNAL_SERVER_ERROR)
 
           whenReady(connector.getPdf(json)) {
@@ -105,7 +100,6 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
         }
 
         "200 (OK) response received without a Content-Length header" in {
-
           stubForPost(url = url, requestBody = Json.stringify(json), responseStatus = OK)
 
           whenReady(connector.getPdf(json)) {
@@ -121,8 +115,8 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
       val url: String = "/generate-pdf/ping"
 
       "return true" when {
-        "200 (OK) response received" in {
 
+        "200 (OK) response received" in {
           stubForGet(url = url, responseStatus = OK)
 
           whenReady(connector.ping()) {
