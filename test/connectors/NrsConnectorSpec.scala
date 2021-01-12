@@ -128,7 +128,7 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
 
       "return false" when {
         "non-200 response received" in {
-          
+
           val statuses = Gen.choose(OK, NETWORK_AUTHENTICATION_REQUIRED)
 
           forAll(statuses.suchThat(_ != OK)) {
