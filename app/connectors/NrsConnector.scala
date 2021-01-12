@@ -18,7 +18,7 @@ package connectors
 
 import config.AppConfig
 import config.Constants._
-import controllers.Assets._
+import controllers.Assets.{OK, JSON}
 
 import javax.inject.Inject
 import models.NrsResponse

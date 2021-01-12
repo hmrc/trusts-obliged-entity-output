@@ -26,6 +26,8 @@ object Constants {
 
   val CORRELATION_ID = "CorrelationId"
 
+  val CONTENT_TYPE   = "Content-Type"
+
   val CONTENT_TYPE_JSON = "application/json; charset=utf-8"
 
 }

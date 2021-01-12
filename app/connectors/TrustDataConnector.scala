@@ -19,7 +19,7 @@ package connectors
 import java.util.UUID
 
 import config.AppConfig
-import config.Constants._
+import config.Constants.{CONTENT_TYPE_JSON, ENVIRONMENT, CORRELATION_ID}
 import controllers.Assets.CONTENT_TYPE
 import javax.inject.Inject
 import models.{Identifier, TrustDataResponse}
