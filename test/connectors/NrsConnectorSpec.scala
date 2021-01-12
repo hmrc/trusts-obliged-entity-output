@@ -115,6 +115,7 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
       val url: String = "/generate-pdf/ping"
 
       "return true" when {
+
         "200 (OK) response received" in {
           stubForGet(url = url, responseStatus = OK)
 
@@ -127,6 +128,7 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
 
       "return false" when {
         "non-200 response received" in {
+          
           val statuses = Gen.choose(OK, NETWORK_AUTHENTICATION_REQUIRED)
 
           forAll(statuses.suchThat(_ != OK)) {
