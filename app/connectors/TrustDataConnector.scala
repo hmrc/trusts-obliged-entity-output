@@ -28,7 +28,8 @@ import play.api.http.HeaderNames
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 import utils.Session
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class TrustDataConnector @Inject()(http: HttpClient, config: AppConfig) extends Logging {
 
@@ -40,15 +41,15 @@ class TrustDataConnector @Inject()(http: HttpClient, config: AppConfig) extends 
       CORRELATION_ID -> correlationId
     )
 
-  def getTrustJson(identifier: Identifier)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[TrustDataResponse] = {
+  def getTrustJson(identifier: Identifier): Future[TrustDataResponse] = {
     lazy val url: String = s"${config.trustDataUrl}/trusts/obliged-entities/$identifier/${identifier.value}"
 
     val correlationId = UUID.randomUUID().toString
 
-    val headersWithoutOldAuth = hc.copy(authorization = None)
-    val hcExtra: HeaderCarrier = headersWithoutOldAuth.withExtraHeaders(trustDataHeaders(correlationId): _*)
+    implicit val hc: HeaderCarrier = HeaderCarrier(authorization = None, extraHeaders = trustDataHeaders(correlationId))
     logger.info(s"[Session ID: ${Session.id(hc)}] getTrustJson correlationId: $correlationId from call to url: $url")
-    http.GET[TrustDataResponse](url)(TrustDataResponse.httpReads(identifier), hcExtra, ec)
+
+    http.GET[TrustDataResponse](url)(TrustDataResponse.httpReads(identifier), implicitly[HeaderCarrier](hc), global)
   }
 
 }
