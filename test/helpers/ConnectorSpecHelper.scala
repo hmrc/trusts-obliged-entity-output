@@ -31,14 +31,6 @@ class ConnectorSpecHelper extends SpecBase with WireMockHelper with IntegrationP
   val fakeCorrelationId: String = "bcda2e24-13c2-4fee-9243-cd9835426559"
   val fakeBearerToken: String = "Bearer 12345"
 
-  val jsonResponse409DuplicateCorrelation: JsValue = Json.parse(
-    s"""
-       |{
-       | "code": "DUPLICATE_SUBMISSION",
-       | "reason": "Duplicate Correlation Id was submitted."
-       |}""".stripMargin)
-
-
   val jsonResponse400CorrelationId: JsValue = Json.parse(
     s"""
        |{
@@ -62,7 +54,6 @@ class ConnectorSpecHelper extends SpecBase with WireMockHelper with IntegrationP
                  delayResponse: Int = 0): StubMapping = {
 
     server.stubFor(get(urlEqualTo(url))
-      .withHeader("content-Type", containing("application/json"))
       .willReturn(
         aResponse()
           .withStatus(responseStatus)
