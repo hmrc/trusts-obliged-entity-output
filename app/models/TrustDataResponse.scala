@@ -34,31 +34,31 @@ case object InternalServerErrorTrustDataResponse extends TrustDataResponse
 
 object TrustDataResponse extends Logging {
 
-  implicit lazy val httpReads: HttpReads[TrustDataResponse] = (_: String, _: String, response: HttpResponse) => {
+  implicit def httpReads(identifier: Identifier): HttpReads[TrustDataResponse] = (_: String, _: String, response: HttpResponse) => {
 
     response.status match {
       case OK =>
         SuccessfulTrustDataResponse(Json.parse(response.body))
       case BAD_REQUEST =>
-        logger.error(s"Invalid identifier - ${response.body}.")
+        logger.error(s"[UTR/URN: ${identifier.value}] Invalid identifier - ${response.body}.")
         BadRequestTrustDataResponse
       case UNPROCESSABLE_ENTITY =>
-        logger.error(s"Could not be processed - ${response.body}.")
+        logger.error(s"[UTR/URN: ${identifier.value}] Could not be processed - ${response.body}.")
         UnprocessableEntityTrustDataResponse
       case SERVICE_UNAVAILABLE =>
-        logger.error(s"IF service unavailable - ${response.body}.")
+        logger.error(s"[UTR/URN: ${identifier.value}] IF service unavailable - ${response.body}.")
         ServiceUnavailableTrustDataResponse
       case UNAUTHORIZED =>
-        logger.error("No Authorization header (bearer token) provided or it is invalid.")
+        logger.error(s"[UTR/URN: ${identifier.value}] No Authorization header (bearer token) provided or it is invalid.")
         UnauthorisedTrustDataResponse
       case FORBIDDEN =>
-        logger.error("No Environment header provided or it is invalid.")
+        logger.error(s"[UTR/URN: ${identifier.value}] No Environment header provided or it is invalid.")
         ForbiddenTrustDataResponse
       case NOT_FOUND =>
-        logger.error("Resource not found for the provided identifier.")
+        logger.error(s"[UTR/URN: ${identifier.value}] Resource not found for the provided identifier.")
         NotFoundTrustDataResponse
       case _ =>
-        logger.error("Internal server error response from IF.")
+        logger.error(s"[UTR/URN: ${identifier.value}] Internal server error response from IF.")
         InternalServerErrorTrustDataResponse
     }
   }

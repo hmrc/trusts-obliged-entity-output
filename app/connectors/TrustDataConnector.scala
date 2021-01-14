@@ -32,23 +32,23 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class TrustDataConnector @Inject()(http: HttpClient, config: AppConfig) extends Logging {
 
+  private def trustDataHeaders(correlationId : String) : Seq[(String, String)] =
+    Seq(
+      HeaderNames.AUTHORIZATION -> s"Bearer ${config.trustDataToken}",
+      CONTENT_TYPE -> CONTENT_TYPE_JSON,
+      ENVIRONMENT -> config.trustDataEnvironment,
+      CORRELATION_ID -> correlationId
+    )
+
   def getTrustJson(identifier: Identifier)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[TrustDataResponse] = {
     lazy val url: String = s"${config.trustDataUrl}/trusts/obliged-entities/$identifier/${identifier.value}"
 
     val correlationId = UUID.randomUUID().toString
 
-    lazy val headers: Seq[(String, String)] = {
-      Seq(
-        HeaderNames.AUTHORIZATION -> s"Bearer ${config.trustDataToken}",
-        CONTENT_TYPE -> CONTENT_TYPE_JSON,
-        ENVIRONMENT -> config.trustDataEnvironment,
-        CORRELATION_ID -> correlationId
-      )
-    }
-
-    val hcExtra: HeaderCarrier = hc.withExtraHeaders(headers: _*)
+    val headersWithoutOldAuth = hc.copy(authorization = None)
+    val hcExtra: HeaderCarrier = headersWithoutOldAuth.withExtraHeaders(trustDataHeaders(correlationId): _*)
     logger.info(s"[Session ID: ${Session.id(hc)}] getTrustJson correlationId: $correlationId from call to url: $url")
-    http.GET[TrustDataResponse](url)(TrustDataResponse.httpReads, hcExtra, ec)
+    http.GET[TrustDataResponse](url)(TrustDataResponse.httpReads(identifier), hcExtra, ec)
   }
 
 }
