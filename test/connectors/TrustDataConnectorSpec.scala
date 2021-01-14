@@ -43,7 +43,7 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
 
         "a valid UTR is sent" in {
 
-          stubForGet(url = url(utrIdentifier), returnStatus = OK, responseBody = Json.stringify(json))
+          stubForGet(url = url(utrIdentifier), responseStatus = OK, responseBody = Json.stringify(json))
 
           whenReady(connector.getTrustJson(utrIdentifier)) {
             response =>
@@ -53,7 +53,7 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
 
         "a valid URN is sent" in {
 
-          stubForGet(url = url(urnIdentifier), returnStatus = OK, responseBody = Json.stringify(json))
+          stubForGet(url = url(urnIdentifier), responseStatus = OK, responseBody = Json.stringify(json))
 
           whenReady(connector.getTrustJson(urnIdentifier)) {
             response =>
@@ -65,7 +65,7 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
       "return BadRequestTrustDataResponse" when {
         "an invalid identifier is sent" in {
 
-          stubForGet(url = url(invalidIdentifier), returnStatus = BAD_REQUEST, responseBody = "")
+          stubForGet(url = url(invalidIdentifier), responseStatus = BAD_REQUEST)
 
           whenReady(connector.getTrustJson(invalidIdentifier)) {
             response =>
@@ -77,7 +77,7 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
       "return UnprocessableEntityTrustDataResponse" when {
         "422 (UNPROCESSABLE_ENTITY) response received" in {
 
-          stubForGet(url = url(utrIdentifier), returnStatus = UNPROCESSABLE_ENTITY, responseBody = "")
+          stubForGet(url = url(utrIdentifier), responseStatus = UNPROCESSABLE_ENTITY)
 
           whenReady(connector.getTrustJson(utrIdentifier)) {
             response =>
@@ -89,7 +89,7 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
       "return ServiceUnavailableTrustDataResponse" when {
         "503 (SERVICE_UNAVAILABLE) response received" in {
 
-          stubForGet(url = url(utrIdentifier), returnStatus = SERVICE_UNAVAILABLE, responseBody = "")
+          stubForGet(url = url(utrIdentifier), responseStatus = SERVICE_UNAVAILABLE)
 
           whenReady(connector.getTrustJson(utrIdentifier)) {
             response =>
@@ -102,7 +102,7 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
         "401 (UNAUTHORISED) response received" when {
           "authorization header missing" in {
 
-            stubForGet(url = url(utrIdentifier), returnStatus = UNAUTHORIZED, responseBody = "")
+            stubForGet(url = url(utrIdentifier), responseStatus = UNAUTHORIZED)
 
             whenReady(connector.getTrustJson(utrIdentifier)) {
               response =>
@@ -116,7 +116,7 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
         "403 (FORBIDDEN) response received" when {
           "environment and authorization headers missing" in {
 
-            stubForGet(url = url(utrIdentifier), returnStatus = FORBIDDEN, responseBody = "")
+            stubForGet(url = url(utrIdentifier), responseStatus = FORBIDDEN)
 
             whenReady(connector.getTrustJson(utrIdentifier)) {
               response =>
@@ -126,7 +126,7 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
 
           "environment header missing" in {
 
-            stubForGet(url = url(utrIdentifier), returnStatus = FORBIDDEN, responseBody = "")
+            stubForGet(url = url(utrIdentifier), responseStatus = FORBIDDEN)
 
             whenReady(connector.getTrustJson(utrIdentifier)) {
               response =>
@@ -136,7 +136,7 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
 
           "correlation ID header missing" in {
 
-            stubForGet(url = url(utrIdentifier), returnStatus = FORBIDDEN,
+            stubForGet(url = url(utrIdentifier), responseStatus = FORBIDDEN,
               responseBody = Json.stringify(jsonResponse400CorrelationId))
 
             whenReady(connector.getTrustJson(utrIdentifier)) {
@@ -150,7 +150,7 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
       "return NotFoundTrustDataResponse" when {
         "404 (NOT_FOUND) response received" in {
 
-          stubForGet(url = url(utrIdentifier), returnStatus = NOT_FOUND, responseBody = "")
+          stubForGet(url = url(utrIdentifier), responseStatus = NOT_FOUND)
 
           whenReady(connector.getTrustJson(utrIdentifier)) {
             response =>
@@ -162,7 +162,7 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
       "return InternalServerErrorTrustDataResponse" when {
         "500 response received" in {
 
-          stubForGet(url = url(utrIdentifier), returnStatus = INTERNAL_SERVER_ERROR, responseBody = "")
+          stubForGet(url = url(utrIdentifier), responseStatus = INTERNAL_SERVER_ERROR)
 
           whenReady(connector.getTrustJson(utrIdentifier)) {
             response =>

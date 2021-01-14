@@ -115,7 +115,7 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
       "return true" when {
 
         "200 (OK) response received" in {
-          stubForGet(url = url, returnStatus = OK)
+          stubForGet(url = url, responseStatus = OK)
 
           whenReady(connector.ping()) {
             response =>
@@ -128,7 +128,7 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
         
         "non-200 response received" in {
 
-          stubForGet(url = url, returnStatus = INTERNAL_SERVER_ERROR)
+          stubForGet(url = url, responseStatus = INTERNAL_SERVER_ERROR)
 
           whenReady(connector.ping()) {
             response =>

@@ -57,15 +57,15 @@ class ConnectorSpecHelper extends SpecBase with WireMockHelper with IntegrationP
       )
   }
 
-  def stubForGet(url: String, returnStatus: Int,
-                responseBody: String = "",
-                delayResponse: Int = 0): StubMapping = {
+  def stubForGet(url: String, responseStatus: Int,
+                 responseBody: String = "",
+                 delayResponse: Int = 0): StubMapping = {
 
     server.stubFor(get(urlEqualTo(url))
       .withHeader("content-Type", containing("application/json"))
       .willReturn(
         aResponse()
-          .withStatus(returnStatus)
+          .withStatus(responseStatus)
           .withBody(responseBody).withFixedDelay(delayResponse)))
   }
 
