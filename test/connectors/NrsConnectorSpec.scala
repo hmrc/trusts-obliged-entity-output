@@ -21,8 +21,6 @@ import controllers.Assets.CONTENT_LENGTH
 import helpers.ConnectorSpecHelper
 import helpers.JsonHelper._
 import models._
-import org.scalacheck.Gen
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks.forAll
 import play.api.http.Status._
 import play.api.libs.json.{JsValue, Json}
 
@@ -127,19 +125,14 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
       }
 
       "return false" when {
+        
         "non-200 response received" in {
 
-          val statuses = Gen.choose(OK, NETWORK_AUTHENTICATION_REQUIRED)
+          stubForGet(url = url, responseStatus = INTERNAL_SERVER_ERROR)
 
-          forAll(statuses.suchThat(_ != OK)) {
-            status =>
-
-              stubForGet(url = url, responseStatus = status)
-
-              whenReady(connector.ping()) {
-                response =>
-                  response mustBe false
-              }
+          whenReady(connector.ping()) {
+            response =>
+              response mustBe false
           }
         }
       }
