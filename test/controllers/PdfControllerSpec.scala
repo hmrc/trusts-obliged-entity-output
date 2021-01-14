@@ -90,7 +90,7 @@ class PdfControllerSpec extends SpecBase {
 
             when(nrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
 
-            when(mockTrustDataConnector.getTrustJson(any())(any(), any()))
+            when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
 
             when(mockPdfFileNameGenerator.generate(any())).thenReturn(Some(fileName))
@@ -120,7 +120,7 @@ class PdfControllerSpec extends SpecBase {
 
             when(nrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
 
-            when(mockTrustDataConnector.getTrustJson(any())(any(), any()))
+            when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(ServiceUnavailableTrustDataResponse))
 
             whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
@@ -134,7 +134,7 @@ class PdfControllerSpec extends SpecBase {
 
             when(nrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
 
-            when(mockTrustDataConnector.getTrustJson(any())(any(), any()))
+            when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
 
             when(mockPdfFileNameGenerator.generate(any())).thenReturn(Some(fileName))
@@ -165,7 +165,7 @@ class PdfControllerSpec extends SpecBase {
 
             when(nrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
 
-            when(mockTrustDataConnector.getTrustJson(any())(any(), any()))
+            when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(InternalServerErrorTrustDataResponse))
 
             whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
@@ -179,7 +179,7 @@ class PdfControllerSpec extends SpecBase {
 
             when(nrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
 
-            when(mockTrustDataConnector.getTrustJson(any())(any(), any()))
+            when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
 
             when(mockPdfFileNameGenerator.generate(any())).thenReturn(Some(fileName))
@@ -201,7 +201,7 @@ class PdfControllerSpec extends SpecBase {
 
             when(nrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
 
-            when(mockTrustDataConnector.getTrustJson(any())(any(), any()))
+            when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
 
             when(mockPdfFileNameGenerator.generate(any())).thenReturn(None)

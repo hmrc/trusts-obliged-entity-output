@@ -17,7 +17,6 @@
 package helpers
 
 import base.SpecBase
-import com.github.tomakehurst.wiremock.client.MappingBuilder
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.http.HttpHeaders
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
@@ -25,11 +24,28 @@ import config.Constants._
 import controllers.Assets.{CONTENT_TYPE, JSON}
 import org.scalatest.concurrent.IntegrationPatience
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.libs.json.{JsValue, Json}
 
 class ConnectorSpecHelper extends SpecBase with WireMockHelper with IntegrationPatience {
 
   val fakeCorrelationId: String = "bcda2e24-13c2-4fee-9243-cd9835426559"
   val fakeBearerToken: String = "Bearer 12345"
+
+  val jsonResponse409DuplicateCorrelation: JsValue = Json.parse(
+    s"""
+       |{
+       | "code": "DUPLICATE_SUBMISSION",
+       | "reason": "Duplicate Correlation Id was submitted."
+       |}""".stripMargin)
+
+
+  val jsonResponse400CorrelationId: JsValue = Json.parse(
+    s"""
+       |{
+       | "code": "INVALID_CORRELATIONID",
+       | "reason": "Submission has not passed validation. Invalid CorrelationId."
+       |}""".stripMargin)
+
 
   override def applicationBuilder(): GuiceApplicationBuilder = {
     super.applicationBuilder()
@@ -41,22 +57,16 @@ class ConnectorSpecHelper extends SpecBase with WireMockHelper with IntegrationP
       )
   }
 
-  def stubForGet(url: String,
-                 requestHeaders: Seq[(String, String)] = Seq(),
-                 responseStatus: Int,
-                 responseBody: String = "",
-                 delayResponse: Int = 0): StubMapping = {
+  def stubForGet(url: String, returnStatus: Int,
+                responseBody: String = "",
+                delayResponse: Int = 0): StubMapping = {
 
-    server.stubFor(
-      requestHeaders.foldLeft[MappingBuilder](get(urlEqualTo(url)))((mappingBuilder, header) => {
-        mappingBuilder.withHeader(header._1, containing(header._2))
-      }).willReturn(
+    server.stubFor(get(urlEqualTo(url))
+      .withHeader("content-Type", containing("application/json"))
+      .willReturn(
         aResponse()
-          .withStatus(responseStatus)
-          .withBody(responseBody)
-          .withFixedDelay(delayResponse)
-      )
-    )
+          .withStatus(returnStatus)
+          .withBody(responseBody).withFixedDelay(delayResponse)))
   }
 
   def stubForPost(url: String,
