@@ -48,7 +48,7 @@ class TrustDataConnector @Inject()(http: HttpClient, config: AppConfig) extends 
     val headersWithoutOldAuth = hc.copy(authorization = None)
     val hcExtra: HeaderCarrier = headersWithoutOldAuth.withExtraHeaders(trustDataHeaders(correlationId): _*)
     logger.info(s"[Session ID: ${Session.id(hc)}] getTrustJson correlationId: $correlationId from call to url: $url")
-    http.GET[TrustDataResponse](url)(TrustDataResponse.httpReads, hcExtra, ec)
+    http.GET[TrustDataResponse](url)(TrustDataResponse.httpReads(identifier), hcExtra, ec)
   }
 
 }
