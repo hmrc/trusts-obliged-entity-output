@@ -19,31 +19,35 @@ package connectors
 import java.util.UUID
 
 import config.AppConfig
-import config.Constants.{CONTENT_TYPE_JSON, ENVIRONMENT, CORRELATION_ID}
+import config.Constants.{CONTENT_TYPE_JSON, CORRELATION_ID, ENVIRONMENT}
 import controllers.Assets.CONTENT_TYPE
 import javax.inject.Inject
 import models.{Identifier, TrustDataResponse}
+import play.api.Logging
 import play.api.http.HeaderNames
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import utils.Session
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class TrustDataConnector @Inject()(http: HttpClient, config: AppConfig) {
+class TrustDataConnector @Inject()(http: HttpClient, config: AppConfig) extends Logging {
 
   def getTrustJson(identifier: Identifier)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[TrustDataResponse] = {
     lazy val url: String = s"${config.trustDataUrl}/trusts/obliged-entities/$identifier/${identifier.value}"
+
+    val correlationId = UUID.randomUUID().toString
 
     lazy val headers: Seq[(String, String)] = {
       Seq(
         HeaderNames.AUTHORIZATION -> s"Bearer ${config.trustDataToken}",
         CONTENT_TYPE -> CONTENT_TYPE_JSON,
         ENVIRONMENT -> config.trustDataEnvironment,
-        CORRELATION_ID -> UUID.randomUUID().toString
+        CORRELATION_ID -> correlationId
       )
     }
 
     val hcExtra: HeaderCarrier = hc.withExtraHeaders(headers: _*)
-
+    logger.info(s"[Session ID: ${Session.id(hc)}] getTrustJson correlationId: $correlationId from call to url: $url")
     http.GET[TrustDataResponse](url)(TrustDataResponse.httpReads, hcExtra, ec)
   }
 
