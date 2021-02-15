@@ -24,11 +24,11 @@ import play.api.mvc.AnyContent
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
-import java.time.LocalDateTime
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext.Implicits._
 
-class AuditService @Inject()(auditConnector: AuditConnector) {
+class AuditService @Inject()(auditConnector: AuditConnector,
+                             localDateTimeService: LocalDateTimeService) {
 
   def audit(event: String, response: Option[JsValue] = None)(implicit request: IdentifierRequest[AnyContent], hc: HeaderCarrier): Unit = {
 
@@ -37,7 +37,7 @@ class AuditService @Inject()(auditConnector: AuditConnector) {
       identifier = request.identifier.value,
       affinity = request.affinityGroup,
       sessionId = request.sessionId,
-      dateTime = request.headers.get(DATE).getOrElse(LocalDateTime.now().toString),
+      dateTime = request.headers.get(DATE).getOrElse(localDateTimeService.now.toString),
       response = response
     )
 

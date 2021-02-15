@@ -24,7 +24,7 @@ case class ObligedEntityAuditEvent(internalAuthId: String,
                                    affinity: AffinityGroup,
                                    sessionId: String,
                                    dateTime: String,
-                                   response: Option[JsValue])
+                                   response: Option[JsValue] = None)
 
 object ObligedEntityAuditEvent {
   implicit val formats: Format[ObligedEntityAuditEvent] = Json.format[ObligedEntityAuditEvent]
