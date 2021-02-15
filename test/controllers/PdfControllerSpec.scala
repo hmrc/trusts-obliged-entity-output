@@ -116,7 +116,7 @@ class PdfControllerSpec extends SpecBase {
               getSourceString(result) mustEqual responseBody
 
               verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(Some(trustJson)))(any(), any())
-              verify(mockAuditService).audit(eqTo(NRS_DATA_RECEIVED), any())(any(), any())
+              verify(mockAuditService).audit(eqTo(NRS_DATA_RECEIVED), eqTo(null))(any(), any())
             }
           }
         }
@@ -174,7 +174,7 @@ class PdfControllerSpec extends SpecBase {
             whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
               result.header.status mustBe SERVICE_UNAVAILABLE
 
-              verify(mockAuditService).audit(eqTo(UNSUCCESSFUL_NRS_PING), any())(any(), any())
+              verify(mockAuditService).audit(eqTo(UNSUCCESSFUL_NRS_PING), eqTo(null))(any(), any())
             }
           }
         }
@@ -257,7 +257,7 @@ class PdfControllerSpec extends SpecBase {
           whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
             result.header.status mustBe TOO_MANY_REQUESTS
 
-            verify(mockAuditService).audit(eqTo(TOO_MANY_PDF_GENERATION_REQUESTS), any())(any(), any())
+            verify(mockAuditService).audit(eqTo(TOO_MANY_PDF_GENERATION_REQUESTS), eqTo(null))(any(), any())
           }
         }
       }
