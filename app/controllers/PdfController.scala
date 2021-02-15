@@ -21,13 +21,15 @@ import config.AppConfig
 import config.Constants._
 import connectors.{NrsConnector, TrustDataConnector}
 import controllers.actions.IdentifierActionProvider
-import models.requests.IdentifierRequest
 import models._
+import models.auditing.Events._
+import models.requests.IdentifierRequest
 import play.api.Logging
 import play.api.http.HttpEntity
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsString, JsValue}
 import play.api.mvc._
 import repositories.NrsLockRepository
+import services.AuditService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.PdfFileNameGenerator
 
@@ -40,7 +42,8 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
                               nrsLockRepository: NrsLockRepository,
                               config: AppConfig,
                               cc: ControllerComponents,
-                              pdfFileNameGenerator: PdfFileNameGenerator) extends BackendController(cc) with Logging {
+                              pdfFileNameGenerator: PdfFileNameGenerator,
+                              auditService: AuditService) extends BackendController(cc) with Logging {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
@@ -59,6 +62,7 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
         logger.info(s"$logInfo Successfully pinged NRS.")
         getLockStatus(identifier)
       case _ =>
+        auditService.audit(UNSUCCESSFUL_NRS_PING)
         logger.error(s"$logInfo Failed to ping NRS. Aborted PDF request.")
         Future.successful(ServiceUnavailable)
     }
@@ -67,6 +71,7 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
   private def getLockStatus(identifier: String)(implicit request: IdentifierRequest[AnyContent]): Future[Result] = {
     nrsLockRepository.getLock(identifier).flatMap {
       case Some(NrsLock(true, _)) =>
+        auditService.audit(TOO_MANY_PDF_GENERATION_REQUESTS)
         Future.successful(TooManyRequests)
       case _ =>
         setLockStatus(identifier, lock = true).flatMap { _ =>
@@ -83,13 +88,18 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
                           (implicit request: IdentifierRequest[AnyContent]): Future[Result] = {
     trustDataConnector.getTrustJson(request.identifier).flatMap {
       case SuccessfulTrustDataResponse(payload) =>
+        auditService.audit(IF_DATA_RECEIVED, Some(payload))
         generateFileName(identifier, payload)
-      case ServiceUnavailableTrustDataResponse =>
-        logger.error(s"$logInfo ServiceUnavailable returned from IF.")
-        Future.successful(ServiceUnavailable)
       case e =>
-        logger.error(s"$logInfo Error retrieving trust data from IF: $e.")
-        Future.successful(InternalServerError)
+        auditService.audit(IF_ERROR, Some(JsString(s"$e")))
+        e match {
+        case ServiceUnavailableTrustDataResponse =>
+          logger.error(s"$logInfo ServiceUnavailable returned from IF.")
+          Future.successful(ServiceUnavailable)
+        case _ =>
+          logger.error(s"$logInfo Error retrieving trust data from IF: $e.")
+          Future.successful(InternalServerError)
+      }
     }
   }
 
@@ -108,15 +118,20 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
                     (implicit request: IdentifierRequest[AnyContent]): Future[Result] = {
     nrsConnector.getPdf(payload).flatMap {
       case response: SuccessfulResponse =>
+        auditService.audit(NRS_DATA_RECEIVED)
         setLockStatus(identifier, lock = false).map { _ =>
           pdf(fileName, response)
         }
-      case ServiceUnavailableResponse =>
-        logger.error(s"$logInfo ServiceUnavailable returned from NRS.")
-        Future.successful(ServiceUnavailable)
       case e =>
-        logger.error(s"$logInfo Error retrieving PDF from NRS: $e.")
-        Future.successful(InternalServerError)
+        auditService.audit(NRS_ERROR, Some(JsString(s"$e")))
+        e match {
+          case ServiceUnavailableResponse =>
+            logger.error(s"$logInfo ServiceUnavailable returned from NRS.")
+            Future.successful(ServiceUnavailable)
+          case _ =>
+            logger.error(s"$logInfo Error retrieving PDF from NRS: $e.")
+            Future.successful(InternalServerError)
+        }
     }
   }
 

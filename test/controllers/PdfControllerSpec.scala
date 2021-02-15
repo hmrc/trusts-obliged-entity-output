@@ -16,7 +16,6 @@
 
 package controllers
 
-import java.time.LocalDateTime
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.ByteString
 import base.SpecBase
@@ -24,19 +23,22 @@ import config.Constants.PDF
 import connectors.{NrsConnector, TrustDataConnector}
 import helpers.JsonHelper.getJsonValueFromFile
 import models._
-import org.mockito.Matchers.any
-import org.mockito.Mockito.when
+import models.auditing.Events._
+import org.mockito.Matchers.{any, eq => eqTo}
+import org.mockito.Mockito.{reset, verify, when}
 import play.api.Play.materializer
 import play.api.http.Status.SERVICE_UNAVAILABLE
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsString, JsValue}
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.NrsLockRepository
+import services.AuditService
 import utils.PdfFileNameGenerator
 
+import java.time.LocalDateTime
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 
@@ -45,7 +47,8 @@ class PdfControllerSpec extends SpecBase {
   private val mockTrustDataConnector: TrustDataConnector = mock[TrustDataConnector]
   private val mockPdfFileNameGenerator: PdfFileNameGenerator = mock[PdfFileNameGenerator]
   private val mockNrsConnector: NrsConnector = mock[NrsConnector]
-  private val nrsLockRepository: NrsLockRepository = mock[NrsLockRepository]
+  private val mockNrsLockRepository: NrsLockRepository = mock[NrsLockRepository]
+  private val mockAuditService: AuditService = mock[AuditService]
 
   override def applicationBuilder(): GuiceApplicationBuilder = {
     super.applicationBuilder()
@@ -53,7 +56,8 @@ class PdfControllerSpec extends SpecBase {
         bind[TrustDataConnector].toInstance(mockTrustDataConnector),
         bind[PdfFileNameGenerator].toInstance(mockPdfFileNameGenerator),
         bind[NrsConnector].toInstance(mockNrsConnector),
-        bind[NrsLockRepository].toInstance(nrsLockRepository)
+        bind[NrsLockRepository].toInstance(mockNrsLockRepository),
+        bind[AuditService].toInstance(mockAuditService)
       )
   }
 
@@ -74,7 +78,7 @@ class PdfControllerSpec extends SpecBase {
     Await.result(result.body.dataStream.runWith(sink), Duration.Inf)
   }
 
-  when(nrsLockRepository.setLock(any(), any())).thenReturn(Future.successful(true))
+  when(mockNrsLockRepository.setLock(any(), any())).thenReturn(Future.successful(true))
 
   "PdfController" when {
     ".getPdf" when {
@@ -86,9 +90,11 @@ class PdfControllerSpec extends SpecBase {
             val responseBody: String = "abcdef"
             val contentLength: Long = 12345L
 
+            reset(mockAuditService)
+
             when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
 
-            when(nrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
+            when(mockNrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
 
             when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
@@ -108,6 +114,9 @@ class PdfControllerSpec extends SpecBase {
               )
 
               getSourceString(result) mustEqual responseBody
+
+              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(Some(trustJson)))(any(), any())
+              verify(mockAuditService).audit(eqTo(NRS_DATA_RECEIVED), any())(any(), any())
             }
           }
         }
@@ -116,23 +125,29 @@ class PdfControllerSpec extends SpecBase {
 
           "IF is unavailable" in {
 
+            reset(mockAuditService)
+
             when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
 
-            when(nrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
+            when(mockNrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
 
             when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(ServiceUnavailableTrustDataResponse))
 
             whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
               result.header.status mustBe SERVICE_UNAVAILABLE
+
+              verify(mockAuditService).audit(eqTo(IF_ERROR), eqTo(Some(JsString("ServiceUnavailableTrustDataResponse"))))(any(), any())
             }
           }
 
           "NRS pings successfully but is unavailable when the getPdf call is made" in {
 
+            reset(mockAuditService)
+
             when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
 
-            when(nrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
+            when(mockNrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
 
             when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
@@ -144,15 +159,22 @@ class PdfControllerSpec extends SpecBase {
 
             whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
               result.header.status mustBe SERVICE_UNAVAILABLE
+
+              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(Some(trustJson)))(any(), any())
+              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(Some(JsString("ServiceUnavailableResponse"))))(any(), any())
             }
           }
 
           "NRS ping fails" in {
 
+            reset(mockAuditService)
+
             when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(false))
 
             whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
               result.header.status mustBe SERVICE_UNAVAILABLE
+
+              verify(mockAuditService).audit(eqTo(UNSUCCESSFUL_NRS_PING), any())(any(), any())
             }
           }
         }
@@ -161,23 +183,29 @@ class PdfControllerSpec extends SpecBase {
 
           "error retrieving trust data from IF" in {
 
+            reset(mockAuditService)
+
             when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
 
-            when(nrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
+            when(mockNrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
 
             when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(InternalServerErrorTrustDataResponse))
 
             whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
               result.header.status mustBe INTERNAL_SERVER_ERROR
+
+              verify(mockAuditService).audit(eqTo(IF_ERROR), eqTo(Some(JsString("InternalServerErrorTrustDataResponse"))))(any(), any())
             }
           }
 
           "error retrieving PDF from NRS" in {
 
+            reset(mockAuditService)
+
             when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
 
-            when(nrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
+            when(mockNrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
 
             when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
@@ -189,6 +217,9 @@ class PdfControllerSpec extends SpecBase {
 
             whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
               result.header.status mustBe INTERNAL_SERVER_ERROR
+
+              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(Some(trustJson)))(any(), any())
+              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(Some(JsString("InternalServerErrorResponse"))))(any(), any())
             }
           }
         }
@@ -199,7 +230,7 @@ class PdfControllerSpec extends SpecBase {
 
             when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
 
-            when(nrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
+            when(mockNrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
 
             when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
@@ -215,13 +246,18 @@ class PdfControllerSpec extends SpecBase {
 
       "there is a lock in mongo" must {
         "return a 429 (TOO_MANY_REQUESTS) response" in {
+
+          reset(mockAuditService)
+
           when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
 
-          when(nrsLockRepository.getLock(any()))
+          when(mockNrsLockRepository.getLock(any()))
             .thenReturn(Future.successful(Some(NrsLock(locked = true, createdAt = testDateTime))))
 
           whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
             result.header.status mustBe TOO_MANY_REQUESTS
+
+            verify(mockAuditService).audit(eqTo(TOO_MANY_PDF_GENERATION_REQUESTS), any())(any(), any())
           }
         }
       }
