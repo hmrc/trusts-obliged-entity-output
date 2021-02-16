@@ -71,7 +71,7 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
   private def getLockStatus(identifier: String)(implicit request: IdentifierRequest[AnyContent]): Future[Result] = {
     nrsLockRepository.getLock(identifier).flatMap {
       case Some(NrsLock(true, _)) =>
-        auditService.audit(TOO_MANY_PDF_GENERATION_REQUESTS)
+        auditService.audit(EXCESSIVE_REQUESTS)
         Future.successful(TooManyRequests)
       case _ =>
         setLockStatus(identifier, lock = true).flatMap { _ =>

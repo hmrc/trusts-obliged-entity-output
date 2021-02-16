@@ -257,7 +257,7 @@ class PdfControllerSpec extends SpecBase {
           whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
             result.header.status mustBe TOO_MANY_REQUESTS
 
-            verify(mockAuditService).audit(eqTo(TOO_MANY_PDF_GENERATION_REQUESTS), eqTo(null))(any(), any())
+            verify(mockAuditService).audit(eqTo(EXCESSIVE_REQUESTS), eqTo(null))(any(), any())
           }
         }
       }
