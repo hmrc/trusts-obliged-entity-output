@@ -22,7 +22,6 @@ import uk.gov.hmrc.auth.core.AffinityGroup
 case class ObligedEntityAuditEvent(internalAuthId: String,
                                    identifier: String,
                                    affinity: AffinityGroup,
-                                   sessionId: String,
                                    dateTime: String,
                                    response: Option[JsValue] = None)
 

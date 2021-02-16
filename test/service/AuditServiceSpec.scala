@@ -65,7 +65,6 @@ class AuditServiceSpec extends SpecBase {
           internalAuthId = internalId,
           identifier = utr,
           affinity = affinity,
-          sessionId = sessionId,
           dateTime = date
         )
 
@@ -92,7 +91,6 @@ class AuditServiceSpec extends SpecBase {
           internalAuthId = internalId,
           identifier = urn,
           affinity = affinity,
-          sessionId = sessionId,
           dateTime = date
         )
 

@@ -36,7 +36,6 @@ class AuditService @Inject()(auditConnector: AuditConnector,
       internalAuthId = request.internalId,
       identifier = request.identifier.value,
       affinity = request.affinityGroup,
-      sessionId = request.sessionId,
       dateTime = request.headers.get(DATE).getOrElse(localDateTimeService.now.toString),
       response = response
     )
