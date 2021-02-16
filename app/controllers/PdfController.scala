@@ -90,7 +90,7 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
       case SuccessfulTrustDataResponse(payload) if identifier != "2211019002" =>
         auditService.audit(IF_DATA_RECEIVED, Some(payload))
         generateFileName(identifier, payload)
-      case SuccessfulTrustDataResponse(payload) =>
+      case SuccessfulTrustDataResponse(_) =>
         auditService.audit(IF_ERROR, Some(JsString(s"$ServiceUnavailableTrustDataResponse")))
         Future.successful(ServiceUnavailable)
       case e =>
