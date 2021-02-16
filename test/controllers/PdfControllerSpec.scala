@@ -174,7 +174,7 @@ class PdfControllerSpec extends SpecBase {
             whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
               result.header.status mustBe SERVICE_UNAVAILABLE
 
-              verify(mockAuditService).audit(eqTo(UNSUCCESSFUL_NRS_PING), eqTo(null))(any(), any())
+              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(Some(JsString("ServiceUnavailableResponse"))))(any(), any())
             }
           }
         }
