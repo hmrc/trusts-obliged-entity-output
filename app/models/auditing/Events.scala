@@ -22,7 +22,6 @@ object Events {
   val NRS_DATA_RECEIVED = "NRSDataReceived"
   val IF_ERROR = "IFError"
   val NRS_ERROR = "NRSError"
-  val UNSUCCESSFUL_NRS_PING = "UnsuccessfulNRSPing"
   val TOO_MANY_PDF_GENERATION_REQUESTS = "TooManyPDFGenerationRequests"
 
 }

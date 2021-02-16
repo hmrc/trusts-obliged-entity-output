@@ -62,7 +62,7 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
         logger.info(s"$logInfo Successfully pinged NRS.")
         getLockStatus(identifier)
       case _ =>
-        auditService.audit(UNSUCCESSFUL_NRS_PING)
+        auditService.audit(NRS_ERROR, Some(JsString(s"$ServiceUnavailableResponse")))
         logger.error(s"$logInfo Failed to ping NRS. Aborted PDF request.")
         Future.successful(ServiceUnavailable)
     }
