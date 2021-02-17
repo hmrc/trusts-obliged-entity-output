@@ -33,7 +33,7 @@ import scala.concurrent.Future
 
 class TrustDataConnector @Inject()(http: HttpClient, config: AppConfig) extends Logging {
 
-  private def trustDataHeaders(correlationId : String) : Seq[(String, String)] =
+  private def trustDataHeaders(correlationId: String): Seq[(String, String)] =
     Seq(
       HeaderNames.AUTHORIZATION -> s"Bearer ${config.trustDataToken}",
       CONTENT_TYPE -> CONTENT_TYPE_JSON,

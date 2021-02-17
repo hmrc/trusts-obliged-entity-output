@@ -108,10 +108,11 @@ class PdfControllerSpec extends SpecBase {
               result.header.status mustBe OK
 
               result.header.headers mustEqual Map(
-                CONTENT_TYPE -> PDF,
-                CONTENT_LENGTH -> contentLength.toString,
                 CONTENT_DISPOSITION -> s"${appConfig.inlineOrAttachment}; filename=$fileName"
               )
+
+              result.body.contentLength.get mustBe contentLength
+              result.body.contentType.get mustBe PDF
 
               getSourceString(result) mustEqual responseBody
 
@@ -258,72 +259,6 @@ class PdfControllerSpec extends SpecBase {
             result.header.status mustBe TOO_MANY_REQUESTS
 
             verify(mockAuditService).audit(eqTo(EXCESSIVE_REQUESTS), eqTo(null))(any(), any())
-          }
-        }
-      }
-
-      "stubbing response" must {
-
-        "audit NRSError with ServiceUnavailableResponse" when {
-          "identifier is 6281917422" in {
-
-            val identifier = "6281917422"
-
-            reset(mockAuditService)
-
-            when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
-
-            whenReady(controller.getPdf(identifier)(FakeRequest())) { _ =>
-              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(Some(JsString("ServiceUnavailableResponse"))))(any(), any())
-            }
-          }
-        }
-
-        "audit IFError ServiceUnavailableTrustDataResponse" when {
-          "identifier is 2211019002" in {
-
-            val identifier = "2211019002"
-
-            reset(mockAuditService)
-
-            when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
-
-            when(mockNrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
-
-            when(mockTrustDataConnector.getTrustJson(any()))
-              .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
-
-            whenReady(controller.getPdf(identifier)(FakeRequest())) { _ =>
-              verify(mockAuditService).audit(eqTo(IF_ERROR), eqTo(Some(JsString("ServiceUnavailableTrustDataResponse"))))(any(), any())
-            }
-          }
-        }
-
-        "audit NRSError with BadRequestResponse" when {
-          "identifier is 8291494881" in {
-
-            val identifier = "8291494881"
-
-            val responseBody: String = "abcdef"
-            val contentLength: Long = 12345L
-
-            reset(mockAuditService)
-
-            when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
-
-            when(mockNrsLockRepository.getLock(any())).thenReturn(Future.successful(None))
-
-            when(mockTrustDataConnector.getTrustJson(any()))
-              .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
-
-            when(mockPdfFileNameGenerator.generate(any())).thenReturn(Some(fileName))
-
-            when(mockNrsConnector.getPdf(any())(any()))
-              .thenReturn(Future.successful(SuccessfulResponse(Source(List(ByteString(responseBody))), contentLength)))
-
-            whenReady(controller.getPdf(identifier)(FakeRequest())) { _ =>
-              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(Some(JsString("BadRequestResponse"))))(any(), any())
-            }
           }
         }
       }
