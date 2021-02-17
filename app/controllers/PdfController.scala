@@ -58,7 +58,7 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
 
   private def pingNrs(identifier: String)(implicit request: IdentifierRequest[AnyContent]): Future[Result] = {
     nrsConnector.ping().flatMap {
-      case true =>
+      case true if identifier != "6281917422" =>
         logger.info(s"$logInfo Successfully pinged NRS.")
         getLockStatus(identifier)
       case _ =>
@@ -71,7 +71,7 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
   private def getLockStatus(identifier: String)(implicit request: IdentifierRequest[AnyContent]): Future[Result] = {
     nrsLockRepository.getLock(identifier).flatMap {
       case Some(NrsLock(true, _)) =>
-        auditService.audit(TOO_MANY_PDF_GENERATION_REQUESTS)
+        auditService.audit(EXCESSIVE_REQUESTS)
         Future.successful(TooManyRequests)
       case _ =>
         setLockStatus(identifier, lock = true).flatMap { _ =>
@@ -87,9 +87,12 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
   private def getTrustJson(identifier: String)
                           (implicit request: IdentifierRequest[AnyContent]): Future[Result] = {
     trustDataConnector.getTrustJson(request.identifier).flatMap {
-      case SuccessfulTrustDataResponse(payload) =>
+      case SuccessfulTrustDataResponse(payload) if identifier != "2211019002" =>
         auditService.audit(IF_DATA_RECEIVED, Some(payload))
         generateFileName(identifier, payload)
+      case SuccessfulTrustDataResponse(_) =>
+        auditService.audit(IF_ERROR, Some(JsString(s"$ServiceUnavailableTrustDataResponse")))
+        Future.successful(ServiceUnavailable)
       case e =>
         auditService.audit(IF_ERROR, Some(JsString(s"$e")))
         e match {
@@ -117,11 +120,14 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
   private def getPdf(identifier: String, payload: JsValue, fileName: String)
                     (implicit request: IdentifierRequest[AnyContent]): Future[Result] = {
     nrsConnector.getPdf(payload).flatMap {
-      case response: SuccessfulResponse =>
+      case response: SuccessfulResponse if identifier != "8291494881" =>
         auditService.audit(NRS_DATA_RECEIVED)
         setLockStatus(identifier, lock = false).map { _ =>
           pdf(fileName, response)
         }
+      case _: SuccessfulResponse =>
+        auditService.audit(NRS_ERROR, Some(JsString(s"$BadRequestResponse")))
+        Future.successful(InternalServerError)
       case e =>
         auditService.audit(NRS_ERROR, Some(JsString(s"$e")))
         e match {
