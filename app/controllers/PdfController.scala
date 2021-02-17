@@ -140,9 +140,7 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
       header = ResponseHeader(
         status = OK,
         headers = Map(
-          CONTENT_DISPOSITION -> s"${config.inlineOrAttachment}; filename=$fileName",
-          CONTENT_TYPE -> PDF,
-          CONTENT_LENGTH -> response.length.toString
+          CONTENT_DISPOSITION -> s"${config.inlineOrAttachment}; filename=$fileName"
         )
       ),
       body = HttpEntity.Streamed(
