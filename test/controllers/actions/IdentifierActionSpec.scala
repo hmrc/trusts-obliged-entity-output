@@ -24,7 +24,6 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, BodyParsers, Results}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.auth.core.AffinityGroup.Individual
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
@@ -94,9 +93,17 @@ class AuthActionSpec extends SpecBase {
 
       "return unauthorised" in {
 
-        val enrolments = Enrolments(Set())
-        
-        val authAction = actionToTest("1234567890", new FakeAuthConnector(authRetrievals(Individual, enrolments)))
+        val enrolments = Enrolments(
+          Set(
+            Enrolment("HMRC-NI", Seq(EnrolmentIdentifier("NINO", "JP121212A")), "Activated", None)
+          )
+        )
+
+        when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(any(), any()))
+          .thenReturn(authRetrievals(AffinityGroup.Individual, enrolments))
+
+        val authAction = actionToTest("1234567890", mockAuthConnector)
+
         val controller = new Harness(authAction)
         val result = controller.onPageLoad()(fakeRequest)
         status(result) mustBe UNAUTHORIZED
