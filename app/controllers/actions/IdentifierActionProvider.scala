@@ -34,15 +34,17 @@ package controllers.actions
 
 import com.google.inject.Inject
 import play.api.mvc.BodyParsers
+import services.AuthenticationService
 import uk.gov.hmrc.auth.core.AuthConnector
 
 import scala.concurrent.ExecutionContext
 
 class AuthenticatedIdentifierActionProvider @Inject()()(implicit val authConnector: AuthConnector,
+                                                        trustAuthService: AuthenticationService,
                                                         val parser: BodyParsers.Default,
                                                         executionContext: ExecutionContext) extends IdentifierActionProvider {
 
-  override def apply(identifier: String): IdentifierAction = new AuthenticatedIdentifierAction(identifier, authConnector)
+  override def apply(identifier: String): IdentifierAction = new AuthenticatedIdentifierAction(identifier, trustAuthService, authConnector)
 }
 
 trait IdentifierActionProvider {

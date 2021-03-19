@@ -30,6 +30,8 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
 
   val trustDataUrl: String = servicesConfig.baseUrl("trust-data")
 
+  val trustAuthUrl: String = servicesConfig.baseUrl("trusts-auth")
+
   val nrsUrl: String = servicesConfig.baseUrl("nrs-trusts")
 
   val nrsToken: String = config.get[String]("microservice.services.nrs-trusts.token")
