@@ -42,32 +42,39 @@ class AuthenticatedIdentifierAction @Inject()(identifier: String,
   def invokeBlock[A](request: Request[A],
                      block: IdentifierRequest[A] => Future[Result]) : Future[Result] = {
 
-    val retrievals = Retrievals.internalId and
-                     Retrievals.affinityGroup
+    import TrustEnrolments._
+
+    val retrievals =
+      Retrievals.internalId and
+      Retrievals.affinityGroup and
+      Retrievals.allEnrolments
 
     implicit val hc : HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers)
 
-    val id = identifier match {
-      case Identifiers.utrPattern(_) => UTR(identifier)
-      case Identifiers.urnPattern(_) => URN(identifier)
-      case _ => throw new Exception
-    }
-
-    authorised().retrieve(retrievals) {
-      case Some(internalId) ~ Some(Agent) =>
-        block(IdentifierRequest(request, internalId, id, Session.id(hc), Agent))
-      case Some(internalId) ~ Some(Organisation) =>
-        block(IdentifierRequest(request, internalId, id, Session.id(hc), Organisation))
-      case _ =>
-        logger.info(s"[Session ID: ${Session.id(hc)}] Insufficient enrolment")
-        Future.successful(Unauthorized)
-    } recoverWith {
-      case e : AuthorisationException =>
-        logger.info(s"[Session ID: ${Session.id(hc)}] AuthorisationException: $e")
+    (identifier match {
+      case Identifiers.utrPattern(_) => Some(UTR(identifier))
+      case Identifiers.urnPattern(_) => Some(URN(identifier))
+      case _ => None
+    }) match {
+      case Some(value) =>
+        authorised().retrieve(retrievals) {
+          case Some(internalId) ~ Some(affinity) ~ enrolments if enrolments.trustIdentifier.contains(identifier) =>
+            block(IdentifierRequest(request, internalId, value, Session.id(hc), affinity))
+          case _ =>
+            logger.info(s"[Session ID: ${Session.id(hc)}] Insufficient enrolment")
+            Future.successful(Unauthorized)
+        } recoverWith {
+          case e: AuthorisationException =>
+            logger.info(s"[Session ID: ${Session.id(hc)}] AuthorisationException: $e")
+            Future.successful(Unauthorized)
+        }
+      case None =>
         Future.successful(Unauthorized)
     }
   }
 }
+
+
 
 trait IdentifierAction extends ActionBuilder[IdentifierRequest, AnyContent]
 
