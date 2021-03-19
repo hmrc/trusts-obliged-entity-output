@@ -21,9 +21,11 @@ import com.google.inject.Inject
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, BodyParsers, Results}
+import play.api.mvc.Results.Unauthorized
+import play.api.mvc.{Action, AnyContent, BodyParsers, Results}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import services.AuthenticationService
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
@@ -33,11 +35,12 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class AuthActionSpec extends SpecBase {
 
-  type RetrievalType = Option[String] ~ Option[AffinityGroup] ~ Enrolments
+  type RetrievalType = Option[String] ~ Option[AffinityGroup]
 
   private val cc = stubControllerComponents()
 
   private val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  private val mockAuthService: AuthenticationService = mock[AuthenticationService]
 
   private val fakeRequest = FakeRequest("POST", "")
     .withHeaders(CONTENT_TYPE -> "application/json")
@@ -47,74 +50,19 @@ class AuthActionSpec extends SpecBase {
     def onPageLoad(): Action[JsValue] = authAction.apply(cc.parsers.json) { _ => Results.Ok }
   }
 
-  private def authRetrievals(affinityGroup: AffinityGroup, enrolments: Enrolments): Future[Some[String] ~ Some[AffinityGroup] ~ Enrolments] =
-    Future.successful(new ~(new ~(Some("id"), Some(affinityGroup)), enrolments))
+  private def authRetrievals(affinityGroup: AffinityGroup): Future[Some[String] ~ Some[AffinityGroup]] =
+    Future.successful(new ~(Some("id"), Some(affinityGroup)))
 
-  private def actionToTest(identifier: String, authConnector: AuthConnector): AuthenticatedIdentifierAction =
-    new AuthenticatedIdentifierAction(identifier, authConnector)(injector.instanceOf[BodyParsers.Default], ExecutionContext.Implicits.global)
+  private def actionToTest(identifier: String, trustAuthService: AuthenticationService, authConnector: AuthConnector): AuthenticatedIdentifierAction =
+    new AuthenticatedIdentifierAction(identifier, trustAuthService, authConnector)(injector.instanceOf[BodyParsers.Default], ExecutionContext.Implicits.global)
 
   "Auth Action" when {
-
-    "Agent user with no delegated enrolments" must {
-
-      "return unauthorised" in {
-
-        val enrolments = Enrolments(Set())
-
-        when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(any(), any()))
-          .thenReturn(authRetrievals(AffinityGroup.Organisation, enrolments))
-
-        val authAction = actionToTest("1234567890", mockAuthConnector)
-        val controller = new Harness(authAction)
-        val result = controller.onPageLoad()(fakeRequest)
-
-        status(result) mustBe UNAUTHORIZED
-      }
-    }
-
-    "Org user with no enrolments" must {
-
-      "return unauthorised" in {
-
-        val enrolments = Enrolments(Set())
-
-        when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(any(), any()))
-          .thenReturn(authRetrievals(AffinityGroup.Organisation, enrolments))
-
-        val authAction = actionToTest("1234567890", mockAuthConnector)
-        val controller = new Harness(authAction)
-        val result = controller.onPageLoad()(fakeRequest)
-
-        status(result) mustBe UNAUTHORIZED
-      }
-    }
-
-    "Individual user" must {
-
-      "return unauthorised" in {
-
-        val enrolments = Enrolments(
-          Set(
-            Enrolment("HMRC-NI", Seq(EnrolmentIdentifier("NINO", "JP121212A")), "Activated", None)
-          )
-        )
-
-        when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(any(), any()))
-          .thenReturn(authRetrievals(AffinityGroup.Individual, enrolments))
-
-        val authAction = actionToTest("1234567890", mockAuthConnector)
-
-        val controller = new Harness(authAction)
-        val result = controller.onPageLoad()(fakeRequest)
-        status(result) mustBe UNAUTHORIZED
-      }
-    }
 
     "the user hasn't logged in" must {
 
       "return unauthorised" in {
 
-        val authAction = actionToTest("1234567890", new FakeFailingAuthConnector(new MissingBearerToken))
+        val authAction = actionToTest("1234567890", mockAuthService, new FakeFailingAuthConnector(new MissingBearerToken))
         val controller = new Harness(authAction)
         val result = controller.onPageLoad()(fakeRequest)
 
@@ -126,7 +74,7 @@ class AuthActionSpec extends SpecBase {
 
       "return unauthorised" in {
 
-        val authAction = actionToTest("1234567890", new FakeFailingAuthConnector(new BearerTokenExpired))
+        val authAction = actionToTest("1234567890", mockAuthService, new FakeFailingAuthConnector(new BearerTokenExpired))
         val controller = new Harness(authAction)
         val result = controller.onPageLoad()(fakeRequest)
 
@@ -134,20 +82,16 @@ class AuthActionSpec extends SpecBase {
       }
     }
 
-    "org user requests a PDF for UTR/URN that matches their enrolment" must {
+    "org user requests a PDF for UTR/URN that they're authenticated to see" must {
 
       "continue with the request" in {
 
-        val enrolments = Enrolments(
-          Set(
-            Enrolment("HMRC-TERS-ORG", Seq(EnrolmentIdentifier("SAUTR", "2647384758")), "Activated", None)
-          )
-        )
-
         when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(any(), any()))
-          .thenReturn(authRetrievals(AffinityGroup.Organisation, enrolments))
+          .thenReturn(authRetrievals(AffinityGroup.Organisation))
 
-        val action = actionToTest("2647384758", mockAuthConnector)
+        when(mockAuthService.authenticateForIdentifier[JsValue](any())(any(), any())).thenReturn(Future.successful(Right(fakeRequest)))
+
+        val action = actionToTest("2647384758", mockAuthService, mockAuthConnector)
         val controller = new Harness(action)
         val result = controller.onPageLoad()(fakeRequest)
 
@@ -156,20 +100,16 @@ class AuthActionSpec extends SpecBase {
 
     }
 
-    "agent user requests a PDF for UTR/URN that matches their enrolment" must {
+    "agent user requests a PDF that they are authenticated to see" must {
 
       "continue with the request" in {
-        val enrolments = Enrolments(
-          Set(
-            Enrolment("HMRC-TERSNT-ORG", Seq(EnrolmentIdentifier("URN", "XTTRUST80837546")), "Activated", None)
-              .withDelegatedAuthRule("trust-auth")
-          )
-        )
 
         when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(any(), any()))
-          .thenReturn(authRetrievals(AffinityGroup.Organisation, enrolments))
+          .thenReturn(authRetrievals(AffinityGroup.Agent))
 
-        val action = actionToTest("XTTRUST80837546", mockAuthConnector)
+        when(mockAuthService.authenticateForIdentifier[JsValue](any())(any(), any())).thenReturn(Future.successful(Right(fakeRequest)))
+
+        val action = actionToTest("XTTRUST80837546", mockAuthService, mockAuthConnector)
         val controller = new Harness(action)
         val result = controller.onPageLoad()(fakeRequest)
 
@@ -181,16 +121,13 @@ class AuthActionSpec extends SpecBase {
     "org user requests a PDF for UTR/URN that does not match their enrolment" must {
 
       "return unauthorised" in {
-        val enrolments = Enrolments(
-          Set(
-            Enrolment("HMRC-TERSNT-ORG", Seq(EnrolmentIdentifier("URN", "XTTRUST12746273")), "Activated", None)
-          )
-        )
 
         when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(any(), any()))
-          .thenReturn(authRetrievals(AffinityGroup.Organisation, enrolments))
+          .thenReturn(authRetrievals(AffinityGroup.Organisation))
 
-        val action = actionToTest("XTTRUST80837546", mockAuthConnector)
+        when(mockAuthService.authenticateForIdentifier[JsValue](any())(any(), any())).thenReturn(Future.successful(Left(Unauthorized)))
+
+        val action = actionToTest("XTTRUST80837546", mockAuthService, mockAuthConnector)
         val controller = new Harness(action)
         val result = controller.onPageLoad()(fakeRequest)
 
@@ -202,17 +139,13 @@ class AuthActionSpec extends SpecBase {
     "agent org user requests a PDF for UTR/URN that does not match their enrolment" must {
 
       "return unauthorised" in {
-        val enrolments = Enrolments(
-          Set(
-            Enrolment("HMRC-TERS-ORG", Seq(EnrolmentIdentifier("UTR", "1957385728")), "Activated", None)
-              .withDelegatedAuthRule("trust-auth")
-          )
-        )
 
         when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(any(), any()))
-          .thenReturn(authRetrievals(AffinityGroup.Organisation, enrolments))
+          .thenReturn(authRetrievals(AffinityGroup.Agent))
 
-        val action = actionToTest("0043748273", mockAuthConnector)
+        when(mockAuthService.authenticateForIdentifier[JsValue](any())(any(), any())).thenReturn(Future.successful(Left(Unauthorized)))
+
+        val action = actionToTest("0043748273", mockAuthService, mockAuthConnector)
         val controller = new Harness(action)
         val result = controller.onPageLoad()(fakeRequest)
 
@@ -224,17 +157,11 @@ class AuthActionSpec extends SpecBase {
     "user requests a PDF for UTR/URN that is not a valid identifier" must {
 
       "return internal server error" in {
-        val enrolments = Enrolments(
-          Set(
-            Enrolment("HMRC-TERS-ORG", Seq(EnrolmentIdentifier("UTR", "1957385728")), "Activated", None)
-              .withDelegatedAuthRule("trust-auth")
-          )
-        )
 
         when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(any(), any()))
-          .thenReturn(authRetrievals(AffinityGroup.Organisation, enrolments))
+          .thenReturn(authRetrievals(AffinityGroup.Organisation))
 
-        val action = actionToTest("84759873598738597397598", mockAuthConnector)
+        val action = actionToTest("84759873598738597397598", mockAuthService, mockAuthConnector)
         val controller = new Harness(action)
         val result = controller.onPageLoad()(fakeRequest)
 
@@ -246,7 +173,6 @@ class AuthActionSpec extends SpecBase {
 }
 
 class FakeFailingAuthConnector @Inject()(exceptionToReturn: Throwable) extends AuthConnector {
-  val serviceUrl: String = ""
 
   override def authorise[A](predicate: Predicate, retrieval: Retrieval[A])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[A] = {
     Future.failed(exceptionToReturn)

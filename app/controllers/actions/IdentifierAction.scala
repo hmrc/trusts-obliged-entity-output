@@ -18,11 +18,11 @@ package controllers.actions
 
 import com.google.inject.Inject
 import models.requests.IdentifierRequest
-import models.{URN, UTR}
+import models.{Identifier, URN, UTR}
 import play.api.Logging
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result, _}
-import uk.gov.hmrc.auth.core.AffinityGroup.{Agent, Organisation}
+import services.AuthenticationService
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.~
@@ -34,7 +34,8 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
 
 class AuthenticatedIdentifierAction @Inject()(identifier: String,
-                                              override val authConnector: AuthConnector)
+                                              trustAuthService: AuthenticationService,
+                                              val authConnector: AuthConnector)
                                              (implicit val parser: BodyParsers.Default,
                                               val executionContext: ExecutionContext)
   extends IdentifierAction with AuthorisedFunctions with Logging {
@@ -42,12 +43,7 @@ class AuthenticatedIdentifierAction @Inject()(identifier: String,
   def invokeBlock[A](request: Request[A],
                      block: IdentifierRequest[A] => Future[Result]) : Future[Result] = {
 
-    import TrustEnrolments._
 
-    val retrievals =
-      Retrievals.internalId and
-      Retrievals.affinityGroup and
-      Retrievals.allEnrolments
 
     implicit val hc : HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers)
 
@@ -56,25 +52,35 @@ class AuthenticatedIdentifierAction @Inject()(identifier: String,
       case Identifiers.urnPattern(_) => Some(URN(identifier))
       case _ => None
     }) match {
-      case Some(value) =>
-        authorised().retrieve(retrievals) {
-          case Some(internalId) ~ Some(affinity) ~ enrolments if enrolments.trustIdentifier.contains(identifier) =>
-            block(IdentifierRequest(request, internalId, value, Session.id(hc), affinity))
-          case _ =>
-            logger.info(s"[Session ID: ${Session.id(hc)}] Insufficient enrolment")
-            Future.successful(Unauthorized)
-        } recoverWith {
-          case e: AuthorisationException =>
-            logger.info(s"[Session ID: ${Session.id(hc)}] AuthorisationException: $e")
-            Future.successful(Unauthorized)
-        }
+      case Some(id) =>
+        authenticate(id, block)(request, hc)
       case None =>
         Future.successful(Unauthorized)
     }
   }
+
+  private def authenticate[A](id: Identifier, block: IdentifierRequest[A] => Future[Result])(implicit request: Request[A], hc: HeaderCarrier) = {
+    val retrievals = Retrievals.internalId and Retrievals.affinityGroup
+
+    authorised().retrieve(retrievals) {
+      case Some(internalId) ~ Some(affinity) =>
+        trustAuthService.authenticateForIdentifier(id.value)(request, hc) flatMap {
+          case Left(value) =>
+            logger.info(s"[Session ID: ${Session.id(hc)}] Not authenticated for ${id.value}")
+            Future.successful(value)
+          case Right(_) =>
+            block(IdentifierRequest(request, internalId, id, Session.id(hc), affinity))
+        }
+      case _ =>
+        logger.info(s"[Session ID: ${Session.id(hc)}] Insufficient enrolment")
+        Future.successful(Unauthorized)
+    } recoverWith {
+      case e: AuthorisationException =>
+        logger.info(s"[Session ID: ${Session.id(hc)}] AuthorisationException: $e")
+        Future.successful(Unauthorized)
+    }
+  }
 }
-
-
 
 trait IdentifierAction extends ActionBuilder[IdentifierRequest, AnyContent]
 
