@@ -27,6 +27,8 @@ class NrsLockRepositorySpec extends AsyncFreeSpec with MustMatchers with Integra
   private val identifier1: String = "1234567890"
   private val identifier2: String = "0987654321"
 
+  private val internalId: String = "internalId"
+
   private val testDateTime: LocalDateTime = LocalDateTime.now()
 
   "NrsLockRepository" - {
@@ -34,17 +36,17 @@ class NrsLockRepositorySpec extends AsyncFreeSpec with MustMatchers with Integra
     "must be able to store and retrieve data" in assertMongoTest(createApplication) { app =>
       val repository: NrsLockRepository = app.injector.instanceOf[NrsLockRepository]
 
-      repository.getLock(identifier1).futureValue mustBe None
-      repository.getLock(identifier2).futureValue mustBe None
+      repository.getLock(internalId, identifier1).futureValue mustBe None
+      repository.getLock(internalId, identifier2).futureValue mustBe None
 
       val state1: NrsLock = NrsLock(locked = true, createdAt = testDateTime)
-      repository.setLock(identifier1, state1).futureValue mustBe true
+      repository.setLock(internalId, identifier1, state1).futureValue mustBe true
 
       val state2: NrsLock = NrsLock(locked = false, createdAt = testDateTime)
-      repository.setLock(identifier2, state2).futureValue mustBe true
+      repository.setLock(internalId, identifier2, state2).futureValue mustBe true
 
-      repository.getLock(identifier1).futureValue mustBe Some(state1)
-      repository.getLock(identifier2).futureValue mustBe Some(state2)
+      repository.getLock(internalId, identifier1).futureValue mustBe Some(state1)
+      repository.getLock(internalId, identifier2).futureValue mustBe Some(state2)
     }
   }
 }
