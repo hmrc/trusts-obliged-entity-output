@@ -32,7 +32,7 @@ class PdfFileNameGeneratorSpec extends SpecBase {
 
     ".generate" must {
 
-      "generate file name with trust name and timestamp" in {
+      "generate file name with trust identifier and timestamp" in {
 
         val identifier = "1234567890"
 
