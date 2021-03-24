@@ -56,10 +56,10 @@ class NrsLockRepository @Inject()(mongo: ReactiveMongoApi,
     } yield createdIndex
   }
 
-  def setLock(identifier: String, lock: NrsLock): Future[Boolean] = {
+  def setLock(internalId: String, identifier: String, lock: NrsLock): Future[Boolean] = {
 
     val selector = Json.obj(
-      "identifier" -> identifier
+      "identifier" -> s"$internalId~$identifier"
     )
 
     val modifier = Json.obj(
@@ -75,10 +75,10 @@ class NrsLockRepository @Inject()(mongo: ReactiveMongoApi,
     ).map(_.ok))
   }
 
-  def getLock(identifier: String): Future[Option[NrsLock]] = {
+  def getLock(internalId: String, identifier: String): Future[Option[NrsLock]] = {
 
     val selector = Json.obj(
-      "identifier" -> identifier
+      "identifier" -> s"$internalId~$identifier"
     )
 
     collection.flatMap(_.find(

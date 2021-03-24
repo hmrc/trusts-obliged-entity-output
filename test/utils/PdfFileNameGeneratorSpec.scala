@@ -30,21 +30,13 @@ class PdfFileNameGeneratorSpec extends SpecBase {
 
   "PdfFileNameGenerator" when {
 
-    ".generate" when {
-      "payload has trust name" must {
-        "generate file name with trust name and timestamp" in {
+    ".generate" must {
 
-          val payload: JsValue = getJsonValueFromFile("nrs-request-body.json")
+      "generate file name with trust identifier and timestamp" in {
 
-          pdfFileNameGenerator.generate(payload) mustBe Some("TRUST_NAME--2020-04-01--09-30-00.pdf")
-        }
-      }
+        val identifier = "1234567890"
 
-      "payload does not have trust name" must {
-        "generate file name with timestamp" in {
-
-          pdfFileNameGenerator.generate(Json.obj()) mustBe None
-        }
+        pdfFileNameGenerator.generate(identifier) mustBe "1234567890-2020-04-01--09-30-00.pdf"
       }
     }
   }
