@@ -69,7 +69,7 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
   }
 
   private def getLockStatus(identifier: String)(implicit request: IdentifierRequest[AnyContent]): Future[Result] = {
-    nrsLockRepository.getLock(identifier).flatMap {
+    nrsLockRepository.getLock(request.internalId, identifier).flatMap {
       case Some(NrsLock(true, _)) =>
         auditService.audit(EXCESSIVE_REQUESTS)
         Future.successful(TooManyRequests)
@@ -80,8 +80,8 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
     }
   }
 
-  private def setLockStatus(identifier: String, lock: Boolean): Future[Boolean] = {
-    nrsLockRepository.setLock(identifier, NrsLock(lock, LocalDateTime.now()))
+  private def setLockStatus(identifier: String, lock: Boolean)(implicit request: IdentifierRequest[AnyContent]): Future[Boolean] = {
+    nrsLockRepository.setLock(request.internalId, identifier, NrsLock(lock, LocalDateTime.now()))
   }
 
   private def getTrustJson(identifier: String)
@@ -89,7 +89,8 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
     trustDataConnector.getTrustJson(request.identifier).flatMap {
       case SuccessfulTrustDataResponse(payload) =>
         auditService.audit(IF_DATA_RECEIVED, Some(payload))
-        generateFileName(identifier, payload)
+        val fileName = pdfFileNameGenerator.generate(identifier)
+        generatePdf(identifier, payload, fileName)
       case e =>
         auditService.audit(IF_ERROR, Some(JsString(s"$e")))
         e match {
@@ -100,17 +101,6 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
             logger.error(s"$logInfo Error retrieving trust data from IF: $e.")
             Future.successful(InternalServerError)
         }
-    }
-  }
-
-  private def generateFileName(identifier: String, payload: JsValue)
-                              (implicit request: IdentifierRequest[AnyContent]): Future[Result] = {
-    pdfFileNameGenerator.generate(payload) match {
-      case Some(fileName) =>
-        generatePdf(identifier, payload, fileName)
-      case _ =>
-        logger.error(s"$logInfo Trust name not found in trust data.")
-        Future.successful(BadRequest)
     }
   }
 

@@ -56,7 +56,7 @@ class NrsLockControllerSpec extends SpecBase {
       "locked" must {
         "return true" in {
 
-          when(nrsLockRepository.getLock(any()))
+          when(nrsLockRepository.getLock(any(), any()))
             .thenReturn(Future.successful(Some(NrsLock(locked = true, createdAt = testDateTime))))
 
           val result: Future[Result] = controller.getLockStatus(identifier)(FakeRequest())
@@ -70,7 +70,7 @@ class NrsLockControllerSpec extends SpecBase {
       "unlocked" must {
         "return false" in {
 
-          when(nrsLockRepository.getLock(any()))
+          when(nrsLockRepository.getLock(any(), any()))
             .thenReturn(Future.successful(Some(NrsLock(locked = false, createdAt = testDateTime))))
 
           val result: Future[Result] = controller.getLockStatus(identifier)(FakeRequest())
@@ -84,7 +84,7 @@ class NrsLockControllerSpec extends SpecBase {
       "no lock" must {
         "return false" in {
 
-          when(nrsLockRepository.getLock(any()))
+          when(nrsLockRepository.getLock(any(), any()))
             .thenReturn(Future.successful(None))
 
           val result: Future[Result] = controller.getLockStatus(identifier)(FakeRequest())

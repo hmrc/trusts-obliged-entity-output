@@ -34,9 +34,10 @@ class NrsLockController @Inject()(identifierAction: IdentifierActionProvider,
   implicit val ec: ExecutionContext = ExecutionContext.global
 
   def getLockStatus(identifier: String): Action[AnyContent] = identifierAction(identifier).async {
-    nrsLockRepository.getLock(identifier).map {
-      case Some(NrsLock(true, _)) => Ok(JsBoolean(true))
-      case _ => Ok(JsBoolean(false))
-    }
+    implicit request =>
+      nrsLockRepository.getLock(request.internalId, identifier).map {
+        case Some(NrsLock(true, _)) => Ok(JsBoolean(true))
+        case _ => Ok(JsBoolean(false))
+      }
   }
 }
