@@ -46,7 +46,8 @@ object NrsResponse extends Logging {
             InternalServerErrorResponse
         }
       case BAD_REQUEST =>
-        logger.error(s"Payload does not conform to defined JSON schema - ${response.body}")
+        logger.debug(s"Payload does not conform to defined JSON schema - ${response.body}")
+        logger.error(s"Payload does not conform to defined JSON schema")
         BadRequestResponse
       case UNAUTHORIZED =>
         logger.error("No X-API-Key provided or it is invalid.")
@@ -55,7 +56,8 @@ object NrsResponse extends Logging {
         logger.error("Requested PDF template does not exist.")
         NotFoundResponse
       case SERVICE_UNAVAILABLE =>
-        logger.error(s"NRS service unavailable - ${response.body}.")
+        logger.debug(s"NRS service unavailable - ${response.body}.")
+        logger.error(s"NRS service unavailable.")
         ServiceUnavailableResponse
       case _ =>
         logger.error("Internal server error response from NRS.")

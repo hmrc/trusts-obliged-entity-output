@@ -98,7 +98,7 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
             logger.error(s"$logInfo ServiceUnavailable returned from IF.")
             Future.successful(ServiceUnavailable)
           case _ =>
-            logger.error(s"$logInfo Error retrieving trust data from IF: $e.")
+            logger.error(s"$logInfo Error retrieving trust data from IF")
             Future.successful(InternalServerError)
         }
     }
@@ -119,7 +119,7 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
             logger.error(s"$logInfo ServiceUnavailable returned from NRS.")
             Future.successful(ServiceUnavailable)
           case _ =>
-            logger.error(s"$logInfo Error retrieving PDF from NRS: $e.")
+            logger.error(s"$logInfo Error retrieving PDF from NRS")
             Future.successful(InternalServerError)
         }
     }
