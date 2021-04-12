@@ -108,7 +108,7 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
                          (implicit request: IdentifierRequest[AnyContent]): Future[Result] = {
     nrsConnector.getPdf(payload).flatMap {
       case response: SuccessfulResponse =>
-        auditService.audit(NRS_DATA_RECEIVED)
+        auditService.audit(NRS_DATA_RECEIVED, None, Some(fileName), Some(PDF), Some(response.length))
         setLockStatus(identifier, lock = false).map { _ =>
           pdf(fileName, response)
         }
