@@ -24,7 +24,7 @@ import connectors.{NrsConnector, TrustDataConnector}
 import helpers.JsonHelper.getJsonValueFromFile
 import models._
 import models.auditing.Events._
-import org.mockito.Matchers.{any, isNull, eq => eqTo}
+import org.mockito.Matchers.{any, eq => eqTo}
 import org.mockito.Mockito.{reset, verify, when}
 import play.api.Play.materializer
 import play.api.http.Status.SERVICE_UNAVAILABLE
@@ -114,11 +114,8 @@ class PdfControllerSpec extends SpecBase {
 
               getSourceString(result) mustEqual responseBody
 
-              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(Some(trustJson)), any(), any(), any())(any(), any())
-              verify(mockAuditService).audit(eqTo(NRS_DATA_RECEIVED), any(),
-                eqTo(Some(fileName)),
-                eqTo(Some(PDF)),
-                eqTo(Some(contentLength)))(any(), any())
+              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(Some(trustJson)), any())(any(), any())
+              verify(mockAuditService).audit(eqTo(NRS_DATA_RECEIVED), any(), eqTo(Some(FileDetails(fileName, PDF, contentLength))))(any(), any())
             }
           }
         }
@@ -139,7 +136,7 @@ class PdfControllerSpec extends SpecBase {
             whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
               result.header.status mustBe SERVICE_UNAVAILABLE
 
-              verify(mockAuditService).audit(eqTo(IF_ERROR), eqTo(Some(JsString("ServiceUnavailableTrustDataResponse"))), any(), any(), any())(any(), any())
+              verify(mockAuditService).audit(eqTo(IF_ERROR), eqTo(Some(JsString("ServiceUnavailableTrustDataResponse"))), any())(any(), any())
             }
           }
 
@@ -160,8 +157,8 @@ class PdfControllerSpec extends SpecBase {
             whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
               result.header.status mustBe SERVICE_UNAVAILABLE
 
-              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(Some(trustJson)), any(), any(), any())(any(), any())
-              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(Some(JsString("ServiceUnavailableResponse"))), any(), any(), any())(any(), any())
+              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(Some(trustJson)), any())(any(), any())
+              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(Some(JsString("ServiceUnavailableResponse"))), any())(any(), any())
             }
           }
 
@@ -174,7 +171,7 @@ class PdfControllerSpec extends SpecBase {
             whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
               result.header.status mustBe SERVICE_UNAVAILABLE
 
-              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(Some(JsString("ServiceUnavailableResponse"))), any(), any(), any())(any(), any())
+              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(Some(JsString("ServiceUnavailableResponse"))), any())(any(), any())
             }
           }
         }
@@ -195,7 +192,7 @@ class PdfControllerSpec extends SpecBase {
             whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
               result.header.status mustBe INTERNAL_SERVER_ERROR
 
-              verify(mockAuditService).audit(eqTo(IF_ERROR), eqTo(Some(JsString("InternalServerErrorTrustDataResponse"))), any(), any(), any())(any(), any())
+              verify(mockAuditService).audit(eqTo(IF_ERROR), eqTo(Some(JsString("InternalServerErrorTrustDataResponse"))), any())(any(), any())
             }
           }
 
@@ -216,8 +213,8 @@ class PdfControllerSpec extends SpecBase {
             whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
               result.header.status mustBe INTERNAL_SERVER_ERROR
 
-              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(Some(trustJson)), any(), any(), any())(any(), any())
-              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(Some(JsString("InternalServerErrorResponse"))), any(), any(), any())(any(), any())
+              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(Some(trustJson)), any())(any(), any())
+              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(Some(JsString("InternalServerErrorResponse"))), any())(any(), any())
             }
           }
         }
@@ -236,7 +233,7 @@ class PdfControllerSpec extends SpecBase {
           whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
             result.header.status mustBe TOO_MANY_REQUESTS
 
-            verify(mockAuditService).audit(eqTo(EXCESSIVE_REQUESTS), eqTo(null), any(), any(), any())(any(), any())
+            verify(mockAuditService).audit(eqTo(EXCESSIVE_REQUESTS), eqTo(null), any())(any(), any())
           }
         }
       }

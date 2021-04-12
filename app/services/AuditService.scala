@@ -20,10 +20,11 @@ import controllers.Assets.DATE
 import models.auditing.ObligedEntityAuditEvent
 import models.requests.IdentifierRequest
 import play.api.libs.json.JsValue
-import play.api.mvc.{AnyContent, Result}
+import play.api.mvc.AnyContent
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import javax.inject.Inject
+import models.FileDetails
 
 import scala.concurrent.ExecutionContext.Implicits._
 
@@ -32,9 +33,7 @@ class AuditService @Inject()(auditConnector: AuditConnector,
 
   def audit(event: String,
             response: Option[JsValue] = None,
-            fileName: Option[String] = None,
-            fileType: Option[String] = None,
-            fileSize: Option[Long] = None
+            fileDetails: Option[FileDetails] = None
            )(implicit request: IdentifierRequest[AnyContent], hc: HeaderCarrier): Unit = {
 
     val payload = ObligedEntityAuditEvent(
@@ -43,9 +42,10 @@ class AuditService @Inject()(auditConnector: AuditConnector,
       affinity = request.affinityGroup,
       dateTime = request.headers.get(DATE).getOrElse(localDateTimeService.now.toString),
       response = response,
-      fileName = fileName,
-      fileType = fileType,
-      fileSize = fileSize
+      fileName = fileDetails.map(_.fileName),
+      fileType = fileDetails.map(_.fileType),
+      fileSize = fileDetails.map(_.fileSize),
+      checkSum = fileDetails.map(_.checkSum)
     )
 
     auditConnector.sendExplicitAudit(event, payload)

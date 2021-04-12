@@ -22,7 +22,7 @@ import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Results.Unauthorized
-import play.api.mvc.{Action, AnyContent, BodyParsers, Results}
+import play.api.mvc.{Action, BodyParsers, Results}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.AuthenticationService
