@@ -44,10 +44,9 @@ class AuditService @Inject()(auditConnector: AuditConnector,
       response = response,
       fileName = fileDetails.map(_.fileName),
       fileType = fileDetails.map(_.fileType),
-      fileSize = fileDetails.map(_.fileSize),
+      fileSize = fileDetails.map(_.fileSize)
     )
 
     auditConnector.sendExplicitAudit(event, payload)
   }
-
 }

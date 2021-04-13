@@ -16,6 +16,6 @@
 
 package models
 
-case class FileDetails(fileName: String, fileType: String, fileSize: Long) 
+case class FileDetails(fileName: String, fileType: String, fileSize: Long)
 
 
