@@ -17,9 +17,7 @@
 package utils
 
 import base.SpecBase
-import helpers.JsonHelper.getJsonValueFromFile
 import org.mockito.Mockito.when
-import play.api.libs.json.{JsValue, Json}
 import services.LocalDateTimeService
 
 class PdfFileNameGeneratorSpec extends SpecBase {

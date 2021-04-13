@@ -14,15 +14,8 @@
  * limitations under the License.
  */
 
-package utils
+package models
 
-import javax.inject.Inject
-import services.LocalDateTimeService
+case class FileDetails(fileName: String, fileType: String, fileSize: Long)
 
-class PdfFileNameGenerator @Inject()(localDateTimeService: LocalDateTimeService) {
 
-  def generate(identifier: String): String = {
-    val timestamp: String = localDateTimeService.nowFormatted
-    s"$identifier-$timestamp.pdf"
-  }
-}

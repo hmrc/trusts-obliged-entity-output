@@ -19,7 +19,7 @@ package service
 import base.SpecBase
 import connectors.TrustAuthConnector
 import models.requests.IdentifierRequest
-import models.{TrustAuthAgentAllowed, TrustAuthAllowed, TrustAuthDenied, TrustAuthInternalServerError, UTR}
+import models.{TrustAuthAllowed, TrustAuthDenied, TrustAuthInternalServerError, UTR}
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
@@ -30,9 +30,6 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.AuthenticationService
 import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
-import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.auth.core.retrieve.~
-import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.Future
 

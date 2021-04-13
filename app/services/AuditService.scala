@@ -17,22 +17,37 @@
 package services
 
 import controllers.Assets.DATE
-import models.auditing.ObligedEntityAuditEvent
+import models.auditing._
 import models.requests.IdentifierRequest
 import play.api.libs.json.JsValue
 import play.api.mvc.AnyContent
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-
 import javax.inject.Inject
+import models.FileDetails
+
 import scala.concurrent.ExecutionContext.Implicits._
 
 class AuditService @Inject()(auditConnector: AuditConnector,
                              localDateTimeService: LocalDateTimeService) {
 
-  def audit(event: String, response: Option[JsValue] = None)(implicit request: IdentifierRequest[AnyContent], hc: HeaderCarrier): Unit = {
+  def audit(event: String)
+           (implicit request: IdentifierRequest[AnyContent], hc: HeaderCarrier): Unit = {
 
     val payload = ObligedEntityAuditEvent(
+      internalAuthId = request.internalId,
+      identifier = request.identifier.value,
+      affinity = request.affinityGroup,
+      dateTime = request.headers.get(DATE).getOrElse(localDateTimeService.now.toString)
+    )
+
+    auditConnector.sendExplicitAudit(event, payload)
+  }
+
+  def audit(event: String, response: JsValue)
+           (implicit request: IdentifierRequest[AnyContent], hc: HeaderCarrier): Unit = {
+
+    val payload = ObligedEntityAuditResponseEvent(
       internalAuthId = request.internalId,
       identifier = request.identifier.value,
       affinity = request.affinityGroup,
@@ -43,4 +58,20 @@ class AuditService @Inject()(auditConnector: AuditConnector,
     auditConnector.sendExplicitAudit(event, payload)
   }
 
+  def auditFileDetails(event: String, fileDetails: FileDetails)
+                      (implicit request: IdentifierRequest[AnyContent], hc: HeaderCarrier): Unit = {
+
+    val payload = ObligedEntityAuditFileDetailsEvent(
+      internalAuthId = request.internalId,
+      identifier = request.identifier.value,
+      affinity = request.affinityGroup,
+      dateTime = request.headers.get(DATE).getOrElse(localDateTimeService.now.toString),
+      fileName = fileDetails.fileName,
+      fileType = fileDetails.fileType,
+      fileSize = fileDetails.fileSize,
+      fileGenerationDateTime = localDateTimeService.nowFormatted
+    )
+
+    auditConnector.sendExplicitAudit(event, payload)
+  }
 }
