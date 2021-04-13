@@ -45,7 +45,6 @@ class AuditService @Inject()(auditConnector: AuditConnector,
       fileName = fileDetails.map(_.fileName),
       fileType = fileDetails.map(_.fileType),
       fileSize = fileDetails.map(_.fileSize),
-      checkSum = fileDetails.map(_.checkSum)
     )
 
     auditConnector.sendExplicitAudit(event, payload)

@@ -26,8 +26,7 @@ case class ObligedEntityAuditEvent(internalAuthId: String,
                                    response: Option[JsValue] = None,
                                    fileName: Option[String] = None,
                                    fileType: Option[String] = None,
-                                   fileSize: Option[Long] = None,
-                                   checkSum: Option[Int] = None)
+                                   fileSize: Option[Long] = None)
 
 object ObligedEntityAuditEvent {
   implicit val formats: Format[ObligedEntityAuditEvent] = Json.format[ObligedEntityAuditEvent]

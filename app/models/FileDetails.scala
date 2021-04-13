@@ -16,8 +16,6 @@
 
 package models
 
-case class FileDetails(fileName: String, fileType: String, fileSize: Long) {
-  val checkSum: Int = -1 //ToDo Add CheckSum calculation
-}
+case class FileDetails(fileName: String, fileType: String, fileSize: Long) 
 
 
