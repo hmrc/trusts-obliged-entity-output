@@ -19,12 +19,15 @@ package models.auditing
 import play.api.libs.json.{Format, JsValue, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup
 
-case class ObligedEntityAuditEvent(internalAuthId: String,
+case class ObligedEntityAuditFileDetailsEvent(internalAuthId: String,
                                    identifier: String,
                                    affinity: AffinityGroup,
                                    dateTime: String,
-                                   response: Option[JsValue] = None)
+                                   fileName: String,
+                                   fileType: String,
+                                   fileSize: Long,
+                                   fileGenerationDateTime: String)
 
-object ObligedEntityAuditEvent {
-  implicit val formats: Format[ObligedEntityAuditEvent] = Json.format[ObligedEntityAuditEvent]
+object ObligedEntityAuditFileDetailsEvent {
+  implicit val formats: Format[ObligedEntityAuditFileDetailsEvent] = Json.format[ObligedEntityAuditFileDetailsEvent]
 }

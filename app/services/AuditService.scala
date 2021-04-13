@@ -17,7 +17,7 @@
 package services
 
 import controllers.Assets.DATE
-import models.auditing.ObligedEntityAuditEvent
+import models.auditing.{ObligedEntityAuditEvent, ObligedEntityAuditFileDetailsEvent}
 import models.requests.IdentifierRequest
 import play.api.libs.json.JsValue
 import play.api.mvc.AnyContent
@@ -33,7 +33,6 @@ class AuditService @Inject()(auditConnector: AuditConnector,
 
   def audit(event: String,
             response: Option[JsValue] = None,
-            fileDetails: Option[FileDetails] = None
            )(implicit request: IdentifierRequest[AnyContent], hc: HeaderCarrier): Unit = {
 
     val payload = ObligedEntityAuditEvent(
@@ -41,10 +40,25 @@ class AuditService @Inject()(auditConnector: AuditConnector,
       identifier = request.identifier.value,
       affinity = request.affinityGroup,
       dateTime = request.headers.get(DATE).getOrElse(localDateTimeService.now.toString),
-      response = response,
-      fileName = fileDetails.map(_.fileName),
-      fileType = fileDetails.map(_.fileType),
-      fileSize = fileDetails.map(_.fileSize)
+      response = response
+    )
+
+    auditConnector.sendExplicitAudit(event, payload)
+  }
+
+  def auditFileDetails(event: String,
+            fileDetails: FileDetails
+           )(implicit request: IdentifierRequest[AnyContent], hc: HeaderCarrier): Unit = {
+
+    val payload = ObligedEntityAuditFileDetailsEvent(
+      internalAuthId = request.internalId,
+      identifier = request.identifier.value,
+      affinity = request.affinityGroup,
+      dateTime = request.headers.get(DATE).getOrElse(localDateTimeService.now.toString),
+      fileName = fileDetails.fileName,
+      fileType = fileDetails.fileType,
+      fileSize = fileDetails.fileSize,
+      fileGenerationDateTime = localDateTimeService.now.toString,
     )
 
     auditConnector.sendExplicitAudit(event, payload)
