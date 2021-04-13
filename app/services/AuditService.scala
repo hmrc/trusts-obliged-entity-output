@@ -61,16 +61,15 @@ class AuditService @Inject()(auditConnector: AuditConnector,
   def auditFileDetails(event: String, fileDetails: FileDetails)
                       (implicit request: IdentifierRequest[AnyContent], hc: HeaderCarrier): Unit = {
 
-    val generationDateTime = localDateTimeService.now.toString
     val payload = ObligedEntityAuditFileDetailsEvent(
       internalAuthId = request.internalId,
       identifier = request.identifier.value,
       affinity = request.affinityGroup,
-      dateTime = request.headers.get(DATE).getOrElse(generationDateTime),
+      dateTime = request.headers.get(DATE).getOrElse(localDateTimeService.now.toString),
       fileName = fileDetails.fileName,
       fileType = fileDetails.fileType,
       fileSize = fileDetails.fileSize,
-      fileGenerationDateTime = generationDateTime
+      fileGenerationDateTime = localDateTimeService.nowFormatted
     )
 
     auditConnector.sendExplicitAudit(event, payload)
