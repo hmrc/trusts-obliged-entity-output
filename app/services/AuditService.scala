@@ -38,7 +38,7 @@ class AuditService @Inject()(auditConnector: AuditConnector,
       internalAuthId = request.internalId,
       identifier = request.identifier.value,
       affinity = request.affinityGroup,
-      dateTime = request.headers.get(DATE).getOrElse(localDateTimeService.now.toString),
+      dateTime = request.headers.get(DATE).getOrElse(localDateTimeService.now.toString)
     )
 
     auditConnector.sendExplicitAudit(event, payload)
@@ -70,7 +70,7 @@ class AuditService @Inject()(auditConnector: AuditConnector,
       fileName = fileDetails.fileName,
       fileType = fileDetails.fileType,
       fileSize = fileDetails.fileSize,
-      fileGenerationDateTime = generationDateTime,
+      fileGenerationDateTime = generationDateTime
     )
 
     auditConnector.sendExplicitAudit(event, payload)
