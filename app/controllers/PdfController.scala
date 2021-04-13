@@ -62,7 +62,7 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
         logger.info(s"$logInfo Successfully pinged NRS.")
         getLockStatus(identifier)
       case _ =>
-        auditService.audit(NRS_ERROR, Some(JsString(s"$ServiceUnavailableResponse")))
+        auditService.audit(NRS_ERROR, JsString(s"$ServiceUnavailableResponse"))
         logger.error(s"$logInfo Failed to ping NRS. Aborted PDF request.")
         Future.successful(ServiceUnavailable)
     }
@@ -88,11 +88,11 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
                           (implicit request: IdentifierRequest[AnyContent]): Future[Result] = {
     trustDataConnector.getTrustJson(request.identifier).flatMap {
       case SuccessfulTrustDataResponse(payload) =>
-        auditService.audit(IF_DATA_RECEIVED, Some(payload))
+        auditService.audit(IF_DATA_RECEIVED, payload)
         val fileName = pdfFileNameGenerator.generate(identifier)
         generatePdf(identifier, payload, fileName)
       case e =>
-        auditService.audit(IF_ERROR, Some(JsString(s"$e")))
+        auditService.audit(IF_ERROR, JsString(s"$e"))
         e match {
           case ServiceUnavailableTrustDataResponse =>
             logger.error(s"$logInfo ServiceUnavailable returned from IF.")
@@ -113,7 +113,7 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
           pdf(fileName, response)
         }
       case e =>
-        auditService.audit(NRS_ERROR, Some(JsString(s"$e")))
+        auditService.audit(NRS_ERROR, JsString(s"$e"))
         e match {
           case ServiceUnavailableResponse =>
             logger.error(s"$logInfo ServiceUnavailable returned from NRS.")
