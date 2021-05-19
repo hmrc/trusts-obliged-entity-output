@@ -27,7 +27,7 @@ import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.HeaderCarrierConverter
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import utils.Session
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -45,7 +45,7 @@ class AuthenticatedIdentifierAction @Inject()(identifier: String,
 
 
 
-    implicit val hc : HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers)
+    implicit val hc : HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
 
     (identifier match {
       case Identifiers.utrPattern(_) => Some(UTR(identifier))
