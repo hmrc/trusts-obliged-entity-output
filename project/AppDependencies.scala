@@ -5,13 +5,13 @@ import sbt._
 object AppDependencies {
 
   val compile: Seq[ModuleID] = Seq(
-    "uk.gov.hmrc"             %% "bootstrap-backend-play-27"      % "4.3.0",
+    "uk.gov.hmrc"             %% "bootstrap-backend-play-27"      % "5.3.0",
     "org.reactivemongo"       %% "play2-reactivemongo"            % "0.20.13-play27",
     ws
   )
 
   val test: Seq[ModuleID] = Seq(
-    "uk.gov.hmrc"             %% "bootstrap-test-play-27"   % "4.3.0",
+    "uk.gov.hmrc"             %% "bootstrap-test-play-27"   % "5.3.0",
     "org.scalatest"           %% "scalatest"                % "3.0.9",
     "com.typesafe.play"       %% "play-test"                % current,
     "org.scalatestplus.play"  %% "scalatestplus-play"       % "4.0.3",
