@@ -17,12 +17,12 @@
 package utils
 
 import base.SpecBase
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{mock, when}
 import services.LocalDateTimeService
 
 class PdfFileNameGeneratorSpec extends SpecBase {
 
-  private val mockLocalDateTimeService: LocalDateTimeService = mock[LocalDateTimeService]
+  private val mockLocalDateTimeService: LocalDateTimeService = mock(classOf[LocalDateTimeService])
   when(mockLocalDateTimeService.nowFormatted).thenReturn("2020-04-01--09-30-00")
   private val pdfFileNameGenerator: PdfFileNameGenerator = new PdfFileNameGenerator(mockLocalDateTimeService)
 

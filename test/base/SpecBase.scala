@@ -19,8 +19,9 @@ package base
 import config.AppConfig
 import controllers.actions.{FakeIdentifierActionProvider, IdentifierActionProvider}
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{BeforeAndAfter, Inside, MustMatchers, WordSpec}
-import org.scalatestplus.mockito.MockitoSugar
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.{BeforeAndAfter, Inside}
+import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -29,10 +30,9 @@ import play.api.test.Helpers
 import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
 import uk.gov.hmrc.http.HeaderCarrier
 
-class SpecBase extends WordSpec
-  with MustMatchers
+class SpecBase extends AnyWordSpec
+  with Matchers
   with ScalaFutures
-  with MockitoSugar
   with BeforeAndAfter
   with GuiceOneServerPerSuite
   with Inside {

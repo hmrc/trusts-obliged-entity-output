@@ -21,8 +21,9 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.http.HttpHeaders
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import config.Constants._
-import controllers.Assets.{CONTENT_TYPE, JSON}
+import play.api.http.HeaderNames._
 import org.scalatest.concurrent.IntegrationPatience
+import play.api.http.ContentTypes.JSON
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
 

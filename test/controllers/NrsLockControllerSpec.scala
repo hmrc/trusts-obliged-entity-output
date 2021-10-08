@@ -17,12 +17,11 @@
 package controllers
 
 import java.time.LocalDateTime
-
 import base.SpecBase
-import controllers.Assets.OK
 import models.NrsLock
-import org.mockito.Matchers.any
-import org.mockito.Mockito.when
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{mock, when}
+import play.api.http.Status.OK
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.JsBoolean
@@ -35,7 +34,7 @@ import scala.concurrent.Future
 
 class NrsLockControllerSpec extends SpecBase {
 
-  private val nrsLockRepository: NrsLockRepository = mock[NrsLockRepository]
+  private val nrsLockRepository: NrsLockRepository = mock(classOf[NrsLockRepository])
 
   override def applicationBuilder(): GuiceApplicationBuilder = {
     super.applicationBuilder()

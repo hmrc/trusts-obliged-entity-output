@@ -20,8 +20,8 @@ import base.SpecBase
 import connectors.TrustAuthConnector
 import models.requests.IdentifierRequest
 import models.{TrustAuthAllowed, TrustAuthDenied, TrustAuthInternalServerError, UTR}
-import org.mockito.Matchers.any
-import org.mockito.Mockito.when
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{mock, when}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{EitherValues, RecoverMethods}
 import play.api.inject.bind
@@ -40,7 +40,7 @@ class AuthenticationServiceSpec extends SpecBase with ScalaFutures with EitherVa
   private implicit val request: IdentifierRequest[AnyContent]
   = IdentifierRequest[AnyContent](FakeRequest(), "internalId", UTR(utr), "sessionId", Organisation)
 
-  private lazy val trustAuthConnector = mock[TrustAuthConnector]
+  private lazy val trustAuthConnector = mock(classOf[TrustAuthConnector])
 
   "invoking authenticateForIdentifier" when {
 
@@ -54,7 +54,7 @@ class AuthenticationServiceSpec extends SpecBase with ScalaFutures with EitherVa
 
         whenReady(service.authenticateForIdentifier[AnyContent](utr)) {
           result =>
-            result.right.value mustBe request
+            result.value mustBe request
         }
       }
     }

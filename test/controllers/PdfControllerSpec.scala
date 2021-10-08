@@ -24,8 +24,8 @@ import connectors.{NrsConnector, TrustDataConnector}
 import helpers.JsonHelper.getJsonValueFromFile
 import models._
 import models.auditing.Events._
-import org.mockito.Matchers.{any, eq => eqTo}
-import org.mockito.Mockito.{reset, verify, when}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.Mockito.{mock, reset, verify, when}
 import play.api.Play.materializer
 import play.api.http.Status.SERVICE_UNAVAILABLE
 import play.api.inject.bind
@@ -36,18 +36,18 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.NrsLockRepository
 import services.{AuditService, LocalDateTimeService}
-import java.time.LocalDateTime
 
+import java.time.LocalDateTime
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 
 class PdfControllerSpec extends SpecBase {
 
-  private val mockTrustDataConnector: TrustDataConnector = mock[TrustDataConnector]
-  private val mockNrsConnector: NrsConnector = mock[NrsConnector]
-  private val mockNrsLockRepository: NrsLockRepository = mock[NrsLockRepository]
-  private val mockAuditService: AuditService = mock[AuditService]
-  private val mockLocalDateTimeService: LocalDateTimeService = mock[LocalDateTimeService]
+  private val mockTrustDataConnector: TrustDataConnector = mock(classOf[TrustDataConnector])
+  private val mockNrsConnector: NrsConnector = mock(classOf[NrsConnector])
+  private val mockNrsLockRepository: NrsLockRepository = mock(classOf[NrsLockRepository])
+  private val mockAuditService: AuditService = mock(classOf[AuditService])
+  private val mockLocalDateTimeService: LocalDateTimeService = mock(classOf[LocalDateTimeService])
 
   override def applicationBuilder(): GuiceApplicationBuilder = {
     super.applicationBuilder()
