@@ -18,7 +18,7 @@ package models
 
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
-import controllers.Assets.CONTENT_LENGTH
+import play.api.http.HeaderNames._
 import play.api.Logging
 import play.api.http.Status._
 import play.api.libs.ws.BodyReadable

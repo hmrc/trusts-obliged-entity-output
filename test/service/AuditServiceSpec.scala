@@ -20,8 +20,8 @@ import base.SpecBase
 import models.auditing.ObligedEntityAuditEvent
 import models.requests.IdentifierRequest
 import models.{Identifier, URN, UTR}
-import org.mockito.Matchers.{any, eq => eqTo}
-import org.mockito.Mockito.{reset, verify, when}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.Mockito.{mock, reset, verify, when}
 import play.api.mvc.{AnyContent, Headers}
 import play.api.test.FakeRequest
 import services.{AuditService, LocalDateTimeService}
@@ -33,8 +33,8 @@ import java.time.LocalDateTime
 
 class AuditServiceSpec extends SpecBase {
 
-  private val auditConnector: AuditConnector = mock[AuditConnector]
-  private val mockLocalDateTimeService: LocalDateTimeService = mock[LocalDateTimeService]
+  private val auditConnector: AuditConnector = mock(classOf[AuditConnector])
+  private val mockLocalDateTimeService: LocalDateTimeService = mock(classOf[LocalDateTimeService])
   private val auditService: AuditService = new AuditService(auditConnector, mockLocalDateTimeService)
 
   private val event: String = "event"

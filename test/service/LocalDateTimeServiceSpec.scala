@@ -17,13 +17,14 @@
 package service
 
 import base.SpecBase
-import org.mockito.Mockito.{reset, when}
+import org.mockito.Mockito.{mock, reset, when}
 import services.LocalDateTimeService
+
 import java.time.LocalDateTime
 
 class LocalDateTimeServiceSpec extends SpecBase {
 
-  private val localDateTimeService: LocalDateTimeService = mock[LocalDateTimeService]
+  private val localDateTimeService: LocalDateTimeService = mock(classOf[LocalDateTimeService])
 
   "LocalDateTimeService" when {
 

@@ -18,10 +18,12 @@ package connectors
 
 import config.AppConfig
 import config.Constants.X_API_KEY
-import controllers.Assets.{OK, JSON, CONTENT_TYPE}
+import play.api.http.HeaderNames._
 
 import javax.inject.Inject
 import models.NrsResponse
+import play.api.http.ContentTypes.JSON
+import play.api.http.Status.OK
 import play.api.libs.json.JsValue
 import play.api.libs.ws.WSClient
 import uk.gov.hmrc.http.HttpVerbs.{GET, POST}

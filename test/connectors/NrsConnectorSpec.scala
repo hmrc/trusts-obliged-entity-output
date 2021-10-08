@@ -17,7 +17,7 @@
 package connectors
 
 import com.github.tomakehurst.wiremock.http.{HttpHeader, HttpHeaders}
-import controllers.Assets.CONTENT_LENGTH
+import play.api.http.HeaderNames._
 import helpers.ConnectorSpecHelper
 import helpers.JsonHelper._
 import models._

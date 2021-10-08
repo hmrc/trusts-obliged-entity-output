@@ -20,7 +20,7 @@ import java.util.UUID
 
 import config.AppConfig
 import config.Constants.{CONTENT_TYPE_JSON, CORRELATION_ID, ENVIRONMENT}
-import controllers.Assets.CONTENT_TYPE
+import play.api.http.HeaderNames._
 import javax.inject.Inject
 import models.{Identifier, TrustDataResponse}
 import play.api.Logging

@@ -18,8 +18,8 @@ package controllers.actions
 
 import base.SpecBase
 import com.google.inject.Inject
-import org.mockito.Matchers.any
-import org.mockito.Mockito.when
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{mock, when}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Results.Unauthorized
 import play.api.mvc.{Action, BodyParsers, Results}
@@ -39,8 +39,8 @@ class AuthActionSpec extends SpecBase {
 
   private val cc = stubControllerComponents()
 
-  private val mockAuthConnector: AuthConnector = mock[AuthConnector]
-  private val mockAuthService: AuthenticationService = mock[AuthenticationService]
+  private val mockAuthConnector: AuthConnector = mock(classOf[AuthConnector])
+  private val mockAuthService: AuthenticationService = mock(classOf[AuthenticationService])
 
   private val fakeRequest = FakeRequest("POST", "")
     .withHeaders(CONTENT_TYPE -> "application/json")

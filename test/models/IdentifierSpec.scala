@@ -16,23 +16,18 @@
 
 package models
 
-import org.scalacheck.Arbitrary.arbitrary
 import base.SpecBase
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
-class IdentifierSpec extends SpecBase with ScalaCheckPropertyChecks {
+class IdentifierSpec extends SpecBase {
 
   "Identifier" when {
 
     "UTR" when {
       ".toString" must {
         "return UTR" in {
-          forAll(arbitrary[String]) {
-            str =>
-              val identifier: Identifier = UTR(str)
-              identifier.toString mustEqual "UTR"
-              s"$identifier" mustEqual "UTR"
-          }
+          val identifier: Identifier = UTR("1234567890")
+          identifier.toString mustEqual "UTR"
+          s"$identifier" mustEqual "UTR"
         }
       }
     }
@@ -40,12 +35,10 @@ class IdentifierSpec extends SpecBase with ScalaCheckPropertyChecks {
     "URN" when {
       ".toString" must {
         "return URN" in {
-          forAll(arbitrary[String]) {
-            str =>
-              val identifier: Identifier = URN(str)
-              identifier.toString mustEqual "URN"
-              s"$identifier" mustEqual "URN"
-          }
+
+          val identifier: Identifier = URN("NTTRUST12345678")
+          identifier.toString mustEqual "URN"
+          s"$identifier" mustEqual "URN"
         }
       }
     }

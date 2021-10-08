@@ -16,7 +16,7 @@
 
 package services
 
-import controllers.Assets.DATE
+import play.api.http.HeaderNames._
 import models.auditing._
 import models.requests.IdentifierRequest
 import play.api.libs.json.JsValue

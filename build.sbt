@@ -25,6 +25,7 @@ lazy val microservice = Project(appName, file("."))
     SilencerSettings(),
     PlayKeys.playDefaultPort         := 9780,
     libraryDependencies              ++= AppDependencies.compile ++ AppDependencies.test,
+    dependencyOverrides ++= AppDependencies.overrides,
     publishingSettings ++ scoverageSettings,
   )
   .settings(
