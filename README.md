@@ -1,7 +1,16 @@
+# Trusts obliged entity output
 
-# trusts-obliged-entity-output
+This service is responsible for fetching the information about the persons in the trust from API#1584 Get Trust Obliged Entities and generating a PDF from this data with the NRS PDF service.
 
-This is a placeholder README.md for a new repository
+This service acts as a proxy to IF and NRS. The information is not transformed/modified in any way.
+
+To run locally using the micro-service provided by the service manager:
+
+***sm --start TRUSTS_ALL -r***
+
+If you want to run your local copy, then stop the frontend ran by the service manager and run your local code by using the following (port number is 9780 but is defaulted to that in build.sbt).
+
+`sbt run`
 
 ### License
 
