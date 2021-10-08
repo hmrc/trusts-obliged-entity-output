@@ -18,11 +18,11 @@ package repositories
 
 import base.IntegrationTestBase
 import models.NrsLock
-import org.scalatest.{AsyncFreeSpec, MustMatchers}
-
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.freespec.AsyncFreeSpec
 import java.time.LocalDateTime
 
-class NrsLockRepositorySpec extends AsyncFreeSpec with MustMatchers with IntegrationTestBase {
+class NrsLockRepositorySpec extends AsyncFreeSpec with Matchers with IntegrationTestBase {
 
   private val identifier1: String = "1234567890"
   private val identifier2: String = "0987654321"
