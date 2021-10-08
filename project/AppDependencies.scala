@@ -25,15 +25,4 @@ object AppDependencies {
     "org.scalacheck" %% "scalacheck" % "1.14.3"
   ).map(_ % Test)
 
-  private val akkaVersion = "2.6.12"
-  private val akkaHttpVersion = "10.2.3"
-
-  val overrides = Seq(
-    "com.typesafe.akka" %% "akka-stream_2.12" % akkaVersion,
-    "com.typesafe.akka" %% "akka-protobuf_2.12" % akkaVersion,
-    "com.typesafe.akka" %% "akka-slf4j_2.12" % akkaVersion,
-    "com.typesafe.akka" %% "akka-actor_2.12" % akkaVersion,
-    "com.typesafe.akka" %% "akka-http-core_2.12" % akkaHttpVersion,
-    "commons-codec" % "commons-codec" % "1.12"
-  )
 }
