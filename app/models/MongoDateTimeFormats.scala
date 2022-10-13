@@ -16,23 +16,41 @@
 
 package models
 
-import java.time.{Instant, LocalDateTime, ZoneOffset}
-
+import java.time.{Instant, LocalDateTime, ZoneOffset, ZonedDateTime}
 import play.api.libs.json._
+import scala.util.{Success, Try}
+import scala.util.{Success, Try}
 
 trait MongoDateTimeFormats {
 
   implicit val localDateTimeRead: Reads[LocalDateTime] = {
-    (__ \ "$date").read[Long].map {
-      millis =>
-        LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneOffset.UTC)
-    }
+    case JsObject(map) if map.contains("$date") =>
+      map("$date") match {
+        case JsNumber(v) => JsSuccess(LocalDateTime.ofInstant(Instant.ofEpochMilli(v.toLong), ZoneOffset.UTC))
+        case JsObject(stringObject) =>
+          if (stringObject.contains("$numberLong")) {
+            JsSuccess(LocalDateTime.ofInstant(Instant.ofEpochMilli(BigDecimal(stringObject("$numberLong").as[JsString].value).toLong), ZoneOffset.UTC))
+          } else {
+            JsError("Unexpected LocalDateTime Format")
+          }
+        case JsString(dateValue) =>
+          val parseDateTime = if (dateValue.contains("Z")) { (dateAsString: String) =>
+            ZonedDateTime.parse(dateAsString)
+          } else { (dateAsString: String) => LocalDateTime.parse(dateAsString) }
+          ZonedDateTime.parse(dateValue)
+          Try(parseDateTime(dateValue)) match {
+            case Success(value: LocalDateTime) => JsSuccess(value)
+            case Success(value: ZonedDateTime) => JsSuccess(value.toLocalDateTime)
+            case _ => JsError("Unexpected LocalDateTime Format")
+          }
+        case _ => JsError("Unexpected LocalDateTime Format")
+      }
+    case _ => JsError("Unexpected LocalDateTime Format")
   }
 
   implicit val localDateTimeWrite: Writes[LocalDateTime] = (dateTime: LocalDateTime) => Json.obj(
     "$date" -> dateTime.atZone(ZoneOffset.UTC).toInstant.toEpochMilli
   )
-
 }
 
 object MongoDateTimeFormats extends MongoDateTimeFormats
