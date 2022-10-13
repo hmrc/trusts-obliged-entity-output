@@ -18,11 +18,15 @@ package repositories
 
 import base.IntegrationTestBase
 import models.NrsLock
+import org.mongodb.scala.bson.BsonDocument
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.freespec.AsyncFreeSpec
+import play.api.test.Helpers.{await, defaultAwaitTimeout}
+
 import java.time.LocalDateTime
 
-class NrsLockRepositorySpec extends AsyncFreeSpec with Matchers with IntegrationTestBase {
+class NrsLockRepositorySpec extends AsyncFreeSpec with Matchers with IntegrationTestBase with BeforeAndAfterEach {
 
   private val identifier1: String = "1234567890"
   private val identifier2: String = "0987654321"
@@ -31,22 +35,28 @@ class NrsLockRepositorySpec extends AsyncFreeSpec with Matchers with Integration
 
   private val testDateTime: LocalDateTime = LocalDateTime.now()
 
+  private val repository = createApplication.injector.instanceOf[NrsLockRepository]
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    await(repository.collection.deleteMany(BsonDocument()).toFuture())
+  }
+
   "NrsLockRepository" - {
 
-    "must be able to store and retrieve data" in assertMongoTest(createApplication) { app =>
-      val repository: NrsLockRepository = app.injector.instanceOf[NrsLockRepository]
+    "must be able to store and retrieve data" in  {
 
-      repository.getLock(internalId, identifier1).futureValue mustBe None
-      repository.getLock(internalId, identifier2).futureValue mustBe None
+      await(repository.getLock(internalId, identifier1)) mustBe None
+      await(repository.getLock(internalId, identifier2)) mustBe None
 
       val state1: NrsLock = NrsLock(locked = true, createdAt = testDateTime)
-      repository.setLock(internalId, identifier1, state1).futureValue mustBe true
+      await(repository.setLock(internalId, identifier1, state1)) mustBe true
 
       val state2: NrsLock = NrsLock(locked = false, createdAt = testDateTime)
-      repository.setLock(internalId, identifier2, state2).futureValue mustBe true
+      await(repository.setLock(internalId, identifier2, state2)) mustBe true
 
-      repository.getLock(internalId, identifier1).futureValue mustBe Some(state1)
-      repository.getLock(internalId, identifier2).futureValue mustBe Some(state2)
+      await(repository.getLock(internalId, identifier1)) mustBe Some(state1)
+      await(repository.getLock(internalId, identifier2)) mustBe Some(state2)
     }
   }
 }

@@ -17,14 +17,16 @@
 package models
 
 import java.time.LocalDateTime
-
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{Reads, Writes, __}
+import play.api.libs.json.{Format, Json, OFormat, Reads, Writes, __}
 
 case class NrsLock(locked: Boolean,
                    createdAt: LocalDateTime)
 
 object NrsLock {
+
+  implicit def format(implicit localDateTimeFormat: Format[LocalDateTime]): OFormat[NrsLock] =
+    Json.using[Json.WithDefaultValues].format[NrsLock]
 
   implicit lazy val reads: Reads[NrsLock] = {
     (
