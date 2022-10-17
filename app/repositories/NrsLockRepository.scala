@@ -44,7 +44,7 @@ class NrsLockRepository @Inject()(
         Indexes.ascending("createdAt"),
         IndexOptions()
           .name("created-at-index")
-          .expireAfter(config.lockTtlInSeconds, TimeUnit.SECONDS)),
+          .expireAfter(config.lockTtlInSeconds, TimeUnit.SECONDS))
     )
   ) with Logging {
 
