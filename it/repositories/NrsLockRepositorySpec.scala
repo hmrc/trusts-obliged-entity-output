@@ -19,11 +19,11 @@ package repositories
 import base.IntegrationTestBase
 import models.NrsLock
 import org.mongodb.scala.bson.BsonDocument
-import org.scalatest.concurrent.IntegrationPatience
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.mongo.test.MongoSupport
 
 import java.time.LocalDateTime
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class NrsLockRepositorySpec extends IntegrationTestBase with MongoSupport {
 
