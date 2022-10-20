@@ -124,9 +124,7 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
         }
       }
 
-      "return false" when {
-        
-        "non-200 response received" in {
+      "return false" when {"non-200 response received" in {
           stubForGet(url = url, responseStatus = INTERNAL_SERVER_ERROR)
 
           whenReady(connector.ping()) {

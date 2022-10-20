@@ -1,23 +1,16 @@
 package base
 
 import com.typesafe.config.ConfigFactory
-import org.scalatest.time.{Millis, Seconds, Span}
-import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.{Application, Configuration}
-import uk.gov.hmrc.mongo.test.MongoSupport
+import config.AppConfig
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.freespec.AsyncFreeSpec
+import org.scalatest.matchers.must.Matchers
+import play.api.Configuration
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-trait IntegrationTestBase extends MongoSupport {
+trait IntegrationTestBase extends AsyncFreeSpec with Matchers with BeforeAndAfterEach {
 
-  implicit val defaultPatience: PatienceConfig = PatienceConfig(timeout = Span(30, Seconds), interval = Span(15, Millis))
-
-  private lazy val config = Configuration(ConfigFactory.load(System.getProperty("config.resource")))
-
-  def dropTheDatabase(): Unit = {
-    mongoDatabase.drop()
-  }
-
-  lazy val createApplication: Application = new GuiceApplicationBuilder()
-    .configure(config)
-    .build()
+  private val config: Configuration = Configuration(ConfigFactory.load(System.getProperty("config.resource")))
+  val appConfig = new AppConfig(config, new ServicesConfig(config))
 
 }

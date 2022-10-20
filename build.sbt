@@ -1,7 +1,6 @@
-import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 
-lazy val IntegrationTest = config("it") extend(Test)
+lazy val IntegrationTest = config("it") extend Test
 
 val appName = "trusts-obliged-entity-output"
 
@@ -10,8 +9,8 @@ lazy val scoverageSettings = {
   Seq(
     ScoverageKeys.coverageExcludedPackages := "<empty>;..*Reverse.*;..Routes.;prod.*;testOnlyDoNotUseInAppConf.*;views.html.*;" +
       "uk.gov.hmrc.BuildInfo;app.*;prod.*;config.*",
-    ScoverageKeys.coverageMinimumStmtTotal := 75,
-    ScoverageKeys.coverageFailOnMinimum := false,
+    ScoverageKeys.coverageMinimumStmtTotal := 85,
+    ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true
   )
 }
@@ -48,3 +47,5 @@ lazy val testSettings: Seq[Def.Setting[_]] = Seq(
     "-Dconfig.resource=test.application.conf"
   )
 )
+
+addCommandAlias("scalastyleAll", "all scalastyle test:scalastyle it:scalastyle")

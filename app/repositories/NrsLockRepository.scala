@@ -21,7 +21,6 @@ import models.NrsLock
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.Updates.{combine, set}
 import org.mongodb.scala.model._
-import play.api.Logging
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.Codecs.toBson
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
@@ -46,8 +45,7 @@ class NrsLockRepository @Inject()(
           .name("created-at-index")
           .expireAfter(config.lockTtlInSeconds, TimeUnit.SECONDS))
     )
-  ) with Logging {
-
+  ) {
   def getLock(internalId: String, identifier: String): Future[Option[NrsLock]] = {
 
     val selector = equal("identifier", s"$internalId~$identifier")
