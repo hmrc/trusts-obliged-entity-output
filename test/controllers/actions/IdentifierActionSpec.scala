@@ -177,7 +177,6 @@ class FakeFailingAuthConnector @Inject()(exceptionToReturn: Throwable) extends A
   override def authorise[A](predicate: Predicate, retrieval: Retrieval[A])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[A] = {
     Future.failed(exceptionToReturn)
   }
-  
 }
 
 class FakeAuthConnector(stubbedRetrievalResult: Future[_]) extends AuthConnector {
@@ -185,5 +184,4 @@ class FakeAuthConnector(stubbedRetrievalResult: Future[_]) extends AuthConnector
   override def authorise[A](predicate: Predicate, retrieval: Retrieval[A])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[A] = {
     stubbedRetrievalResult.map(_.asInstanceOf[A])
   }
-
 }

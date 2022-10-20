@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,15 @@ package repositories
 import base.IntegrationTestBase
 import models.NrsLock
 import org.mongodb.scala.bson.BsonDocument
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.freespec.AsyncFreeSpec
+import org.scalatest.concurrent.IntegrationPatience
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
+import uk.gov.hmrc.mongo.test.MongoSupport
 
 import java.time.LocalDateTime
 
-class NrsLockRepositorySpec extends AsyncFreeSpec with Matchers with IntegrationTestBase with BeforeAndAfterEach {
+class NrsLockRepositorySpec extends IntegrationTestBase with MongoSupport {
+
+  private val repository = new NrsLockRepository(mongoComponent, appConfig)
 
   private val identifier1: String = "1234567890"
   private val identifier2: String = "0987654321"
@@ -35,8 +36,6 @@ class NrsLockRepositorySpec extends AsyncFreeSpec with Matchers with Integration
 
   private val testDateTime: LocalDateTime = LocalDateTime.now()
 
-  private val repository = createApplication.injector.instanceOf[NrsLockRepository]
-
   override def beforeEach(): Unit = {
     super.beforeEach()
     await(repository.collection.deleteMany(BsonDocument()).toFuture())
@@ -44,7 +43,7 @@ class NrsLockRepositorySpec extends AsyncFreeSpec with Matchers with Integration
 
   "NrsLockRepository" - {
 
-    "must be able to store and retrieve data" in  {
+    "must be able to store and retrieve data" in {
 
       await(repository.getLock(internalId, identifier1)) mustBe None
       await(repository.getLock(internalId, identifier2)) mustBe None
@@ -55,8 +54,31 @@ class NrsLockRepositorySpec extends AsyncFreeSpec with Matchers with Integration
       val state2: NrsLock = NrsLock(locked = false, createdAt = testDateTime)
       await(repository.setLock(internalId, identifier2, state2)) mustBe true
 
+      await(repository.collection.countDocuments(BsonDocument()).toFuture()) mustBe 2
       await(repository.getLock(internalId, identifier1)) mustBe Some(state1)
       await(repository.getLock(internalId, identifier2)) mustBe Some(state2)
+    }
+
+    "must be able to update data" in {
+
+      await(repository.getLock(internalId, identifier1)) mustBe None
+      await(repository.getLock(internalId, identifier2)) mustBe None
+
+      val state1: NrsLock = NrsLock(locked = true, createdAt = testDateTime)
+      await(repository.setLock(internalId, identifier1, state1)) mustBe true
+
+      val state2: NrsLock = NrsLock(locked = false, createdAt = testDateTime)
+      await(repository.setLock(internalId, identifier2, state2)) mustBe true
+
+      val state1Update: NrsLock = NrsLock(locked = false, createdAt = testDateTime)
+      await(repository.setLock(internalId, identifier1, state1Update)) mustBe true
+
+      val state2Update: NrsLock = NrsLock(locked = true, createdAt = testDateTime)
+      await(repository.setLock(internalId, identifier2, state2Update)) mustBe true
+
+      await(repository.collection.countDocuments(BsonDocument()).toFuture()) mustBe 2
+      await(repository.getLock(internalId, identifier1)) mustBe Some(state1Update)
+      await(repository.getLock(internalId, identifier2)) mustBe Some(state2Update)
     }
   }
 }
