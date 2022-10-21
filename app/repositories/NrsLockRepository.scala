@@ -19,10 +19,8 @@ package repositories
 import config.AppConfig
 import models.NrsLock
 import org.mongodb.scala.model.Filters.equal
-import org.mongodb.scala.model.Updates.{combine, set}
 import org.mongodb.scala.model._
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.Codecs.toBson
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import java.util.concurrent.TimeUnit
@@ -30,10 +28,9 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 
-class NrsLockRepository @Inject()(
-                                   mongoComponent: MongoComponent,
-                                   config: AppConfig
-                                 )(implicit val ec: ExecutionContext)
+class NrsLockRepository @Inject()(mongoComponent: MongoComponent,
+                                  config: AppConfig)
+                                 (implicit val ec: ExecutionContext)
   extends PlayMongoRepository[NrsLock](
     mongoComponent = mongoComponent,
     collectionName = "nrs-lock",
@@ -46,25 +43,17 @@ class NrsLockRepository @Inject()(
           .expireAfter(config.lockTtlInSeconds, TimeUnit.SECONDS))
     )
   ) {
-  def getLock(internalId: String, identifier: String): Future[Option[NrsLock]] = {
 
+  def getLock(internalId: String, identifier: String): Future[Boolean] = {
     val selector = equal("identifier", s"$internalId~$identifier")
 
-    collection.find(selector).headOption()
+    collection.find(selector).headOption().map(_.exists(_.locked))
   }
 
-  def setLock(internalId: String, identifier: String, lock: NrsLock): Future[Boolean] = {
+  def setLock(lock: NrsLock): Future[Boolean] = {
+    val selector = equal("identifier", s"${lock.identifier}")
 
-    val selector = equal("identifier", s"$internalId~$identifier")
-
-    val modifier = combine(
-      set("identifier", s"$internalId~$identifier"),
-      set("locked", toBson(lock.locked)),
-      set("createdAt", toBson(lock.createdAt))
-    )
-
-    val updateOptions = new UpdateOptions().upsert(true)
-
-    collection.updateOne(selector, modifier, updateOptions).headOption().map(_.exists(_.wasAcknowledged()))
+    val options = new ReplaceOptions().upsert(true)
+    collection.replaceOne(selector, lock, options).headOption().map(_.exists(_.wasAcknowledged()))
   }
 }

@@ -45,40 +45,40 @@ class NrsLockRepositorySpec extends IntegrationTestBase with MongoSupport {
 
     "must be able to store and retrieve data" in {
 
-      await(repository.getLock(internalId, identifier1)) mustBe None
-      await(repository.getLock(internalId, identifier2)) mustBe None
+      await(repository.getLock(internalId, identifier1)) mustBe false
+      await(repository.getLock(internalId, identifier2)) mustBe false
 
-      val state1: NrsLock = NrsLock(locked = true, createdAt = testDateTime)
-      await(repository.setLock(internalId, identifier1, state1)) mustBe true
+      val state1: NrsLock = NrsLock.build(internalId, identifier1, locked = true, createdAt = testDateTime)
+      await(repository.setLock(state1)) mustBe true
 
-      val state2: NrsLock = NrsLock(locked = false, createdAt = testDateTime)
-      await(repository.setLock(internalId, identifier2, state2)) mustBe true
+      val state2: NrsLock = NrsLock.build(internalId, identifier2, locked = false, createdAt = testDateTime)
+      await(repository.setLock(state2)) mustBe true
 
       await(repository.collection.countDocuments(BsonDocument()).toFuture()) mustBe 2
-      await(repository.getLock(internalId, identifier1)) mustBe Some(state1)
-      await(repository.getLock(internalId, identifier2)) mustBe Some(state2)
+      await(repository.getLock(internalId, identifier1)) mustBe state1.locked
+      await(repository.getLock(internalId, identifier2)) mustBe state2.locked
     }
 
     "must be able to update data" in {
 
-      await(repository.getLock(internalId, identifier1)) mustBe None
-      await(repository.getLock(internalId, identifier2)) mustBe None
+      await(repository.getLock(internalId, identifier1)) mustBe false
+      await(repository.getLock(internalId, identifier2)) mustBe false
 
-      val state1: NrsLock = NrsLock(locked = true, createdAt = testDateTime)
-      await(repository.setLock(internalId, identifier1, state1)) mustBe true
+      val state1: NrsLock = NrsLock.build(internalId, identifier1, locked = true, createdAt = testDateTime)
+      await(repository.setLock(state1)) mustBe true
 
-      val state2: NrsLock = NrsLock(locked = false, createdAt = testDateTime)
-      await(repository.setLock(internalId, identifier2, state2)) mustBe true
+      val state2: NrsLock = NrsLock.build(internalId, identifier2, locked = false, createdAt = testDateTime)
+      await(repository.setLock(state2)) mustBe true
 
-      val state1Update: NrsLock = NrsLock(locked = false, createdAt = testDateTime)
-      await(repository.setLock(internalId, identifier1, state1Update)) mustBe true
+      val state1Update: NrsLock = NrsLock.build(internalId, identifier1, locked = false, createdAt = testDateTime)
+      await(repository.setLock(state1Update)) mustBe true
 
-      val state2Update: NrsLock = NrsLock(locked = true, createdAt = testDateTime)
-      await(repository.setLock(internalId, identifier2, state2Update)) mustBe true
+      val state2Update: NrsLock = NrsLock.build(internalId, identifier2, locked = true, createdAt = testDateTime)
+      await(repository.setLock(state2Update)) mustBe true
 
       await(repository.collection.countDocuments(BsonDocument()).toFuture()) mustBe 2
-      await(repository.getLock(internalId, identifier1)) mustBe Some(state1Update)
-      await(repository.getLock(internalId, identifier2)) mustBe Some(state2Update)
+      await(repository.getLock(internalId, identifier1)) mustBe state1Update.locked
+      await(repository.getLock(internalId, identifier2)) mustBe state2Update.locked
     }
   }
 }

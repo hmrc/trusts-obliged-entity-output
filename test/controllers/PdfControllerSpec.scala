@@ -37,7 +37,6 @@ import play.api.test.Helpers._
 import repositories.NrsLockRepository
 import services.{AuditService, LocalDateTimeService}
 
-import java.time.LocalDateTime
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 
@@ -64,8 +63,6 @@ class PdfControllerSpec extends SpecBase {
 
   private val trustJson: JsValue = getJsonValueFromFile("nrs-request-body.json")
 
-  private val testDateTime: LocalDateTime = LocalDateTime.now()
-
   private val controller: PdfController = injector.instanceOf[PdfController]
 
   private def getSourceString(result: Result): String = {
@@ -75,7 +72,7 @@ class PdfControllerSpec extends SpecBase {
     Await.result(result.body.dataStream.runWith(sink), Duration.Inf)
   }
 
-  when(mockNrsLockRepository.setLock(any(), any(), any())).thenReturn(Future.successful(true))
+  when(mockNrsLockRepository.setLock(any())).thenReturn(Future.successful(true))
 
   "PdfController" when {
     ".getPdf" when {
@@ -92,7 +89,7 @@ class PdfControllerSpec extends SpecBase {
 
             when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
 
-            when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(None))
+            when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(false))
 
             when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
@@ -128,7 +125,7 @@ class PdfControllerSpec extends SpecBase {
 
             when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
 
-            when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(None))
+            when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(false))
 
             when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(ServiceUnavailableTrustDataResponse))
@@ -146,7 +143,7 @@ class PdfControllerSpec extends SpecBase {
 
             when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
 
-            when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(None))
+            when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(false))
 
             when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
@@ -184,7 +181,7 @@ class PdfControllerSpec extends SpecBase {
 
             when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
 
-            when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(None))
+            when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(false))
 
             when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(InternalServerErrorTrustDataResponse))
@@ -202,7 +199,7 @@ class PdfControllerSpec extends SpecBase {
 
             when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
 
-            when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(None))
+            when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(false))
 
             when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
@@ -227,8 +224,7 @@ class PdfControllerSpec extends SpecBase {
 
           when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
 
-          when(mockNrsLockRepository.getLock(any(), any()))
-            .thenReturn(Future.successful(Some(NrsLock(locked = true, createdAt = testDateTime))))
+          when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(true))
 
           whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
             result.header.status mustBe TOO_MANY_REQUESTS

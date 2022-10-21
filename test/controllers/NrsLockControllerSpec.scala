@@ -16,9 +16,7 @@
 
 package controllers
 
-import java.time.LocalDateTime
 import base.SpecBase
-import models.NrsLock
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{mock, when}
 import play.api.http.Status.OK
@@ -45,8 +43,6 @@ class NrsLockControllerSpec extends SpecBase {
 
   private val identifier: String = "1234567890"
 
-  private val testDateTime: LocalDateTime = LocalDateTime.now()
-
   private val controller: NrsLockController = injector.instanceOf[NrsLockController]
 
   "NrsLockController" when {
@@ -55,8 +51,7 @@ class NrsLockControllerSpec extends SpecBase {
       "locked" must {
         "return true" in {
 
-          when(nrsLockRepository.getLock(any(), any()))
-            .thenReturn(Future.successful(Some(NrsLock(locked = true, createdAt = testDateTime))))
+          when(nrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(true))
 
           val result: Future[Result] = controller.getLockStatus(identifier)(FakeRequest())
 
@@ -69,8 +64,7 @@ class NrsLockControllerSpec extends SpecBase {
       "unlocked" must {
         "return false" in {
 
-          when(nrsLockRepository.getLock(any(), any()))
-            .thenReturn(Future.successful(Some(NrsLock(locked = false, createdAt = testDateTime))))
+          when(nrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(false))
 
           val result: Future[Result] = controller.getLockStatus(identifier)(FakeRequest())
 
@@ -83,8 +77,7 @@ class NrsLockControllerSpec extends SpecBase {
       "no lock" must {
         "return false" in {
 
-          when(nrsLockRepository.getLock(any(), any()))
-            .thenReturn(Future.successful(None))
+          when(nrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(false))
 
           val result: Future[Result] = controller.getLockStatus(identifier)(FakeRequest())
 
