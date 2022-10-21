@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,16 @@ package repositories
 
 import base.IntegrationTestBase
 import models.NrsLock
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.freespec.AsyncFreeSpec
-import java.time.LocalDateTime
+import org.mongodb.scala.bson.BsonDocument
+import play.api.test.Helpers.{await, defaultAwaitTimeout}
+import uk.gov.hmrc.mongo.test.MongoSupport
 
-class NrsLockRepositorySpec extends AsyncFreeSpec with Matchers with IntegrationTestBase {
+import java.time.LocalDateTime
+import scala.concurrent.ExecutionContext.Implicits.global
+
+class NrsLockRepositorySpec extends IntegrationTestBase with MongoSupport {
+
+  private val repository = new NrsLockRepository(mongoComponent, appConfig)
 
   private val identifier1: String = "1234567890"
   private val identifier2: String = "0987654321"
@@ -31,22 +36,49 @@ class NrsLockRepositorySpec extends AsyncFreeSpec with Matchers with Integration
 
   private val testDateTime: LocalDateTime = LocalDateTime.now()
 
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    await(repository.collection.deleteMany(BsonDocument()).toFuture())
+  }
+
   "NrsLockRepository" - {
 
-    "must be able to store and retrieve data" in assertMongoTest(createApplication) { app =>
-      val repository: NrsLockRepository = app.injector.instanceOf[NrsLockRepository]
+    "must be able to store and retrieve data" in {
 
-      repository.getLock(internalId, identifier1).futureValue mustBe None
-      repository.getLock(internalId, identifier2).futureValue mustBe None
+      await(repository.getLock(internalId, identifier1)) mustBe false
+      await(repository.getLock(internalId, identifier2)) mustBe false
 
-      val state1: NrsLock = NrsLock(locked = true, createdAt = testDateTime)
-      repository.setLock(internalId, identifier1, state1).futureValue mustBe true
+      val state1: NrsLock = NrsLock.build(internalId, identifier1, locked = true, createdAt = testDateTime)
+      await(repository.setLock(state1)) mustBe true
 
-      val state2: NrsLock = NrsLock(locked = false, createdAt = testDateTime)
-      repository.setLock(internalId, identifier2, state2).futureValue mustBe true
+      val state2: NrsLock = NrsLock.build(internalId, identifier2, locked = false, createdAt = testDateTime)
+      await(repository.setLock(state2)) mustBe true
 
-      repository.getLock(internalId, identifier1).futureValue mustBe Some(state1)
-      repository.getLock(internalId, identifier2).futureValue mustBe Some(state2)
+      await(repository.collection.countDocuments(BsonDocument()).toFuture()) mustBe 2
+      await(repository.getLock(internalId, identifier1)) mustBe state1.locked
+      await(repository.getLock(internalId, identifier2)) mustBe state2.locked
+    }
+
+    "must be able to update data" in {
+
+      await(repository.getLock(internalId, identifier1)) mustBe false
+      await(repository.getLock(internalId, identifier2)) mustBe false
+
+      val state1: NrsLock = NrsLock.build(internalId, identifier1, locked = true, createdAt = testDateTime)
+      await(repository.setLock(state1)) mustBe true
+
+      val state2: NrsLock = NrsLock.build(internalId, identifier2, locked = false, createdAt = testDateTime)
+      await(repository.setLock(state2)) mustBe true
+
+      val state1Update: NrsLock = NrsLock.build(internalId, identifier1, locked = false, createdAt = testDateTime)
+      await(repository.setLock(state1Update)) mustBe true
+
+      val state2Update: NrsLock = NrsLock.build(internalId, identifier2, locked = true, createdAt = testDateTime)
+      await(repository.setLock(state2Update)) mustBe true
+
+      await(repository.collection.countDocuments(BsonDocument()).toFuture()) mustBe 2
+      await(repository.getLock(internalId, identifier1)) mustBe state1Update.locked
+      await(repository.getLock(internalId, identifier2)) mustBe state2Update.locked
     }
   }
 }

@@ -18,73 +18,42 @@ package repositories
 
 import config.AppConfig
 import models.NrsLock
-import play.api.Logging
-import play.api.libs.json._
-import play.modules.reactivemongo.ReactiveMongoApi
-import reactivemongo.play.json.collection.JSONCollection
+import org.mongodb.scala.model.Filters.equal
+import org.mongodb.scala.model._
+import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 
-class NrsLockRepository @Inject()(mongo: ReactiveMongoApi,
+class NrsLockRepository @Inject()(mongoComponent: MongoComponent,
                                   config: AppConfig)
-                                 (implicit ec: ExecutionContext) extends Logging {
+                                 (implicit val ec: ExecutionContext)
+  extends PlayMongoRepository[NrsLock](
+    mongoComponent = mongoComponent,
+    collectionName = "nrs-lock",
+    domainFormat = NrsLock.format,
+    indexes = Seq(
+      IndexModel(
+        Indexes.ascending("createdAt"),
+        IndexOptions()
+          .name("created-at-index")
+          .expireAfter(config.lockTtlInSeconds, TimeUnit.SECONDS))
+    )
+  ) {
 
-  implicit final val jsObjectWrites: OWrites[JsObject] = OWrites[JsObject](identity)
+  def getLock(internalId: String, identifier: String): Future[Boolean] = {
+    val selector = equal("identifier", s"$internalId~$identifier")
 
-  private val collectionName: String = "nrs-lock"
-
-  private val lockTtl: Int = config.lockTtlInSeconds
-
-  private def collection: Future[JSONCollection] =
-    for {
-      _ <- ensureIndexes
-      res <- mongo.database.map(_.collection[JSONCollection](collectionName))
-    } yield res
-
-  private lazy val createdAtIndex = MongoIndex(
-    key = "createdAt",
-    name = "created-at-index",
-    expireAfterSeconds = Some(lockTtl)
-  )
-
-  private lazy val ensureIndexes: Future[Boolean] = {
-    logger.info("Ensuring collection indexes")
-    for {
-      collection <- mongo.database.map(_.collection[JSONCollection](collectionName))
-      createdIndex <- collection.indexesManager.ensure(createdAtIndex)
-    } yield createdIndex
+    collection.find(selector).headOption().map(_.exists(_.locked))
   }
 
-  def setLock(internalId: String, identifier: String, lock: NrsLock): Future[Boolean] = {
+  def setLock(lock: NrsLock): Future[Boolean] = {
+    val selector = equal("identifier", s"${lock.identifier}")
 
-    val selector = Json.obj(
-      "identifier" -> s"$internalId~$identifier"
-    )
-
-    val modifier = Json.obj(
-      "$set" -> lock
-    )
-
-    collection.flatMap(_.update(
-      ordered = false
-    ).one(
-      q = selector,
-      u = modifier,
-      upsert = true
-    ).map(_.ok))
+    val options = new ReplaceOptions().upsert(true)
+    collection.replaceOne(selector, lock, options).headOption().map(_.exists(_.wasAcknowledged()))
   }
-
-  def getLock(internalId: String, identifier: String): Future[Option[NrsLock]] = {
-
-    val selector = Json.obj(
-      "identifier" -> s"$internalId~$identifier"
-    )
-
-    collection.flatMap(_.find(
-      selector = selector,
-      projection = None
-    ).one[NrsLock])
-  }
-
 }

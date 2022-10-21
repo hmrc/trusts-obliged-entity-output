@@ -16,27 +16,42 @@
 
 package models
 
+import play.api.libs.functional.syntax._
+import play.api.libs.json.{Format, Reads, Writes, __}
+
 import java.time.LocalDateTime
 
-import play.api.libs.functional.syntax._
-import play.api.libs.json.{Reads, Writes, __}
-
-case class NrsLock(locked: Boolean,
+case class NrsLock(identifier: String,
+                   locked: Boolean,
                    createdAt: LocalDateTime)
 
 object NrsLock {
 
+  def build(internalId: String,
+            identifier: String,
+            locked: Boolean,
+            createdAt: LocalDateTime = LocalDateTime.now()): NrsLock =
+    NrsLock(
+      identifier = s"$internalId~$identifier",
+      locked = locked,
+      createdAt = createdAt
+    )
+
+  val format: Format[NrsLock] = Format(reads, writes)
+
   implicit lazy val reads: Reads[NrsLock] = {
     (
-      (__ \ "locked").read[Boolean] and
-      (__ \ "createdAt").read(MongoDateTimeFormats.localDateTimeRead)
-    )(NrsLock.apply _)
+      (__ \ "identifier").read[String] and
+        (__ \ "locked").read[Boolean] and
+        (__ \ "createdAt").read(MongoDateTimeFormats.localDateTimeRead)
+      ) (NrsLock.apply _)
   }
 
   implicit lazy val writes: Writes[NrsLock] = {
     (
-      (__ \ "locked").write[Boolean] and
-      (__ \ "createdAt").write(MongoDateTimeFormats.localDateTimeWrite)
-    )(unlift(NrsLock.unapply))
+      (__ \ "identifier").write[String] and
+        (__ \ "locked").write[Boolean] and
+        (__ \ "createdAt").write(MongoDateTimeFormats.localDateTimeWrite)
+      ) (unlift(NrsLock.unapply))
   }
 }

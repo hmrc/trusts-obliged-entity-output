@@ -18,7 +18,6 @@ package controllers
 
 import com.google.inject.Inject
 import controllers.actions.IdentifierActionProvider
-import models.NrsLock
 import play.api.Logging
 import play.api.libs.json.JsBoolean
 import play.api.mvc._
@@ -36,7 +35,7 @@ class NrsLockController @Inject()(identifierAction: IdentifierActionProvider,
   def getLockStatus(identifier: String): Action[AnyContent] = identifierAction(identifier).async {
     implicit request =>
       nrsLockRepository.getLock(request.internalId, identifier).map {
-        case Some(NrsLock(true, _)) => Ok(JsBoolean(true))
+        case true => Ok(JsBoolean(true))
         case _ => Ok(JsBoolean(false))
       }
   }

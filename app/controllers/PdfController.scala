@@ -33,7 +33,6 @@ import services.AuditService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.PdfFileNameGenerator
 
-import java.time.LocalDateTime
 import scala.concurrent.{ExecutionContext, Future}
 
 class PdfController @Inject()(identifierAction: IdentifierActionProvider,
@@ -70,7 +69,7 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
 
   private def getLockStatus(identifier: String)(implicit request: IdentifierRequest[AnyContent]): Future[Result] = {
     nrsLockRepository.getLock(request.internalId, identifier).flatMap {
-      case Some(NrsLock(true, _)) =>
+      case true =>
         auditService.audit(EXCESSIVE_REQUESTS)
         Future.successful(TooManyRequests)
       case _ =>
@@ -81,7 +80,7 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
   }
 
   private def setLockStatus(identifier: String, lock: Boolean)(implicit request: IdentifierRequest[AnyContent]): Future[Boolean] = {
-    nrsLockRepository.setLock(request.internalId, identifier, NrsLock(lock, LocalDateTime.now()))
+    nrsLockRepository.setLock(NrsLock.build(request.internalId, identifier, lock))
   }
 
   private def getTrustJson(identifier: String)

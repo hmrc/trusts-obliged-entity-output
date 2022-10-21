@@ -1,7 +1,6 @@
-import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 
-lazy val IntegrationTest = config("it") extend(Test)
+lazy val IntegrationTest = config("it") extend Test
 
 val appName = "trusts-obliged-entity-output"
 
@@ -10,8 +9,8 @@ lazy val scoverageSettings = {
   Seq(
     ScoverageKeys.coverageExcludedPackages := "<empty>;..*Reverse.*;..Routes.;prod.*;testOnlyDoNotUseInAppConf.*;views.html.*;" +
       "uk.gov.hmrc.BuildInfo;app.*;prod.*;config.*",
-    ScoverageKeys.coverageMinimum := 75,
-    ScoverageKeys.coverageFailOnMinimum := false,
+    ScoverageKeys.coverageMinimumStmtTotal := 90,
+    ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true
   )
 }
@@ -21,7 +20,7 @@ lazy val microservice = Project(appName, file("."))
   .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
   .settings(
     majorVersion                     := 0,
-    scalaVersion                     := "2.12.12",
+    scalaVersion                     := "2.12.16",
     SilencerSettings(),
     PlayKeys.playDefaultPort         := 9780,
     libraryDependencies              ++= AppDependencies.compile ++ AppDependencies.test,
@@ -48,3 +47,5 @@ lazy val testSettings: Seq[Def.Setting[_]] = Seq(
     "-Dconfig.resource=test.application.conf"
   )
 )
+
+addCommandAlias("scalastyleAll", "all scalastyle test:scalastyle it:scalastyle")
