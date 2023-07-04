@@ -26,10 +26,10 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import javax.inject.Inject
 import models.FileDetails
 
-import scala.concurrent.ExecutionContext.Implicits._
+import scala.concurrent.ExecutionContext
 
 class AuditService @Inject()(auditConnector: AuditConnector,
-                             localDateTimeService: LocalDateTimeService) {
+                             localDateTimeService: LocalDateTimeService) (implicit ec: ExecutionContext) {
 
   def audit(event: String)
            (implicit request: IdentifierRequest[AnyContent], hc: HeaderCarrier): Unit = {

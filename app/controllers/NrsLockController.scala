@@ -28,9 +28,7 @@ import scala.concurrent.ExecutionContext
 
 class NrsLockController @Inject()(identifierAction: IdentifierActionProvider,
                                   nrsLockRepository: NrsLockRepository,
-                                  cc: ControllerComponents) extends BackendController(cc) with Logging {
-
-  implicit val ec: ExecutionContext = ExecutionContext.global
+                                  cc: ControllerComponents) (implicit ec: ExecutionContext) extends BackendController(cc) with Logging {
 
   def getLockStatus(identifier: String): Action[AnyContent] = identifierAction(identifier).async {
     implicit request =>

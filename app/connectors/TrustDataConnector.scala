@@ -28,10 +28,9 @@ import play.api.http.HeaderNames
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 import utils.Session
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-class TrustDataConnector @Inject()(http: HttpClient, config: AppConfig) extends Logging {
+class TrustDataConnector @Inject()(http: HttpClient, config: AppConfig) (implicit ec: ExecutionContext) extends Logging {
 
   private def trustDataHeaders(correlationId: String): Seq[(String, String)] =
     Seq(
