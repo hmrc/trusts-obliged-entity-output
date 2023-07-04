@@ -15,16 +15,18 @@ lazy val scoverageSettings = {
   )
 }
 
+libraryDependencySchemes ++= Seq("org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always)
+
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
   .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
   .settings(
     majorVersion                     := 0,
-    scalaVersion                     := "2.12.16",
-    SilencerSettings(),
+    scalaVersion                     := "2.13.11",
     PlayKeys.playDefaultPort         := 9780,
     libraryDependencies              ++= AppDependencies.compile ++ AppDependencies.test,
     publishingSettings ++ scoverageSettings,
+    scalacOptions+= "-Wconf:src=routes/.*:s"
   )
   .settings(
     inConfig(Test)(testSettings)
