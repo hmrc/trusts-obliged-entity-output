@@ -26,8 +26,9 @@ import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import javax.inject.Singleton
 
-
+@Singleton
 class NrsLockRepository @Inject()(mongoComponent: MongoComponent,
                                   config: AppConfig)
                                  (implicit val ec: ExecutionContext)

@@ -35,9 +35,11 @@ import java.time.LocalDateTime
 
 class AuditServiceSpec extends SpecBase {
 
+  implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
+
   private val auditConnector: AuditConnector = mock(classOf[AuditConnector])
   private val mockLocalDateTimeService: LocalDateTimeService = mock(classOf[LocalDateTimeService])
-  private val auditService: AuditService = new AuditService(auditConnector, mockLocalDateTimeService)
+  private val auditService: AuditService = new AuditService(auditConnector, mockLocalDateTimeService)(ec)
 
   private val event: String = "event"
   private val internalId: String = "internalId"

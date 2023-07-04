@@ -48,7 +48,7 @@ class TrustDataConnector @Inject()(http: HttpClient, config: AppConfig) (implici
     implicit val hc: HeaderCarrier = HeaderCarrier(authorization = None, extraHeaders = trustDataHeaders(correlationId))
     logger.info(s"[Session ID: ${Session.id(hc)}] getTrustJson correlationId: $correlationId from call to url: $url")
 
-    http.GET[TrustDataResponse](url)(TrustDataResponse.httpReads(identifier), implicitly[HeaderCarrier](hc), global)
+    http.GET[TrustDataResponse](url)(TrustDataResponse.httpReads(identifier), implicitly[HeaderCarrier](hc), ec)
   }
 
 }

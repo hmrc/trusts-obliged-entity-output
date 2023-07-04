@@ -1,4 +1,3 @@
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 
 lazy val IntegrationTest = config("it") extend Test
 
@@ -25,7 +24,7 @@ lazy val microservice = Project(appName, file("."))
     scalaVersion                     := "2.13.11",
     PlayKeys.playDefaultPort         := 9780,
     libraryDependencies              ++= AppDependencies.compile ++ AppDependencies.test,
-    publishingSettings ++ scoverageSettings,
+    scoverageSettings,
     scalacOptions+= "-Wconf:src=routes/.*:s"
   )
   .settings(
