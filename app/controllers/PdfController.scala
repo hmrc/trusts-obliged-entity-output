@@ -42,7 +42,7 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
                               config: AppConfig,
                               cc: ControllerComponents,
                               pdfFileNameGenerator: PdfFileNameGenerator,
-                              auditService: AuditService,
+                              auditService: AuditService
                              ) (implicit ec: ExecutionContext) extends BackendController(cc) with Logging {
 
   def getPdf(identifier: String): Action[AnyContent] = identifierAction(identifier).async {
