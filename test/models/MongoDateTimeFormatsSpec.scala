@@ -49,5 +49,11 @@ class MongoDateTimeFormatsSpec extends AnyFreeSpec with Matchers with OptionValu
       val result = Json.toJson(date).as[LocalDateTime]
       result mustEqual date
     }
+
+    "must deserialise from json with missing s'$$date' field" in {
+      val json = Json.obj("foo" -> "bar")
+      val result = json.asOpt[LocalDateTime]
+      result mustBe None
+    }
   }
 }
