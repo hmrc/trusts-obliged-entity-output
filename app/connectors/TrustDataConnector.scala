@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,9 @@ import play.api.http.HeaderNames
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 import utils.Session
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-class TrustDataConnector @Inject()(http: HttpClient, config: AppConfig) extends Logging {
+class TrustDataConnector @Inject()(http: HttpClient, config: AppConfig) (implicit ec: ExecutionContext) extends Logging {
 
   private def trustDataHeaders(correlationId: String): Seq[(String, String)] =
     Seq(
@@ -49,7 +48,7 @@ class TrustDataConnector @Inject()(http: HttpClient, config: AppConfig) extends 
     implicit val hc: HeaderCarrier = HeaderCarrier(authorization = None, extraHeaders = trustDataHeaders(correlationId))
     logger.info(s"[Session ID: ${Session.id(hc)}] getTrustJson correlationId: $correlationId from call to url: $url")
 
-    http.GET[TrustDataResponse](url)(TrustDataResponse.httpReads(identifier), implicitly[HeaderCarrier](hc), global)
+    http.GET[TrustDataResponse](url)(TrustDataResponse.httpReads(identifier), implicitly[HeaderCarrier](hc), ec)
   }
 
 }

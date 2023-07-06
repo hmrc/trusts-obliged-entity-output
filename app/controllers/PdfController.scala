@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,9 +42,8 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
                               config: AppConfig,
                               cc: ControllerComponents,
                               pdfFileNameGenerator: PdfFileNameGenerator,
-                              auditService: AuditService) extends BackendController(cc) with Logging {
-
-  implicit val ec: ExecutionContext = ExecutionContext.global
+                              auditService: AuditService
+                             ) (implicit ec: ExecutionContext) extends BackendController(cc) with Logging {
 
   def getPdf(identifier: String): Action[AnyContent] = identifierAction(identifier).async {
     implicit request =>

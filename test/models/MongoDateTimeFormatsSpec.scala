@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,12 @@ class MongoDateTimeFormatsSpec extends AnyFreeSpec with Matchers with OptionValu
     "must serialise/deserialise to the same value" in {
       val result = Json.toJson(date).as[LocalDateTime]
       result mustEqual date
+    }
+
+    "must deserialise from json with missing s'$$date' field" in {
+      val json = Json.obj("foo" -> "bar")
+      val result = json.asOpt[LocalDateTime]
+      result mustBe None
     }
   }
 }
