@@ -23,7 +23,7 @@ import javax.inject.Inject
 import models.NrsResponse
 import play.api.Logging
 import play.api.http.ContentTypes.JSON
-import play.api.http.Status.{BAD_REQUEST, OK}
+import play.api.http.Status.OK
 import play.api.libs.json.JsValue
 import play.api.libs.ws.WSClient
 import uk.gov.hmrc.http.HttpVerbs.{GET, POST}
@@ -43,9 +43,6 @@ class NrsConnector @Inject()(ws: WSClient, config: AppConfig) extends Logging {
     }
 
     ws.url(url).withMethod(POST).withHttpHeaders(nrsHeaders: _*).withBody(payload).stream().map { response =>
-      if (config.logNRS400ResponseBody && response.status == BAD_REQUEST) {
-        logger.error(s"Response from NRS - ${response.body}")
-      }
       response.body[NrsResponse]
     }
   }

@@ -21,12 +21,13 @@ import akka.util.ByteString
 import play.api.http.HeaderNames._
 import play.api.Logging
 import play.api.http.Status._
+import play.api.libs.json.{JsArray, Json}
 import play.api.libs.ws.BodyReadable
 
 trait NrsResponse
 
 case class SuccessfulResponse(body: Source[ByteString, _], length: Long) extends NrsResponse
-case object BadRequestResponse extends NrsResponse
+case class BadRequestResponse(parsedNRS400Response: String = "") extends NrsResponse
 case object UnauthorisedResponse extends NrsResponse
 case object NotFoundResponse extends NrsResponse
 case object ServiceUnavailableResponse extends NrsResponse
@@ -48,7 +49,7 @@ object NrsResponse extends Logging {
       case BAD_REQUEST =>
         logger.debug(s"Payload does not conform to defined JSON schema - ${response.body}")
         logger.error(s"Payload does not conform to defined JSON schema")
-        BadRequestResponse
+        BadRequestResponse(parseNRS400ResponseBody(response.body))
       case UNAUTHORIZED =>
         logger.error("No X-API-Key provided or it is invalid.")
         UnauthorisedResponse
@@ -63,6 +64,17 @@ object NrsResponse extends Logging {
         logger.error("Internal server error response from NRS.")
         InternalServerErrorResponse
     }
+  }
+
+  def parseNRS400ResponseBody(body: String) = {
+    /**
+     * Matches anything inside square brackets UNLESS it is preceded by a caret symbol (^).
+     */
+    val regex = "(?<!\\^)\\[.*?\\]"
+
+    Json.parse(body).as[JsArray].value.map { json =>
+      json.\("message").getOrElse(Json.obj()).toString().replaceAll(regex, "[OBFUSCATED]")
+    }.mkString("", ",\n", "")
   }
 
 }

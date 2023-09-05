@@ -50,7 +50,8 @@ class SpecBase extends AnyWordSpec
       .configure(
         Seq(
           "metrics.enabled" -> false,
-          "auditing.enabled" -> false
+          "auditing.enabled" -> false,
+          "features.logNRS400ResponseBody" -> true
         ): _*
       ).overrides(
       bind[IdentifierActionProvider].toInstance(new FakeIdentifierActionProvider(Helpers.stubControllerComponents().parsers.default, Organisation))

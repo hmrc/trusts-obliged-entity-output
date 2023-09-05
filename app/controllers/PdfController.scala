@@ -113,6 +113,11 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
       case e =>
         auditService.audit(NRS_ERROR, JsString(s"$e"))
         e match {
+          case BadRequestResponse(body) =>
+            if (config.logNRS400ResponseBody) {
+              logger.error(s"Response from NRS - $body")
+            }
+            Future.successful(InternalServerError)
           case ServiceUnavailableResponse =>
             logger.error(s"$logInfo ServiceUnavailable returned from NRS.")
             Future.successful(ServiceUnavailable)
