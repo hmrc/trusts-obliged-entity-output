@@ -214,6 +214,27 @@ class PdfControllerSpec extends SpecBase {
               verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(JsString("InternalServerErrorResponse")))(any(), any())
             }
           }
+
+          "bad request returned from NRS" in {
+
+            reset(mockAuditService)
+
+            when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
+
+            when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(false))
+
+            when(mockTrustDataConnector.getTrustJson(any()))
+              .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
+
+            when(mockNrsConnector.getPdf(any())(any()))
+              .thenReturn(Future.successful(BadRequestResponse()))
+
+            whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
+              result.header.status mustBe INTERNAL_SERVER_ERROR
+
+              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(JsString("BadRequestResponse()")))(any(), any())
+            }
+          }
         }
       }
 

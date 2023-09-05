@@ -59,7 +59,7 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
 
           whenReady(connector.getPdf(json)) {
             response =>
-              response mustBe BadRequestResponse
+              response mustBe BadRequestResponse()
           }
         }
       }

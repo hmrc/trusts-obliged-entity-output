@@ -64,7 +64,7 @@ class ConnectorSpecHelper extends SpecBase with WireMockHelper with IntegrationP
   def stubForPost(url: String,
                   requestBody: String,
                   responseStatus: Int,
-                  responseBody: String = "",
+                  responseBody: String = "[]",
                   responseHeaders: HttpHeaders = HttpHeaders.noHeaders(),
                   delayResponse: Int = 0): StubMapping = {
 
