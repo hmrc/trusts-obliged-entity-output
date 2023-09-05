@@ -19,18 +19,18 @@ package connectors
 import config.AppConfig
 import config.Constants.X_API_KEY
 import play.api.http.HeaderNames._
-
 import javax.inject.Inject
 import models.NrsResponse
+import play.api.Logging
 import play.api.http.ContentTypes.JSON
-import play.api.http.Status.OK
+import play.api.http.Status.{BAD_REQUEST, OK}
 import play.api.libs.json.JsValue
 import play.api.libs.ws.WSClient
 import uk.gov.hmrc.http.HttpVerbs.{GET, POST}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class NrsConnector @Inject()(ws: WSClient, config: AppConfig) {
+class NrsConnector @Inject()(ws: WSClient, config: AppConfig) extends Logging {
 
   def getPdf(payload: JsValue)(implicit ec: ExecutionContext): Future[NrsResponse] = {
     lazy val url: String = s"${config.nrsUrl}/generate-pdf/template/trusts-5mld-1-2-0/signed-pdf"
@@ -43,6 +43,9 @@ class NrsConnector @Inject()(ws: WSClient, config: AppConfig) {
     }
 
     ws.url(url).withMethod(POST).withHttpHeaders(nrsHeaders: _*).withBody(payload).stream().map { response =>
+      if (config.logNRS400ResponseBody && response.status == BAD_REQUEST) {
+        logger.error(s"Response from NRS - ${response.body}")
+      }
       response.body[NrsResponse]
     }
   }
