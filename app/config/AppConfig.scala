@@ -41,4 +41,6 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
   val inlineOrAttachment: String = config.get[String]("inline-or-attachment")
 
   val lockTtlInSeconds: Int = config.get[Int]("mongodb.lock.ttlSeconds")
+
+  val logNRS400ResponseBody: Boolean = config.get[Boolean]("features.logNRS400ResponseBody")
 }
