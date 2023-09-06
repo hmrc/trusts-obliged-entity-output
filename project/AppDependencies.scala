@@ -23,7 +23,7 @@ object AppDependencies {
     "org.scalacheck"            %% "scalacheck"               % "1.17.0",
     "com.vladsch.flexmark"      % "flexmark-all"              % "0.64.8",
     "org.mockito"               % "mockito-core"              % "5.5.0",
-    "com.github.tomakehurst"    % "wiremock-standalone"       % "2.27.2"
+    "org.wiremock" % "wiremock-standalone" % "3.0.1"
   ).map(_ % "test, it")
 
 }
