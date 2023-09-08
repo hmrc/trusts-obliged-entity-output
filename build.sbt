@@ -21,7 +21,7 @@ lazy val microservice = Project(appName, file("."))
   .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
   .settings(
     majorVersion                     := 0,
-    scalaVersion                     := "2.13.12",
+    scalaVersion                     := "2.13.11",
     PlayKeys.playDefaultPort         := 9780,
     libraryDependencies              ++= AppDependencies.compile ++ AppDependencies.test,
     scoverageSettings,
