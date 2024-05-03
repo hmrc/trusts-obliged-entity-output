@@ -17,8 +17,7 @@
 package service
 
 import base.SpecBase
-import org.scalatest.matchers.must.Matchers._
-import org.scalatest.{Assertion, EitherValues}
+import org.scalatest.EitherValues
 import services.{ValidationService, Validator}
 import utils.JsonUtils
 
