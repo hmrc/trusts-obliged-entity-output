@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import play.api.http.HttpEntity
 import play.api.libs.json.{JsString, JsValue}
 import play.api.mvc._
 import repositories.NrsLockRepository
-import services.AuditService
+import services.{AuditService, ValidationService}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.PdfFileNameGenerator
 
@@ -42,7 +42,8 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
                               config: AppConfig,
                               cc: ControllerComponents,
                               pdfFileNameGenerator: PdfFileNameGenerator,
-                              auditService: AuditService
+                              auditService: AuditService,
+                              validationService: ValidationService
                              ) (implicit ec: ExecutionContext) extends BackendController(cc) with Logging {
 
   def getPdf(identifier: String): Action[AnyContent] = identifierAction(identifier).async {
@@ -87,8 +88,14 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
     trustDataConnector.getTrustJson(request.identifier).flatMap {
       case SuccessfulTrustDataResponse(payload) =>
         auditService.audit(IF_DATA_RECEIVED, payload)
-        val fileName = pdfFileNameGenerator.generate(identifier)
-        generatePdf(identifier, payload, fileName)
+        validationService.get(config.trustsObligedEntityDataSchema).validate(payload.toString()) match {
+          case Right(_) =>
+            val fileName = pdfFileNameGenerator.generate(identifier)
+            generatePdf(identifier, payload, fileName)
+          case Left(validationErrors) =>
+            logger.warn(s"[PdfController][getTrustJson][Session ID: ${request.sessionId}] problem with payload: $validationErrors")
+            Future.successful(InternalServerError)
+        }
       case e =>
         auditService.audit(IF_ERROR, JsString(s"$e"))
         e match {

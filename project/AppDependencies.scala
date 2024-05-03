@@ -9,8 +9,9 @@ object AppDependencies {
   private val bootstrapVersion = "7.22.0"
 
   val compile: Seq[ModuleID] = Seq(
-    "uk.gov.hmrc" %% "bootstrap-backend-play-28" % bootstrapVersion,
-    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28" % mongoHmrcVersion,
+    "uk.gov.hmrc"                 %% "bootstrap-backend-play-28"  % bootstrapVersion,
+    "uk.gov.hmrc.mongo"           %% "hmrc-mongo-play-28"         % mongoHmrcVersion,
+    "com.github.java-json-tools"  % "json-schema-validator"       % "2.2.14",
     ws
   )
 

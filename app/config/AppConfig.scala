@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,4 +43,7 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
   val lockTtlInSeconds: Int = config.get[Int]("mongodb.lock.ttlSeconds")
 
   val logNRS400ResponseBody: Boolean = config.get[Boolean]("features.logNRS400ResponseBody")
+
+  val trustsObligedEntityDataSchema: String =
+    "/resources/schemas/get-trust-obliged-entities-data-schema-v1.2.0.json"
 }
