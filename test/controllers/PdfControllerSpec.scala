@@ -16,8 +16,8 @@
 
 package controllers
 
-import akka.stream.scaladsl.{Sink, Source}
-import akka.util.ByteString
+import org.apache.pekko.stream.scaladsl.{Sink, Source}
+import org.apache.pekko.util.ByteString
 import base.SpecBase
 import config.Constants.PDF
 import connectors.{NrsConnector, TrustDataConnector}
