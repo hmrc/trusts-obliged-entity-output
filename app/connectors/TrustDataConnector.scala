@@ -50,7 +50,6 @@ class TrustDataConnector @Inject()(http: HttpClientV2, config: AppConfig) (impli
 
     http
       .get(url"$url")
-      .setHeader(trustDataHeaders(correlationId): _*)
       .execute[TrustDataResponse](TrustDataResponse.httpReads(identifier), ec)
   }
 
