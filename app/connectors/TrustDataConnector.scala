@@ -42,12 +42,14 @@ class TrustDataConnector @Inject()(http: HttpClientV2, config: AppConfig) (impli
     )
 
   def getTrustJson(identifier: Identifier): Future[TrustDataResponse] = {
+    lazy val url: String = s"${config.trustDataUrl}/trusts/obliged-entities/$identifier/${identifier.value}"
+
     val correlationId = UUID.randomUUID().toString
     implicit val hc: HeaderCarrier = HeaderCarrier(authorization = None, extraHeaders = trustDataHeaders(correlationId))
-    logger.info(s"[Session ID: ${Session.id(hc)}] getTrustJson correlationId: $correlationId from call to url: ${config.trustDataUrl}/trusts/obliged-entities/$identifier/${identifier.value}")
+    logger.info(s"[Session ID: ${Session.id(hc)}] getTrustJson correlationId: $correlationId from call to url: $url")
 
     http
-      .get(url"${config.trustDataUrl}/trusts/obliged-entities/$identifier/${identifier.value}")
+      .get(url"$url")
       .setHeader(trustDataHeaders(correlationId): _*)
       .execute[TrustDataResponse](TrustDataResponse.httpReads(identifier), ec)
   }
