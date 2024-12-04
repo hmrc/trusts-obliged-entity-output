@@ -25,12 +25,13 @@ import javax.inject.Inject
 import models.{Identifier, TrustDataResponse}
 import play.api.Logging
 import play.api.http.HeaderNames
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
+import uk.gov.hmrc.http.client.HttpClientV2
 import utils.Session
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class TrustDataConnector @Inject()(http: HttpClient, config: AppConfig) (implicit ec: ExecutionContext) extends Logging {
+class TrustDataConnector @Inject()(http: HttpClientV2, config: AppConfig) (implicit ec: ExecutionContext) extends Logging {
 
   private def trustDataHeaders(correlationId: String): Seq[(String, String)] =
     Seq(
@@ -44,11 +45,12 @@ class TrustDataConnector @Inject()(http: HttpClient, config: AppConfig) (implici
     lazy val url: String = s"${config.trustDataUrl}/trusts/obliged-entities/$identifier/${identifier.value}"
 
     val correlationId = UUID.randomUUID().toString
-
     implicit val hc: HeaderCarrier = HeaderCarrier(authorization = None, extraHeaders = trustDataHeaders(correlationId))
     logger.info(s"[Session ID: ${Session.id(hc)}] getTrustJson correlationId: $correlationId from call to url: $url")
 
-    http.GET[TrustDataResponse](url)(TrustDataResponse.httpReads(identifier), implicitly[HeaderCarrier](hc), ec)
+    http
+      .get(url"$url")
+      .execute[TrustDataResponse](TrustDataResponse.httpReads(identifier), ec)
   }
 
 }

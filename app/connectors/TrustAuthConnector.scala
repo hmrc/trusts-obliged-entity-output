@@ -20,8 +20,8 @@ import com.google.inject.ImplementedBy
 import config.AppConfig
 import javax.inject.Inject
 import models.{TrustAuthInternalServerError, TrustAuthResponse}
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.HttpReads.Implicits.readFromJson
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -31,15 +31,18 @@ trait TrustAuthConnector {
   def authorisedForIdentifier(identifier: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[TrustAuthResponse]
 }
 
-class TrustAuthConnectorImpl @Inject()(http: HttpClient, config: AppConfig)
+class TrustAuthConnectorImpl @Inject()(http: HttpClientV2, config: AppConfig)
   extends TrustAuthConnector {
 
   val baseUrl: String = config.trustAuthUrl + "/trusts-auth"
 
   override def authorisedForIdentifier(identifier: String)
                                       (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[TrustAuthResponse] = {
-    http.GET[TrustAuthResponse](s"$baseUrl/authorised/$identifier").recoverWith {
-      case _ => Future.successful(TrustAuthInternalServerError)
-    }
+    http
+      .get(url"$baseUrl/authorised/$identifier")
+      .execute[TrustAuthResponse]
+      .recoverWith {
+        case _ => Future.successful(TrustAuthInternalServerError)
+      }
   }
 }
