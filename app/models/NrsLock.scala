@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,24 +18,18 @@ package models
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{Format, Reads, Writes, __}
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.instantFormat
 
-import java.time.LocalDateTime
+import java.time.Instant
 
 case class NrsLock(identifier: String,
                    locked: Boolean,
-                   createdAt: LocalDateTime)
+                   createdAt: Instant = Instant.now())
 
 object NrsLock {
 
-  def build(internalId: String,
-            identifier: String,
-            locked: Boolean,
-            createdAt: LocalDateTime = LocalDateTime.now()): NrsLock =
-    NrsLock(
-      identifier = s"$internalId~$identifier",
-      locked = locked,
-      createdAt = createdAt
-    )
+  def build(internalId: String, identifier: String, locked: Boolean) =
+    NrsLock(identifier = s"$internalId~$identifier", locked = locked)
 
   val format: Format[NrsLock] = Format(reads, writes)
 
@@ -43,7 +37,7 @@ object NrsLock {
     (
       (__ \ "identifier").read[String] and
         (__ \ "locked").read[Boolean] and
-        (__ \ "createdAt").read(MongoDateTimeFormats.localDateTimeRead)
+        (__ \ "createdAt").read(instantFormat)
       ) (NrsLock.apply _)
   }
 
@@ -51,7 +45,7 @@ object NrsLock {
     (
       (__ \ "identifier").write[String] and
         (__ \ "locked").write[Boolean] and
-        (__ \ "createdAt").write(MongoDateTimeFormats.localDateTimeWrite)
+        (__ \ "createdAt").write(instantFormat)
       ) (unlift(NrsLock.unapply))
   }
 }

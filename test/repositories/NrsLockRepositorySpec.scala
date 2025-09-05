@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,16 @@
 
 package repositories
 
-import base.IntegrationTestBase
+import base.SpecBase
 import models.NrsLock
 import org.mongodb.scala.bson.BsonDocument
+import org.scalatest.BeforeAndAfterEach
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.mongo.test.MongoSupport
 
-import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class NrsLockRepositorySpec extends IntegrationTestBase with MongoSupport {
+class NrsLockRepositorySpec extends SpecBase with MongoSupport with BeforeAndAfterEach {
 
   private val repository = new NrsLockRepository(mongoComponent, appConfig)
 
@@ -34,24 +34,22 @@ class NrsLockRepositorySpec extends IntegrationTestBase with MongoSupport {
 
   private val internalId: String = "internalId"
 
-  private val testDateTime: LocalDateTime = LocalDateTime.now()
-
   override def beforeEach(): Unit = {
     super.beforeEach()
     await(repository.collection.deleteMany(BsonDocument()).toFuture())
   }
 
-  "NrsLockRepository" - {
+  "NrsLockRepository" should {
 
     "must be able to store and retrieve data" in {
 
       await(repository.getLock(internalId, identifier1)) mustBe false
       await(repository.getLock(internalId, identifier2)) mustBe false
 
-      val state1: NrsLock = NrsLock.build(internalId, identifier1, locked = true, createdAt = testDateTime)
+      val state1: NrsLock = NrsLock.build(internalId, identifier1, locked = true)
       await(repository.setLock(state1)) mustBe true
 
-      val state2: NrsLock = NrsLock.build(internalId, identifier2, locked = false, createdAt = testDateTime)
+      val state2: NrsLock = NrsLock.build(internalId, identifier2, locked = false)
       await(repository.setLock(state2)) mustBe true
 
       await(repository.collection.countDocuments(BsonDocument()).toFuture()) mustBe 2
@@ -64,16 +62,16 @@ class NrsLockRepositorySpec extends IntegrationTestBase with MongoSupport {
       await(repository.getLock(internalId, identifier1)) mustBe false
       await(repository.getLock(internalId, identifier2)) mustBe false
 
-      val state1: NrsLock = NrsLock.build(internalId, identifier1, locked = true, createdAt = testDateTime)
+      val state1: NrsLock = NrsLock.build(internalId, identifier1, locked = true)
       await(repository.setLock(state1)) mustBe true
 
-      val state2: NrsLock = NrsLock.build(internalId, identifier2, locked = false, createdAt = testDateTime)
+      val state2: NrsLock = NrsLock.build(internalId, identifier2, locked = false)
       await(repository.setLock(state2)) mustBe true
 
-      val state1Update: NrsLock = NrsLock.build(internalId, identifier1, locked = false, createdAt = testDateTime)
+      val state1Update: NrsLock = NrsLock.build(internalId, identifier1, locked = false)
       await(repository.setLock(state1Update)) mustBe true
 
-      val state2Update: NrsLock = NrsLock.build(internalId, identifier2, locked = true, createdAt = testDateTime)
+      val state2Update: NrsLock = NrsLock.build(internalId, identifier2, locked = true)
       await(repository.setLock(state2Update)) mustBe true
 
       await(repository.collection.countDocuments(BsonDocument()).toFuture()) mustBe 2

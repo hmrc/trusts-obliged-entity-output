@@ -14,24 +14,19 @@
         </encoder>
     </appender>
 
-    <appender name="CONNECTOR_LOG_FILE" class="ch.qos.logback.core.FileAppender">
-        <file>logs/connector.log</file>
-        <encoder>
-            <pattern>%message%n</pattern>
-        </encoder>
-    </appender>
-
     <logger name="com.google.inject" level="INFO"/>
-
+    <logger name="org.apache.pekko" level="INFO"/>
+    <logger name="org.mongodb.driver" level="INFO"/>
+    <logger name="play.shaded.ahc" level="INFO"/>
+    <logger name="org.eclipse" level="INFO"/>
     <logger name="uk.gov" level="INFO"/>
-
     <logger name="application" level="DEBUG"/>
 
     <logger name="connector" level="TRACE">
         <appender-ref ref="STDOUT"/>
     </logger>
 
-    <root level="INFO">
+    <root level="DEBUG">
         <appender-ref ref="FILE"/>
         <appender-ref ref="STDOUT"/>
     </root>
