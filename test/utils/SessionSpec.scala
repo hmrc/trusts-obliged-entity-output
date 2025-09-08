@@ -14,19 +14,30 @@
  * limitations under the License.
  */
 
-package services
+package utils
 
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+import base.SpecBase
+import uk.gov.hmrc.http.{HeaderCarrier, SessionId}
 
-class LocalDateTimeService {
+class SessionSpec extends SpecBase {
 
-  def now: LocalDateTime = LocalDateTime.now
+  "Session" should {
 
-  def nowFormatted: String = {
-    val format: String = "yyyy-MM-dd--HH-mm-ss"
-    val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(format)
-    now.format(dateFormatter)
+    "return session ID when available" in {
+      val sessionId = "test-session-id"
+      implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(sessionId)))
+
+      val result = Session.id(hc)
+
+      result mustBe sessionId
+    }
+
+    "return default message when session ID is not available" in {
+      implicit val hc: HeaderCarrier = HeaderCarrier()
+
+      val result = Session.id(hc)
+
+      result mustBe "No Session ID available"
+    }
   }
-
 }

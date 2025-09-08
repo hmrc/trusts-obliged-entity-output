@@ -16,21 +16,26 @@
 
 package controllers.actions
 
-import com.google.inject.Inject
-import play.api.mvc.BodyParsers
+import base.SpecBase
+import org.mockito.Mockito.mock
 import services.AuthenticationService
 import uk.gov.hmrc.auth.core.AuthConnector
 
 import scala.concurrent.ExecutionContext
 
-class AuthenticatedIdentifierActionProvider @Inject()()(implicit val authConnector: AuthConnector,
-                                                        trustAuthService: AuthenticationService,
-                                                        val parser: BodyParsers.Default,
-                                                        executionContext: ExecutionContext) extends IdentifierActionProvider {
+class IdentifierActionProviderSpec extends SpecBase {
 
-  override def apply(identifier: String): IdentifierAction = new AuthenticatedIdentifierAction(identifier, trustAuthService, authConnector)
-}
+  private val mockAuthConnector: AuthConnector = mock(classOf[AuthConnector])
+  private val mockAuthService: AuthenticationService = mock(classOf[AuthenticationService])
 
-trait IdentifierActionProvider {
-  def apply(identifier: String): IdentifierAction
+  "AuthenticatedIdentifierActionProvider" should {
+    "create an AuthenticatedIdentifierAction when apply is invoked" in {
+      val defaultParser = injector.instanceOf[play.api.mvc.BodyParsers.Default]
+      val provider = new AuthenticatedIdentifierActionProvider()(mockAuthConnector, mockAuthService, defaultParser, ExecutionContext.Implicits.global)
+
+      val action = provider("1234567890")
+
+      action mustBe a[AuthenticatedIdentifierAction]
+    }
+  }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ class ValidationServiceSpec extends SpecBase with EitherValues {
 
         val result = trustValidator.validate(jsonString)
         result.isLeft mustBe true
-        result.left.get.head.location mustBe "/correspondence/address"
+        result.left.value.head.location mustBe "/correspondence/address"
       }
 
       "an exception is thrown" in {

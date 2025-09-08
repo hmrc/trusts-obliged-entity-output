@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -169,6 +169,25 @@ class AuthActionSpec extends SpecBase {
       }
 
     }
+
+    "when enrolment details are missing (insufficient enrolment)" must {
+
+      "return unauthorised" in {
+
+        val noneAuthRetrievals: Future[Option[String] ~ Option[AffinityGroup]] =
+          Future.successful(new ~(None, None))
+
+        when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(any(), any()))
+          .thenReturn(noneAuthRetrievals)
+
+        val action = actionToTest("1234567890", mockAuthService, mockAuthConnector)
+        val controller = new Harness(action)
+        val result = controller.onPageLoad()(fakeRequest)
+
+        status(result) mustBe UNAUTHORIZED
+      }
+    }
+
   }
 }
 

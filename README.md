@@ -6,7 +6,7 @@ This service acts as a proxy to IF and NRS. The information is not transformed/m
 
 ### Running
 
-To run locally using the micro-service provided by the service manager:
+To run locally using the microservice provided by the service manager:
 
 ```
 sm2 --start TRUSTS_ALL
