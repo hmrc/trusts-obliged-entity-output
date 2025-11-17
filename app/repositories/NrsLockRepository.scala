@@ -24,9 +24,8 @@ import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import java.util.concurrent.TimeUnit
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-import javax.inject.Singleton
 
 @Singleton
 class NrsLockRepository @Inject()(mongoComponent: MongoComponent,
@@ -36,13 +35,17 @@ class NrsLockRepository @Inject()(mongoComponent: MongoComponent,
     mongoComponent = mongoComponent,
     collectionName = "nrs-lock",
     domainFormat = NrsLock.format,
+    replaceIndexes = true,
     indexes = Seq(
       IndexModel(
         Indexes.ascending("createdAt"),
         IndexOptions()
           .name("created-at-index")
-          .expireAfter(config.lockTtlInSeconds, TimeUnit.SECONDS))
-    )
+          .expireAfter(config.lockTtlInSeconds, TimeUnit.SECONDS)),
+      IndexModel(
+        Indexes.ascending("identifier"),
+        IndexOptions().name("identifier-index").unique(false)
+      ))
   ) {
 
   def getLock(internalId: String, identifier: String): Future[Boolean] = {
