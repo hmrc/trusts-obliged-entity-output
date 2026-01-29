@@ -25,17 +25,23 @@ import scala.concurrent.ExecutionContext
 
 class IdentifierActionProviderSpec extends SpecBase {
 
-  private val mockAuthConnector: AuthConnector = mock(classOf[AuthConnector])
+  private val mockAuthConnector: AuthConnector       = mock(classOf[AuthConnector])
   private val mockAuthService: AuthenticationService = mock(classOf[AuthenticationService])
 
   "AuthenticatedIdentifierActionProvider" should {
     "create an AuthenticatedIdentifierAction when apply is invoked" in {
       val defaultParser = injector.instanceOf[play.api.mvc.BodyParsers.Default]
-      val provider = new AuthenticatedIdentifierActionProvider()(mockAuthConnector, mockAuthService, defaultParser, ExecutionContext.Implicits.global)
+      val provider      = new AuthenticatedIdentifierActionProvider()(
+        mockAuthConnector,
+        mockAuthService,
+        defaultParser,
+        ExecutionContext.Implicits.global
+      )
 
       val action = provider("1234567890")
 
       action mustBe a[AuthenticatedIdentifierAction]
     }
   }
+
 }

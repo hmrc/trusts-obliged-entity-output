@@ -24,7 +24,9 @@ import utils.JsonUtils
 class ValidationServiceSpec extends SpecBase with EitherValues {
 
   private lazy val validationService: ValidationService = new ValidationService()
-  private lazy val trustValidator: Validator = validationService.get("/resources/schemas/get-trust-obliged-entities-data-schema-v1.2.0.json")
+
+  private lazy val trustValidator: Validator            =
+    validationService.get("/resources/schemas/get-trust-obliged-entities-data-schema-v1.2.0.json")
 
   "a validator " should {
     "return an empty list of errors when " when {
@@ -40,7 +42,7 @@ class ValidationServiceSpec extends SpecBase with EitherValues {
         val jsonString = JsonUtils.getJsonFromFile("invalid.json")
 
         val result = trustValidator.validate(jsonString)
-        result.isLeft mustBe true
+        result.isLeft                   mustBe true
         result.left.value.head.location mustBe "/correspondence/address"
       }
 

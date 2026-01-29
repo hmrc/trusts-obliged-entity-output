@@ -34,12 +34,12 @@ class NrsLockControllerSpec extends SpecBase {
 
   private val nrsLockRepository: NrsLockRepository = mock(classOf[NrsLockRepository])
 
-  override def applicationBuilder(): GuiceApplicationBuilder = {
-    super.applicationBuilder()
+  override def applicationBuilder(): GuiceApplicationBuilder =
+    super
+      .applicationBuilder()
       .overrides(
         bind[NrsLockRepository].toInstance(nrsLockRepository)
       )
-  }
 
   private val identifier: String = "1234567890"
 
@@ -88,4 +88,5 @@ class NrsLockControllerSpec extends SpecBase {
       }
     }
   }
+
 }

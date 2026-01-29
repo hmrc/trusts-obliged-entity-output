@@ -17,7 +17,9 @@
 package config
 
 import com.google.inject.AbstractModule
-import controllers.actions.{AuthenticatedIdentifierAction, AuthenticatedIdentifierActionProvider, IdentifierAction, IdentifierActionProvider}
+import controllers.actions.{
+  AuthenticatedIdentifierAction, AuthenticatedIdentifierActionProvider, IdentifierAction, IdentifierActionProvider
+}
 
 class Module extends AbstractModule {
 
@@ -25,4 +27,5 @@ class Module extends AbstractModule {
     bind(classOf[IdentifierAction]).to(classOf[AuthenticatedIdentifierAction]).asEagerSingleton()
     bind(classOf[IdentifierActionProvider]).to(classOf[AuthenticatedIdentifierActionProvider]).asEagerSingleton()
   }
+
 }

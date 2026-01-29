@@ -37,13 +37,13 @@ class AuditServiceSpec extends SpecBase {
 
   implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
 
-  private val auditConnector: AuditConnector = mock(classOf[AuditConnector])
+  private val auditConnector: AuditConnector                 = mock(classOf[AuditConnector])
   private val mockLocalDateTimeService: LocalDateTimeService = mock(classOf[LocalDateTimeService])
-  private val auditService: AuditService = new AuditService(auditConnector, mockLocalDateTimeService)(ec)
+  private val auditService: AuditService                     = new AuditService(auditConnector, mockLocalDateTimeService)(ec)
 
-  private val event: String = "event"
+  private val event: String      = "event"
   private val internalId: String = "internalId"
-  private val sessionId: String = "sessionId"
+  private val sessionId: String  = "sessionId"
 
   "Audit service" must {
 
@@ -53,15 +53,16 @@ class AuditServiceSpec extends SpecBase {
 
         reset(auditConnector)
 
-        val date: String = "Wed, 16 Oct 2019 07:28:00 GMT"
+        val date: String     = "Wed, 16 Oct 2019 07:28:00 GMT"
         val headers: Headers = Headers((HeaderNames.DATE, date))
 
         val affinity: AffinityGroup = Agent
 
-        val utr: String = "utr"
+        val utr: String            = "utr"
         val identifier: Identifier = UTR(utr)
 
-        val request: IdentifierRequest[AnyContent] = IdentifierRequest(FakeRequest().withHeaders(headers), internalId, identifier, sessionId, affinity)
+        val request: IdentifierRequest[AnyContent] =
+          IdentifierRequest(FakeRequest().withHeaders(headers), internalId, identifier, sessionId, affinity)
 
         auditService.audit(event)(request, hc)
 
@@ -84,10 +85,11 @@ class AuditServiceSpec extends SpecBase {
 
         val affinity: AffinityGroup = Organisation
 
-        val urn: String = "urn"
+        val urn: String            = "urn"
         val identifier: Identifier = URN(urn)
 
-        val request: IdentifierRequest[AnyContent] = IdentifierRequest(FakeRequest(), internalId, identifier, sessionId, affinity)
+        val request: IdentifierRequest[AnyContent] =
+          IdentifierRequest(FakeRequest(), internalId, identifier, sessionId, affinity)
 
         auditService.audit(event)(request, hc)
 
@@ -113,11 +115,12 @@ class AuditServiceSpec extends SpecBase {
 
         val affinity: AffinityGroup = Agent
 
-        val utr: String = "utr"
+        val utr: String            = "utr"
         val identifier: Identifier = UTR(utr)
 
-        val response: JsValue = JsNumber(10.443335)
-        val request: IdentifierRequest[AnyContent] = IdentifierRequest(FakeRequest(), internalId, identifier, sessionId, affinity)
+        val response: JsValue                      = JsNumber(10.443335)
+        val request: IdentifierRequest[AnyContent] =
+          IdentifierRequest(FakeRequest(), internalId, identifier, sessionId, affinity)
 
         auditService.audit(event, response)(request, hc)
 
@@ -141,13 +144,14 @@ class AuditServiceSpec extends SpecBase {
 
         val affinity: AffinityGroup = Agent
 
-        val utr: String = "utr"
+        val utr: String            = "utr"
         val identifier: Identifier = UTR(utr)
-        val headers = FakeHeaders(Seq((HeaderNames.DATE, date)))
-        val fakeRequest = FakeRequest().withHeaders(headers)
+        val headers                = FakeHeaders(Seq((HeaderNames.DATE, date)))
+        val fakeRequest            = FakeRequest().withHeaders(headers)
 
-        val response: JsValue = JsNumber(10.443335)
-        val request: IdentifierRequest[AnyContent] = IdentifierRequest(fakeRequest, internalId, identifier, sessionId, affinity)
+        val response: JsValue                      = JsNumber(10.443335)
+        val request: IdentifierRequest[AnyContent] =
+          IdentifierRequest(fakeRequest, internalId, identifier, sessionId, affinity)
 
         auditService.audit(event, response)(request, hc)
 
@@ -171,13 +175,14 @@ class AuditServiceSpec extends SpecBase {
 
         val affinity: AffinityGroup = Agent
 
-        val utr: String = "utr"
+        val utr: String            = "utr"
         val identifier: Identifier = UTR(utr)
-        val headers = FakeHeaders(Seq((HeaderNames.DATE, date)))
-        val fakeRequest = FakeRequest().withHeaders(headers)
+        val headers                = FakeHeaders(Seq((HeaderNames.DATE, date)))
+        val fakeRequest            = FakeRequest().withHeaders(headers)
 
-        val response: JsValue = JsString("test")
-        val request: IdentifierRequest[AnyContent] = IdentifierRequest(fakeRequest, internalId, identifier, sessionId, affinity)
+        val response: JsValue                      = JsString("test")
+        val request: IdentifierRequest[AnyContent] =
+          IdentifierRequest(fakeRequest, internalId, identifier, sessionId, affinity)
 
         auditService.audit(event, response)(request, hc)
 
@@ -198,20 +203,21 @@ class AuditServiceSpec extends SpecBase {
       "with date header" in {
         reset(auditConnector)
 
-        val date: String = "2021-01-01T09:30:15"
+        val date: String  = "2021-01-01T09:30:15"
         val date2: String = "2022-01-01T09:30:15"
         when(mockLocalDateTimeService.now).thenReturn(LocalDateTime.parse(date2))
 
         val affinity: AffinityGroup = Agent
 
-        val utr: String = "utr"
+        val utr: String            = "utr"
         val identifier: Identifier = UTR(utr)
-        val headers = FakeHeaders(Seq((HeaderNames.DATE, date)))
-        val fakeRequest = FakeRequest().withHeaders(headers)
+        val headers                = FakeHeaders(Seq((HeaderNames.DATE, date)))
+        val fakeRequest            = FakeRequest().withHeaders(headers)
 
         val fileDetails = FileDetails("abc", "def", 10L)
 
-        val request: IdentifierRequest[AnyContent] = IdentifierRequest(fakeRequest, internalId, identifier, sessionId, affinity)
+        val request: IdentifierRequest[AnyContent] =
+          IdentifierRequest(fakeRequest, internalId, identifier, sessionId, affinity)
 
         auditService.auditFileDetails(event, fileDetails)(request, hc)
 
@@ -236,13 +242,14 @@ class AuditServiceSpec extends SpecBase {
 
         val affinity: AffinityGroup = Agent
 
-        val utr: String = "utr"
+        val utr: String            = "utr"
         val identifier: Identifier = UTR(utr)
-        val fakeRequest = FakeRequest()
+        val fakeRequest            = FakeRequest()
 
         val fileDetails = FileDetails("abc", "def", 10L)
 
-        val request: IdentifierRequest[AnyContent] = IdentifierRequest(fakeRequest, internalId, identifier, sessionId, affinity)
+        val request: IdentifierRequest[AnyContent] =
+          IdentifierRequest(fakeRequest, internalId, identifier, sessionId, affinity)
 
         auditService.auditFileDetails(event, fileDetails)(request, hc)
 
@@ -260,4 +267,5 @@ class AuditServiceSpec extends SpecBase {
       }
     }
   }
+
 }

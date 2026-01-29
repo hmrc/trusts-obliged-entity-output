@@ -22,9 +22,7 @@ import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.instantFormat
 
 import java.time.Instant
 
-case class NrsLock(identifier: String,
-                   locked: Boolean,
-                   createdAt: Instant = Instant.now())
+case class NrsLock(identifier: String, locked: Boolean, createdAt: Instant = Instant.now())
 
 object NrsLock {
 
@@ -33,19 +31,18 @@ object NrsLock {
 
   val format: Format[NrsLock] = Format(reads, writes)
 
-  implicit lazy val reads: Reads[NrsLock] = {
+  implicit lazy val reads: Reads[NrsLock] =
     (
       (__ \ "identifier").read[String] and
         (__ \ "locked").read[Boolean] and
         (__ \ "createdAt").read(instantFormat)
-      ) (NrsLock.apply _)
-  }
+    )(NrsLock.apply _)
 
-  implicit lazy val writes: Writes[NrsLock] = {
+  implicit lazy val writes: Writes[NrsLock] =
     (
       (__ \ "identifier").write[String] and
         (__ \ "locked").write[Boolean] and
         (__ \ "createdAt").write(instantFormat)
-      ) (unlift(NrsLock.unapply))
-  }
+    )(unlift(NrsLock.unapply))
+
 }

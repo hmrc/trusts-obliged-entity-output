@@ -28,11 +28,11 @@ import models.FileDetails
 
 import scala.concurrent.ExecutionContext
 
-class AuditService @Inject()(auditConnector: AuditConnector,
-                             localDateTimeService: LocalDateTimeService) (implicit ec: ExecutionContext) {
+class AuditService @Inject() (auditConnector: AuditConnector, localDateTimeService: LocalDateTimeService)(implicit
+  ec: ExecutionContext
+) {
 
-  def audit(event: String)
-           (implicit request: IdentifierRequest[AnyContent], hc: HeaderCarrier): Unit = {
+  def audit(event: String)(implicit request: IdentifierRequest[AnyContent], hc: HeaderCarrier): Unit = {
 
     val payload = ObligedEntityAuditEvent(
       internalAuthId = request.internalId,
@@ -44,8 +44,10 @@ class AuditService @Inject()(auditConnector: AuditConnector,
     auditConnector.sendExplicitAudit(event, payload)
   }
 
-  def audit(event: String, response: JsValue)
-           (implicit request: IdentifierRequest[AnyContent], hc: HeaderCarrier): Unit = {
+  def audit(event: String, response: JsValue)(implicit
+    request: IdentifierRequest[AnyContent],
+    hc: HeaderCarrier
+  ): Unit = {
 
     val payload = ObligedEntityAuditResponseEvent(
       internalAuthId = request.internalId,
@@ -58,11 +60,13 @@ class AuditService @Inject()(auditConnector: AuditConnector,
     auditConnector.sendExplicitAudit(event, payload)
   }
 
-  def auditFileDetails(event: String, fileDetails: FileDetails)
-                      (implicit request: IdentifierRequest[AnyContent], hc: HeaderCarrier): Unit = {
+  def auditFileDetails(event: String, fileDetails: FileDetails)(implicit
+    request: IdentifierRequest[AnyContent],
+    hc: HeaderCarrier
+  ): Unit = {
 
     val generationDateTime = localDateTimeService.now.toString
-    val payload = ObligedEntityAuditFileDetailsEvent(
+    val payload            = ObligedEntityAuditFileDetailsEvent(
       internalAuthId = request.internalId,
       identifier = request.identifier.value,
       affinity = request.affinityGroup,
@@ -75,4 +79,5 @@ class AuditService @Inject()(auditConnector: AuditConnector,
 
     auditConnector.sendExplicitAudit(event, payload)
   }
+
 }

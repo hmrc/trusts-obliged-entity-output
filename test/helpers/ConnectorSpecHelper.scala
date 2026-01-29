@@ -30,56 +30,57 @@ import play.api.libs.json.{JsValue, Json}
 class ConnectorSpecHelper extends SpecBase with WireMockHelper with IntegrationPatience {
 
   val fakeCorrelationId: String = "bcda2e24-13c2-4fee-9243-cd9835426559"
-  val fakeBearerToken: String = "Bearer 12345"
+  val fakeBearerToken: String   = "Bearer 12345"
 
-  val jsonResponse400CorrelationId: JsValue = Json.parse(
-    s"""
+  val jsonResponse400CorrelationId: JsValue = Json.parse(s"""
        |{
        | "code": "INVALID_CORRELATIONID",
        | "reason": "Submission has not passed validation. Invalid CorrelationId."
        |}""".stripMargin)
 
-
-  override def applicationBuilder(): GuiceApplicationBuilder = {
-    super.applicationBuilder()
+  override def applicationBuilder(): GuiceApplicationBuilder =
+    super
+      .applicationBuilder()
       .configure(
         Seq(
           "microservice.services.nrs-trusts.port" -> server.port(),
           "microservice.services.trust-data.port" -> server.port()
         ): _*
       )
-  }
 
-  def stubForGet(url: String, responseStatus: Int,
-                 responseBody: String = "",
-                 delayResponse: Int = 0): StubMapping = {
+  def stubForGet(url: String, responseStatus: Int, responseBody: String = "", delayResponse: Int = 0): StubMapping =
 
-    server.stubFor(get(urlEqualTo(url))
-      .willReturn(
-        aResponse()
-          .withStatus(responseStatus)
-          .withBody(responseBody).withFixedDelay(delayResponse)))
-  }
-
-  def stubForPost(url: String,
-                  requestBody: String,
-                  responseStatus: Int,
-                  responseBody: String = "[]",
-                  responseHeaders: HttpHeaders = HttpHeaders.noHeaders(),
-                  delayResponse: Int = 0): StubMapping = {
-
-    server.stubFor(post(urlEqualTo(url))
-      .withHeader(X_API_KEY, equalTo(appConfig.nrsToken))
-      .withHeader(CONTENT_TYPE, equalTo(JSON))
-      .withRequestBody(equalTo(requestBody))
-      .willReturn(
-        aResponse()
-          .withStatus(responseStatus)
-          .withHeaders(responseHeaders)
-          .withBody(responseBody)
-          .withFixedDelay(delayResponse)
-      )
+    server.stubFor(
+      get(urlEqualTo(url))
+        .willReturn(
+          aResponse()
+            .withStatus(responseStatus)
+            .withBody(responseBody)
+            .withFixedDelay(delayResponse)
+        )
     )
-  }
+
+  def stubForPost(
+    url: String,
+    requestBody: String,
+    responseStatus: Int,
+    responseBody: String = "[]",
+    responseHeaders: HttpHeaders = HttpHeaders.noHeaders(),
+    delayResponse: Int = 0
+  ): StubMapping =
+
+    server.stubFor(
+      post(urlEqualTo(url))
+        .withHeader(X_API_KEY, equalTo(appConfig.nrsToken))
+        .withHeader(CONTENT_TYPE, equalTo(JSON))
+        .withRequestBody(equalTo(requestBody))
+        .willReturn(
+          aResponse()
+            .withStatus(responseStatus)
+            .withHeaders(responseHeaders)
+            .withBody(responseBody)
+            .withFixedDelay(delayResponse)
+        )
+    )
 
 }

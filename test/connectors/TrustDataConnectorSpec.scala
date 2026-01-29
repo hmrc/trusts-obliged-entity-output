@@ -16,7 +16,6 @@
 
 package connectors
 
-
 import helpers.ConnectorSpecHelper
 import helpers.JsonHelper._
 import models.{BadRequestTrustDataResponse, _}
@@ -27,8 +26,8 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
 
   private lazy val connector: TrustDataConnector = injector.instanceOf[TrustDataConnector]
 
-  private val utrIdentifier: Identifier = UTR("2134514321")
-  private val urnIdentifier: Identifier = URN("XATRUST80000001")
+  private val utrIdentifier: Identifier     = UTR("2134514321")
+  private val urnIdentifier: Identifier     = URN("XATRUST80000001")
   private val invalidIdentifier: Identifier = UTR("1234567890abcdefg")
 
   private def url(identifier: Identifier): String = s"/trusts/obliged-entities/$identifier/${identifier.value}"
@@ -45,9 +44,8 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
 
           stubForGet(url = url(utrIdentifier), responseStatus = OK, responseBody = Json.stringify(json))
 
-          whenReady(connector.getTrustJson(utrIdentifier)) {
-            response =>
-              response mustBe SuccessfulTrustDataResponse(json)
+          whenReady(connector.getTrustJson(utrIdentifier)) { response =>
+            response mustBe SuccessfulTrustDataResponse(json)
           }
         }
 
@@ -55,9 +53,8 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
 
           stubForGet(url = url(urnIdentifier), responseStatus = OK, responseBody = Json.stringify(json))
 
-          whenReady(connector.getTrustJson(urnIdentifier)) {
-            response =>
-              response mustBe SuccessfulTrustDataResponse(json)
+          whenReady(connector.getTrustJson(urnIdentifier)) { response =>
+            response mustBe SuccessfulTrustDataResponse(json)
           }
         }
       }
@@ -67,9 +64,8 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
 
           stubForGet(url = url(invalidIdentifier), responseStatus = BAD_REQUEST)
 
-          whenReady(connector.getTrustJson(invalidIdentifier)) {
-            response =>
-              response mustBe BadRequestTrustDataResponse
+          whenReady(connector.getTrustJson(invalidIdentifier)) { response =>
+            response mustBe BadRequestTrustDataResponse
           }
         }
       }
@@ -79,9 +75,8 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
 
           stubForGet(url = url(utrIdentifier), responseStatus = UNPROCESSABLE_ENTITY)
 
-          whenReady(connector.getTrustJson(utrIdentifier)) {
-            response =>
-              response mustBe UnprocessableEntityTrustDataResponse
+          whenReady(connector.getTrustJson(utrIdentifier)) { response =>
+            response mustBe UnprocessableEntityTrustDataResponse
           }
         }
       }
@@ -91,9 +86,8 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
 
           stubForGet(url = url(utrIdentifier), responseStatus = SERVICE_UNAVAILABLE)
 
-          whenReady(connector.getTrustJson(utrIdentifier)) {
-            response =>
-              response mustBe ServiceUnavailableTrustDataResponse
+          whenReady(connector.getTrustJson(utrIdentifier)) { response =>
+            response mustBe ServiceUnavailableTrustDataResponse
           }
         }
       }
@@ -104,9 +98,8 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
 
             stubForGet(url = url(utrIdentifier), responseStatus = UNAUTHORIZED)
 
-            whenReady(connector.getTrustJson(utrIdentifier)) {
-              response =>
-                response mustBe UnauthorisedTrustDataResponse
+            whenReady(connector.getTrustJson(utrIdentifier)) { response =>
+              response mustBe UnauthorisedTrustDataResponse
             }
           }
         }
@@ -118,9 +111,8 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
 
             stubForGet(url = url(utrIdentifier), responseStatus = FORBIDDEN)
 
-            whenReady(connector.getTrustJson(utrIdentifier)) {
-              response =>
-                response mustBe ForbiddenTrustDataResponse
+            whenReady(connector.getTrustJson(utrIdentifier)) { response =>
+              response mustBe ForbiddenTrustDataResponse
             }
           }
 
@@ -128,20 +120,21 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
 
             stubForGet(url = url(utrIdentifier), responseStatus = FORBIDDEN)
 
-            whenReady(connector.getTrustJson(utrIdentifier)) {
-              response =>
-                response mustBe ForbiddenTrustDataResponse
+            whenReady(connector.getTrustJson(utrIdentifier)) { response =>
+              response mustBe ForbiddenTrustDataResponse
             }
           }
 
           "correlation ID header missing" in {
 
-            stubForGet(url = url(utrIdentifier), responseStatus = FORBIDDEN,
-              responseBody = Json.stringify(jsonResponse400CorrelationId))
+            stubForGet(
+              url = url(utrIdentifier),
+              responseStatus = FORBIDDEN,
+              responseBody = Json.stringify(jsonResponse400CorrelationId)
+            )
 
-            whenReady(connector.getTrustJson(utrIdentifier)) {
-              response =>
-                response mustBe ForbiddenTrustDataResponse
+            whenReady(connector.getTrustJson(utrIdentifier)) { response =>
+              response mustBe ForbiddenTrustDataResponse
             }
           }
         }
@@ -152,9 +145,8 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
 
           stubForGet(url = url(utrIdentifier), responseStatus = NOT_FOUND)
 
-          whenReady(connector.getTrustJson(utrIdentifier)) {
-            response =>
-              response mustBe NotFoundTrustDataResponse
+          whenReady(connector.getTrustJson(utrIdentifier)) { response =>
+            response mustBe NotFoundTrustDataResponse
           }
         }
       }
@@ -164,12 +156,12 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
 
           stubForGet(url = url(utrIdentifier), responseStatus = INTERNAL_SERVER_ERROR)
 
-          whenReady(connector.getTrustJson(utrIdentifier)) {
-            response =>
-              response mustBe InternalServerErrorTrustDataResponse
+          whenReady(connector.getTrustJson(utrIdentifier)) { response =>
+            response mustBe InternalServerErrorTrustDataResponse
           }
         }
       }
     }
   }
+
 }

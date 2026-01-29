@@ -18,10 +18,10 @@ package models.auditing
 
 object Events {
 
-  val IF_DATA_RECEIVED = "IntegrationFrameworkDataReceived"
-  val NRS_DATA_RECEIVED = "NonRepudiationStoreDataReceived"
-  val IF_ERROR = "IntegrationFrameworkError"
-  val NRS_ERROR = "NonRepudiationStoreError"
+  val IF_DATA_RECEIVED   = "IntegrationFrameworkDataReceived"
+  val NRS_DATA_RECEIVED  = "NonRepudiationStoreDataReceived"
+  val IF_ERROR           = "IntegrationFrameworkError"
+  val NRS_ERROR          = "NonRepudiationStoreError"
   val EXCESSIVE_REQUESTS = "ExcessiveRequests"
 
 }

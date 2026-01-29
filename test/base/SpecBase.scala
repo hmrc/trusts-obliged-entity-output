@@ -30,12 +30,8 @@ import play.api.test.Helpers
 import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
 import uk.gov.hmrc.http.HeaderCarrier
 
-class SpecBase extends AnyWordSpec
-  with Matchers
-  with ScalaFutures
-  with BeforeAndAfter
-  with GuiceOneServerPerSuite
-  with Inside {
+class SpecBase
+    extends AnyWordSpec with Matchers with ScalaFutures with BeforeAndAfter with GuiceOneServerPerSuite with Inside {
 
   implicit lazy val hc: HeaderCarrier = HeaderCarrier()
 
@@ -45,16 +41,19 @@ class SpecBase extends AnyWordSpec
 
   def appConfig: AppConfig = injector.instanceOf[AppConfig]
 
-  def applicationBuilder(): GuiceApplicationBuilder = {
+  def applicationBuilder(): GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
         Seq(
-          "metrics.enabled" -> false,
-          "auditing.enabled" -> false,
+          "metrics.enabled"                -> false,
+          "auditing.enabled"               -> false,
           "features.logNRS400ResponseBody" -> true
         ): _*
-      ).overrides(
-      bind[IdentifierActionProvider].toInstance(new FakeIdentifierActionProvider(Helpers.stubControllerComponents().parsers.default, Organisation))
-    )
-  }
+      )
+      .overrides(
+        bind[IdentifierActionProvider].toInstance(
+          new FakeIdentifierActionProvider(Helpers.stubControllerComponents().parsers.default, Organisation)
+        )
+      )
+
 }

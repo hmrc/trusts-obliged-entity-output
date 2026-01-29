@@ -42,16 +42,17 @@ import scala.concurrent.{Await, Future}
 
 class PdfControllerSpec extends SpecBase {
 
-  private val mockTrustDataConnector: TrustDataConnector = mock(classOf[TrustDataConnector])
-  private val mockNrsConnector: NrsConnector = mock(classOf[NrsConnector])
-  private val mockNrsLockRepository: NrsLockRepository = mock(classOf[NrsLockRepository])
-  private val mockAuditService: AuditService = mock(classOf[AuditService])
+  private val mockTrustDataConnector: TrustDataConnector     = mock(classOf[TrustDataConnector])
+  private val mockNrsConnector: NrsConnector                 = mock(classOf[NrsConnector])
+  private val mockNrsLockRepository: NrsLockRepository       = mock(classOf[NrsLockRepository])
+  private val mockAuditService: AuditService                 = mock(classOf[AuditService])
   private val mockLocalDateTimeService: LocalDateTimeService = mock(classOf[LocalDateTimeService])
-  private val mockValidationService: ValidationService = mock(classOf[ValidationService])
-  private val defaultValidator: Validator = mock(classOf[Validator])
+  private val mockValidationService: ValidationService       = mock(classOf[ValidationService])
+  private val defaultValidator: Validator                    = mock(classOf[Validator])
 
-  override def applicationBuilder(): GuiceApplicationBuilder = {
-    super.applicationBuilder()
+  override def applicationBuilder(): GuiceApplicationBuilder =
+    super
+      .applicationBuilder()
       .overrides(
         bind[TrustDataConnector].toInstance(mockTrustDataConnector),
         bind[NrsConnector].toInstance(mockNrsConnector),
@@ -60,7 +61,6 @@ class PdfControllerSpec extends SpecBase {
         bind[LocalDateTimeService].toInstance(mockLocalDateTimeService),
         bind[ValidationService].toInstance(mockValidationService)
       )
-  }
 
   private val identifier: String = "1234567890"
 
@@ -87,8 +87,8 @@ class PdfControllerSpec extends SpecBase {
           "a pdf is generated" in {
 
             val responseBody: String = "abcdef"
-            val contentLength: Long = 12345L
-            val fileName = "1234567890-2021-02-03.pdf"
+            val contentLength: Long  = 12345L
+            val fileName             = "1234567890-2021-02-03.pdf"
 
             reset(mockAuditService)
 
@@ -112,12 +112,15 @@ class PdfControllerSpec extends SpecBase {
               )
 
               result.body.contentLength.get mustBe contentLength
-              result.body.contentType.get mustBe PDF
+              result.body.contentType.get   mustBe PDF
 
               getSourceString(result) mustEqual responseBody
 
               verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(trustJson))(any(), any())
-              verify(mockAuditService).auditFileDetails(eqTo(NRS_DATA_RECEIVED), eqTo(FileDetails(fileName, PDF, contentLength)))(any(), any())
+              verify(mockAuditService).auditFileDetails(
+                eqTo(NRS_DATA_RECEIVED),
+                eqTo(FileDetails(fileName, PDF, contentLength))
+              )(any(), any())
             }
           }
         }
@@ -138,7 +141,10 @@ class PdfControllerSpec extends SpecBase {
             whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
               result.header.status mustBe SERVICE_UNAVAILABLE
 
-              verify(mockAuditService).audit(eqTo(IF_ERROR), eqTo(JsString("ServiceUnavailableTrustDataResponse")))(any(), any())
+              verify(mockAuditService).audit(eqTo(IF_ERROR), eqTo(JsString("ServiceUnavailableTrustDataResponse")))(
+                any(),
+                any()
+              )
             }
           }
 
@@ -160,7 +166,10 @@ class PdfControllerSpec extends SpecBase {
               result.header.status mustBe SERVICE_UNAVAILABLE
 
               verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(trustJson))(any(), any())
-              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(JsString("ServiceUnavailableResponse")))(any(), any())
+              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(JsString("ServiceUnavailableResponse")))(
+                any(),
+                any()
+              )
             }
           }
 
@@ -173,7 +182,10 @@ class PdfControllerSpec extends SpecBase {
             whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
               result.header.status mustBe SERVICE_UNAVAILABLE
 
-              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(JsString("ServiceUnavailableResponse")))(any(), any())
+              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(JsString("ServiceUnavailableResponse")))(
+                any(),
+                any()
+              )
             }
           }
         }
@@ -194,7 +206,10 @@ class PdfControllerSpec extends SpecBase {
             whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
               result.header.status mustBe INTERNAL_SERVER_ERROR
 
-              verify(mockAuditService).audit(eqTo(IF_ERROR), eqTo(JsString("InternalServerErrorTrustDataResponse")))(any(), any())
+              verify(mockAuditService).audit(eqTo(IF_ERROR), eqTo(JsString("InternalServerErrorTrustDataResponse")))(
+                any(),
+                any()
+              )
             }
           }
 
@@ -216,7 +231,10 @@ class PdfControllerSpec extends SpecBase {
               result.header.status mustBe INTERNAL_SERVER_ERROR
 
               verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(trustJson))(any(), any())
-              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(JsString("InternalServerErrorResponse")))(any(), any())
+              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(JsString("InternalServerErrorResponse")))(
+                any(),
+                any()
+              )
             }
           }
 
@@ -243,7 +261,8 @@ class PdfControllerSpec extends SpecBase {
 
           "bad request returned from NRS with logging enabled" in {
 
-            val appBuilderWithLogging = super.applicationBuilder()
+            val appBuilderWithLogging = super
+              .applicationBuilder()
               .configure("microservice.services.nrs.logNRS400ResponseBody" -> true)
               .overrides(
                 bind[TrustDataConnector].toInstance(mockTrustDataConnector),
@@ -272,15 +291,18 @@ class PdfControllerSpec extends SpecBase {
               result.header.status mustBe INTERNAL_SERVER_ERROR
 
               verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(trustJson))(any(), any())
-              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(JsString("BadRequestResponse(Invalid request body)")))(any(), any())
+              verify(mockAuditService).audit(
+                eqTo(NRS_ERROR),
+                eqTo(JsString("BadRequestResponse(Invalid request body)"))
+              )(any(), any())
             }
           }
 
           "setLockStatus fails after successful PDF generation" in {
 
             val responseBody: String = "abcdef"
-            val contentLength: Long = 12345L
-            val fileName = "1234567890-2021-02-03.pdf"
+            val contentLength: Long  = 12345L
+            val fileName             = "1234567890-2021-02-03.pdf"
 
             reset(mockAuditService)
 
@@ -309,12 +331,15 @@ class PdfControllerSpec extends SpecBase {
               )
 
               result.body.contentLength.get mustBe contentLength
-              result.body.contentType.get mustBe PDF
+              result.body.contentType.get   mustBe PDF
 
               getSourceString(result) mustEqual responseBody
 
               verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(trustJson))(any(), any())
-              verify(mockAuditService).auditFileDetails(eqTo(NRS_DATA_RECEIVED), eqTo(FileDetails(fileName, PDF, contentLength)))(any(), any())
+              verify(mockAuditService).auditFileDetails(
+                eqTo(NRS_DATA_RECEIVED),
+                eqTo(FileDetails(fileName, PDF, contentLength))
+              )(any(), any())
             }
           }
 
@@ -407,4 +432,5 @@ class PdfControllerSpec extends SpecBase {
       }
     }
   }
+
 }

@@ -33,33 +33,33 @@ import utils.Session
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
 
-class AuthenticatedIdentifierAction @Inject()(identifier: String,
-                                              trustAuthService: AuthenticationService,
-                                              val authConnector: AuthConnector)
-                                             (implicit val parser: BodyParsers.Default,
-                                              val executionContext: ExecutionContext)
-  extends IdentifierAction with AuthorisedFunctions with Logging {
+class AuthenticatedIdentifierAction @Inject() (
+  identifier: String,
+  trustAuthService: AuthenticationService,
+  val authConnector: AuthConnector
+)(implicit val parser: BodyParsers.Default, val executionContext: ExecutionContext)
+    extends IdentifierAction with AuthorisedFunctions with Logging {
 
-  def invokeBlock[A](request: Request[A],
-                     block: IdentifierRequest[A] => Future[Result]) : Future[Result] = {
+  def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
 
-
-
-    implicit val hc : HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
+    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
 
     (identifier match {
       case Identifiers.utrPattern(_) => Some(UTR(identifier))
       case Identifiers.urnPattern(_) => Some(URN(identifier))
-      case _ => None
+      case _                         => None
     }) match {
       case Some(id) =>
         authenticate(id, block)(request, hc)
-      case None =>
+      case None     =>
         Future.successful(Unauthorized)
     }
   }
 
-  private def authenticate[A](id: Identifier, block: IdentifierRequest[A] => Future[Result])(implicit request: Request[A], hc: HeaderCarrier) = {
+  private def authenticate[A](id: Identifier, block: IdentifierRequest[A] => Future[Result])(implicit
+    request: Request[A],
+    hc: HeaderCarrier
+  ) = {
     val retrievals = Retrievals.internalId and Retrievals.affinityGroup
 
     authorised().retrieve(retrievals) {
@@ -68,18 +68,18 @@ class AuthenticatedIdentifierAction @Inject()(identifier: String,
           case Left(value) =>
             logger.info(s"[Session ID: ${Session.id(hc)}] Not authenticated for ${id.value}")
             Future.successful(value)
-          case Right(_) =>
+          case Right(_)    =>
             block(IdentifierRequest(request, internalId, id, Session.id(hc), affinity))
         }
-      case _ =>
+      case _                                 =>
         logger.info(s"[Session ID: ${Session.id(hc)}] Insufficient enrolment")
         Future.successful(Unauthorized)
-    } recoverWith {
-      case e: AuthorisationException =>
-        logger.info(s"[Session ID: ${Session.id(hc)}] AuthorisationException: $e")
-        Future.successful(Unauthorized)
+    } recoverWith { case e: AuthorisationException =>
+      logger.info(s"[Session ID: ${Session.id(hc)}] AuthorisationException: $e")
+      Future.successful(Unauthorized)
     }
   }
+
 }
 
 trait IdentifierAction extends ActionBuilder[IdentifierRequest, AnyContent]

@@ -24,7 +24,7 @@ class LocalDateTimeService {
   def now: LocalDateTime = LocalDateTime.now
 
   def nowFormatted: String = {
-    val format: String = "yyyy-MM-dd--HH-mm-ss"
+    val format: String                   = "yyyy-MM-dd--HH-mm-ss"
     val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(format)
     now.format(dateFormatter)
   }

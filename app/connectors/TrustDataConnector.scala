@@ -31,20 +31,21 @@ import utils.Session
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class TrustDataConnector @Inject()(http: HttpClientV2, config: AppConfig) (implicit ec: ExecutionContext) extends Logging {
+class TrustDataConnector @Inject() (http: HttpClientV2, config: AppConfig)(implicit ec: ExecutionContext)
+    extends Logging {
 
   private def trustDataHeaders(correlationId: String): Seq[(String, String)] =
     Seq(
       HeaderNames.AUTHORIZATION -> s"Bearer ${config.trustDataToken}",
-      CONTENT_TYPE -> CONTENT_TYPE_JSON,
-      ENVIRONMENT -> config.trustDataEnvironment,
-      CORRELATION_ID -> correlationId
+      CONTENT_TYPE              -> CONTENT_TYPE_JSON,
+      ENVIRONMENT               -> config.trustDataEnvironment,
+      CORRELATION_ID            -> correlationId
     )
 
   def getTrustJson(identifier: Identifier): Future[TrustDataResponse] = {
     lazy val url: String = s"${config.trustDataUrl}/trusts/obliged-entities/$identifier/${identifier.value}"
 
-    val correlationId = UUID.randomUUID().toString
+    val correlationId              = UUID.randomUUID().toString
     implicit val hc: HeaderCarrier = HeaderCarrier(authorization = None, extraHeaders = trustDataHeaders(correlationId))
     logger.info(s"[Session ID: ${Session.id(hc)}] getTrustJson correlationId: $correlationId from call to url: $url")
 
