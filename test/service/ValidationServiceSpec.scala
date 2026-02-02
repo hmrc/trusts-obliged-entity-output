@@ -25,7 +25,7 @@ class ValidationServiceSpec extends SpecBase with EitherValues {
 
   private lazy val validationService: ValidationService = new ValidationService()
 
-  private lazy val trustValidator: Validator            =
+  private lazy val trustValidator: Validator =
     validationService.get("/resources/schemas/get-trust-obliged-entities-data-schema-v1.2.0.json")
 
   "a validator " should {
