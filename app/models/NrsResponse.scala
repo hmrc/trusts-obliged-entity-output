@@ -36,45 +36,50 @@ case object InternalServerErrorResponse extends NrsResponse
 object NrsResponse extends Logging {
 
   implicit val bodyReadable: BodyReadable[NrsResponse] = BodyReadable[NrsResponse] { response =>
-
     response.status match {
-      case OK =>
+      case OK                  =>
         response.headers.get(CONTENT_LENGTH) match {
           case Some(Seq(length)) =>
             SuccessfulResponse(response.bodyAsSource, length.toLong)
-          case _ =>
+          case _                 =>
             logger.error(s"$CONTENT_LENGTH header is missing.")
             InternalServerErrorResponse
         }
-      case BAD_REQUEST =>
+      case BAD_REQUEST         =>
         logger.debug(s"Payload does not conform to defined JSON schema - ${response.body}")
         logger.error(s"Payload does not conform to defined JSON schema")
         BadRequestResponse(parseNRS400ResponseBody(response.body))
-      case UNAUTHORIZED =>
+      case UNAUTHORIZED        =>
         logger.error("No X-API-Key provided or it is invalid.")
         UnauthorisedResponse
-      case NOT_FOUND =>
+      case NOT_FOUND           =>
         logger.error("Requested PDF template does not exist.")
         NotFoundResponse
       case SERVICE_UNAVAILABLE =>
         logger.debug(s"NRS service unavailable - ${response.body}.")
         logger.error(s"NRS service unavailable.")
         ServiceUnavailableResponse
-      case _ =>
+      case _                   =>
         logger.error("Internal server error response from NRS.")
         InternalServerErrorResponse
     }
   }
 
   def parseNRS400ResponseBody(body: String) = {
+
     /**
      * Matches anything inside square brackets UNLESS it is preceded by a caret symbol (^).
      */
     val regex = "(?<!\\^)\\[.*?\\]"
 
-    Json.parse(body).as[JsArray].value.map { json =>
-      json.\("message").getOrElse(Json.obj()).toString().replaceAll(regex, "[OBFUSCATED]")
-    }.mkString("", ",\n", "")
+    Json
+      .parse(body)
+      .as[JsArray]
+      .value
+      .map { json =>
+        json.\("message").getOrElse(Json.obj()).toString().replaceAll(regex, "[OBFUSCATED]")
+      }
+      .mkString("", ",\n", "")
   }
 
 }

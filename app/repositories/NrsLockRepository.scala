@@ -28,25 +28,25 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class NrsLockRepository @Inject()(mongoComponent: MongoComponent,
-                                  config: AppConfig)
-                                 (implicit val ec: ExecutionContext)
-  extends PlayMongoRepository[NrsLock](
-    mongoComponent = mongoComponent,
-    collectionName = "nrs-lock",
-    domainFormat = NrsLock.format,
-    replaceIndexes = true,
-    indexes = Seq(
-      IndexModel(
-        Indexes.ascending("createdAt"),
-        IndexOptions()
-          .name("created-at-index")
-          .expireAfter(config.lockTtlInSeconds, TimeUnit.SECONDS)),
-      IndexModel(
-        Indexes.ascending("identifier"),
-        IndexOptions().name("identifier-index").unique(false)
-      ))
-  ) {
+class NrsLockRepository @Inject() (mongoComponent: MongoComponent, config: AppConfig)(implicit val ec: ExecutionContext)
+    extends PlayMongoRepository[NrsLock](
+      mongoComponent = mongoComponent,
+      collectionName = "nrs-lock",
+      domainFormat = NrsLock.format,
+      replaceIndexes = true,
+      indexes = Seq(
+        IndexModel(
+          Indexes.ascending("createdAt"),
+          IndexOptions()
+            .name("created-at-index")
+            .expireAfter(config.lockTtlInSeconds, TimeUnit.SECONDS)
+        ),
+        IndexModel(
+          Indexes.ascending("identifier"),
+          IndexOptions().name("identifier-index").unique(false)
+        )
+      )
+    ) {
 
   def getLock(internalId: String, identifier: String): Future[Boolean] = {
     val selector = equal("identifier", s"$internalId~$identifier")
@@ -60,4 +60,5 @@ class NrsLockRepository @Inject()(mongoComponent: MongoComponent,
     val options = new ReplaceOptions().upsert(true)
     collection.replaceOne(selector, lock, options).headOption().map(_.exists(_.wasAcknowledged()))
   }
+
 }

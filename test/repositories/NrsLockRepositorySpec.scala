@@ -53,8 +53,8 @@ class NrsLockRepositorySpec extends SpecBase with MongoSupport with BeforeAndAft
       await(repository.setLock(state2)) mustBe true
 
       await(repository.collection.countDocuments(BsonDocument()).toFuture()) mustBe 2
-      await(repository.getLock(internalId, identifier1)) mustBe state1.locked
-      await(repository.getLock(internalId, identifier2)) mustBe state2.locked
+      await(repository.getLock(internalId, identifier1))                     mustBe state1.locked
+      await(repository.getLock(internalId, identifier2))                     mustBe state2.locked
     }
 
     "must be able to update data" in {
@@ -75,8 +75,9 @@ class NrsLockRepositorySpec extends SpecBase with MongoSupport with BeforeAndAft
       await(repository.setLock(state2Update)) mustBe true
 
       await(repository.collection.countDocuments(BsonDocument()).toFuture()) mustBe 2
-      await(repository.getLock(internalId, identifier1)) mustBe state1Update.locked
-      await(repository.getLock(internalId, identifier2)) mustBe state2Update.locked
+      await(repository.getLock(internalId, identifier1))                     mustBe state1Update.locked
+      await(repository.getLock(internalId, identifier2))                     mustBe state2Update.locked
     }
   }
+
 }

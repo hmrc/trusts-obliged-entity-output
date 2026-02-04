@@ -21,7 +21,7 @@ import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
-class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig) {
+class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig) {
 
   val authBaseUrl: String = servicesConfig.baseUrl("auth")
 
@@ -34,7 +34,8 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
   val nrsToken: String = config.get[String]("microservice.services.nrs-trusts.token")
 
   val trustDataEnvironment: String = config.get[String]("microservice.services.trust-data.environment")
-  val trustDataToken: String = config.get[String]("microservice.services.trust-data.token")
+  val trustDataToken: String       = config.get[String]("microservice.services.trust-data.token")
+
   /**
    * Content-Disposition is 'inline' by default. Change to 'attachment' to download the file with no preview
    */
@@ -46,4 +47,5 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
 
   val trustsObligedEntityDataSchema: String =
     "/resources/schemas/get-trust-obliged-entities-data-schema-v1.2.0.json"
+
 }

@@ -26,15 +26,18 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import scala.concurrent.ExecutionContext
 
-class NrsLockController @Inject()(identifierAction: IdentifierActionProvider,
-                                  nrsLockRepository: NrsLockRepository,
-                                  cc: ControllerComponents) (implicit ec: ExecutionContext) extends BackendController(cc) with Logging {
+class NrsLockController @Inject() (
+  identifierAction: IdentifierActionProvider,
+  nrsLockRepository: NrsLockRepository,
+  cc: ControllerComponents
+)(implicit ec: ExecutionContext)
+    extends BackendController(cc) with Logging {
 
-  def getLockStatus(identifier: String): Action[AnyContent] = identifierAction(identifier).async {
-    implicit request =>
-      nrsLockRepository.getLock(request.internalId, identifier).map {
-        case true => Ok(JsBoolean(true))
-        case _ => Ok(JsBoolean(false))
-      }
+  def getLockStatus(identifier: String): Action[AnyContent] = identifierAction(identifier).async { implicit request =>
+    nrsLockRepository.getLock(request.internalId, identifier).map {
+      case true => Ok(JsBoolean(true))
+      case _    => Ok(JsBoolean(false))
+    }
   }
+
 }

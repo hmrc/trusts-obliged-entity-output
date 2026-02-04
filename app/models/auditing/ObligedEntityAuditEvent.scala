@@ -19,33 +19,39 @@ package models.auditing
 import play.api.libs.json.{Format, JsValue, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup
 
-case class ObligedEntityAuditEvent(internalAuthId: String,
-                                   identifier: String,
-                                   affinity: AffinityGroup,
-                                   dateTime: String)
+case class ObligedEntityAuditEvent(
+  internalAuthId: String,
+  identifier: String,
+  affinity: AffinityGroup,
+  dateTime: String
+)
 
 object ObligedEntityAuditEvent {
   implicit val formats: Format[ObligedEntityAuditEvent] = Json.format[ObligedEntityAuditEvent]
 }
 
-case class ObligedEntityAuditResponseEvent(internalAuthId: String,
-                                   identifier: String,
-                                   affinity: AffinityGroup,
-                                   dateTime: String,
-                                   response: JsValue)
+case class ObligedEntityAuditResponseEvent(
+  internalAuthId: String,
+  identifier: String,
+  affinity: AffinityGroup,
+  dateTime: String,
+  response: JsValue
+)
 
 object ObligedEntityAuditResponseEvent {
   implicit val formats: Format[ObligedEntityAuditResponseEvent] = Json.format[ObligedEntityAuditResponseEvent]
 }
 
-case class ObligedEntityAuditFileDetailsEvent(internalAuthId: String,
-                                              identifier: String,
-                                              affinity: AffinityGroup,
-                                              dateTime: String,
-                                              fileName: String,
-                                              fileType: String,
-                                              fileSize: Long,
-                                              fileGenerationDateTime: String)
+case class ObligedEntityAuditFileDetailsEvent(
+  internalAuthId: String,
+  identifier: String,
+  affinity: AffinityGroup,
+  dateTime: String,
+  fileName: String,
+  fileType: String,
+  fileSize: Long,
+  fileGenerationDateTime: String
+)
 
 object ObligedEntityAuditFileDetailsEvent {
   implicit val formats: Format[ObligedEntityAuditFileDetailsEvent] = Json.format[ObligedEntityAuditFileDetailsEvent]

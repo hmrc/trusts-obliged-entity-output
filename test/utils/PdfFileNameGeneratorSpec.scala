@@ -24,7 +24,7 @@ class PdfFileNameGeneratorSpec extends SpecBase {
 
   private val mockLocalDateTimeService: LocalDateTimeService = mock(classOf[LocalDateTimeService])
   when(mockLocalDateTimeService.nowFormatted).thenReturn("2020-04-01--09-30-00")
-  private val pdfFileNameGenerator: PdfFileNameGenerator = new PdfFileNameGenerator(mockLocalDateTimeService)
+  private val pdfFileNameGenerator: PdfFileNameGenerator     = new PdfFileNameGenerator(mockLocalDateTimeService)
 
   "PdfFileNameGenerator" when {
 
@@ -38,4 +38,5 @@ class PdfFileNameGeneratorSpec extends SpecBase {
       }
     }
   }
+
 }

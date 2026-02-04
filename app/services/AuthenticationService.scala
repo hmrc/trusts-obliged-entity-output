@@ -27,29 +27,31 @@ import utils.Session
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class AuthenticationServiceImpl @Inject()(trustAuthConnector: TrustAuthConnector) (implicit ec: ExecutionContext) extends AuthenticationService with Logging {
+class AuthenticationServiceImpl @Inject() (trustAuthConnector: TrustAuthConnector)(implicit ec: ExecutionContext)
+    extends AuthenticationService with Logging {
 
-  override def authenticateForIdentifier[A](identifier: String)
-                                           (implicit request: Request[A],
-                                     hc: HeaderCarrier): Future[Either[Result, Request[A]]] =
-  {
+  override def authenticateForIdentifier[A](
+    identifier: String
+  )(implicit request: Request[A], hc: HeaderCarrier): Future[Either[Result, Request[A]]] =
     trustAuthConnector.authorisedForIdentifier(identifier).flatMap {
       case _: TrustAuthAllowed =>
         Future.successful(Right(request))
-      case TrustAuthDenied(_) =>
+      case TrustAuthDenied(_)  =>
         Future.successful(Left(Unauthorized))
-      case _ =>
-        logger.warn(s"[Session ID: ${Session.id(hc)}][UTR/URN: $identifier] Problem authenticating for trust identifier")
+      case _                   =>
+        logger.warn(
+          s"[Session ID: ${Session.id(hc)}][UTR/URN: $identifier] Problem authenticating for trust identifier"
+        )
         Future.successful(Left(InternalServerError))
     }
-  }
 
 }
 
 @ImplementedBy(classOf[AuthenticationServiceImpl])
 trait AuthenticationService {
 
-  def authenticateForIdentifier[A](identifier: String)
-                                  (implicit request: Request[A],
-                                   hc: HeaderCarrier): Future[Either[Result, Request[A]]]
+  def authenticateForIdentifier[A](
+    identifier: String
+  )(implicit request: Request[A], hc: HeaderCarrier): Future[Either[Result, Request[A]]]
+
 }

@@ -26,7 +26,7 @@ class NrsResponseSpec extends SpecBase {
   "parseNRS400ResponseBody method" should {
 
     "remove data within square brackets" in {
-      val input =
+      val input          =
         """[
           |{"message":"#/entities/beneficiary/unidentified: 2 schema violations found"},
           |{"message":"#/entities/beneficiary/unidentified/0/beneficiaryDescription: string [INVALID BENEFICIARY DESCRIPTION ***] does not match pattern ^[0-9A-Z{À-˿'}\\- \\u005C&`'^]{1,70}$"},
@@ -81,4 +81,5 @@ class NrsResponseSpec extends SpecBase {
       result mustBe InternalServerErrorResponse
     }
   }
+
 }

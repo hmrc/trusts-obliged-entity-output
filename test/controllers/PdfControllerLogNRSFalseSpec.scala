@@ -35,20 +35,21 @@ import scala.concurrent.Future
 
 class PdfControllerLogNRSFalseSpec extends SpecBase {
 
-  private val mockTrustDataConnector: TrustDataConnector = mock(classOf[TrustDataConnector])
-  private val mockNrsConnector: NrsConnector = mock(classOf[NrsConnector])
-  private val mockNrsLockRepository: NrsLockRepository = mock(classOf[NrsLockRepository])
-  private val mockAuditService: AuditService = mock(classOf[AuditService])
+  private val mockTrustDataConnector: TrustDataConnector     = mock(classOf[TrustDataConnector])
+  private val mockNrsConnector: NrsConnector                 = mock(classOf[NrsConnector])
+  private val mockNrsLockRepository: NrsLockRepository       = mock(classOf[NrsLockRepository])
+  private val mockAuditService: AuditService                 = mock(classOf[AuditService])
   private val mockLocalDateTimeService: LocalDateTimeService = mock(classOf[LocalDateTimeService])
-  private val mockValidationService: ValidationService = mock(classOf[ValidationService])
-  private val defaultValidator: Validator = mock(classOf[Validator])
+  private val mockValidationService: ValidationService       = mock(classOf[ValidationService])
+  private val defaultValidator: Validator                    = mock(classOf[Validator])
 
-  override def applicationBuilder(): GuiceApplicationBuilder = {
-    super.applicationBuilder()
+  override def applicationBuilder(): GuiceApplicationBuilder =
+    super
+      .applicationBuilder()
       .configure(
         Seq(
-          "metrics.enabled" -> false,
-          "auditing.enabled" -> false,
+          "metrics.enabled"                -> false,
+          "auditing.enabled"               -> false,
           "features.logNRS400ResponseBody" -> false
         ): _*
       )
@@ -60,7 +61,6 @@ class PdfControllerLogNRSFalseSpec extends SpecBase {
         bind[LocalDateTimeService].toInstance(mockLocalDateTimeService),
         bind[ValidationService].toInstance(mockValidationService)
       )
-  }
 
   private val identifier: String = "1234567890"
 
@@ -91,7 +91,10 @@ class PdfControllerLogNRSFalseSpec extends SpecBase {
               result.header.status mustBe INTERNAL_SERVER_ERROR
 
               verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(trustJson))(any(), any())
-              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(JsString("BadRequestResponse(Invalid request body)")))(any(), any())
+              verify(mockAuditService).audit(
+                eqTo(NRS_ERROR),
+                eqTo(JsString("BadRequestResponse(Invalid request body)"))
+              )(any(), any())
             }
           }
 
@@ -99,4 +102,5 @@ class PdfControllerLogNRSFalseSpec extends SpecBase {
       }
     }
   }
+
 }

@@ -30,17 +30,16 @@ import uk.gov.hmrc.http.HttpVerbs.{GET, POST}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class NrsConnector @Inject()(ws: WSClient, config: AppConfig) extends Logging {
+class NrsConnector @Inject() (ws: WSClient, config: AppConfig) extends Logging {
 
   def getPdf(payload: JsValue)(implicit ec: ExecutionContext): Future[NrsResponse] = {
     lazy val url: String = s"${config.nrsUrl}/generate-pdf/template/trusts-5mld-1-2-0/signed-pdf"
 
-    lazy val nrsHeaders: Seq[(String, String)] = {
+    lazy val nrsHeaders: Seq[(String, String)] =
       Seq(
-        X_API_KEY -> s"${config.nrsToken}",
+        X_API_KEY    -> s"${config.nrsToken}",
         CONTENT_TYPE -> JSON
       )
-    }
 
     ws.url(url).withMethod(POST).withHttpHeaders(nrsHeaders: _*).withBody(payload).stream().map { response =>
       response.body[NrsResponse]

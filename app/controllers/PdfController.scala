@@ -35,92 +35,92 @@ import utils.PdfFileNameGenerator
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class PdfController @Inject()(identifierAction: IdentifierActionProvider,
-                              nrsConnector: NrsConnector,
-                              trustDataConnector: TrustDataConnector,
-                              nrsLockRepository: NrsLockRepository,
-                              config: AppConfig,
-                              cc: ControllerComponents,
-                              pdfFileNameGenerator: PdfFileNameGenerator,
-                              auditService: AuditService,
-                              validationService: ValidationService
-                             ) (implicit ec: ExecutionContext) extends BackendController(cc) with Logging {
+class PdfController @Inject() (
+  identifierAction: IdentifierActionProvider,
+  nrsConnector: NrsConnector,
+  trustDataConnector: TrustDataConnector,
+  nrsLockRepository: NrsLockRepository,
+  config: AppConfig,
+  cc: ControllerComponents,
+  pdfFileNameGenerator: PdfFileNameGenerator,
+  auditService: AuditService,
+  validationService: ValidationService
+)(implicit ec: ExecutionContext)
+    extends BackendController(cc) with Logging {
 
-  def getPdf(identifier: String): Action[AnyContent] = identifierAction(identifier).async {
-    implicit request =>
-      pingNrs(identifier)
+  def getPdf(identifier: String): Action[AnyContent] = identifierAction(identifier).async { implicit request =>
+    pingNrs(identifier)
   }
 
-  private def logInfo(implicit request: IdentifierRequest[AnyContent]): String = {
+  private def logInfo(implicit request: IdentifierRequest[AnyContent]): String =
     s"[SessionId: ${request.sessionId}][${request.identifier}: ${request.identifier.value}]"
-  }
 
-  private def pingNrs(identifier: String)(implicit request: IdentifierRequest[AnyContent]): Future[Result] = {
+  private def pingNrs(identifier: String)(implicit request: IdentifierRequest[AnyContent]): Future[Result] =
     nrsConnector.ping().flatMap {
       case true =>
         logger.info(s"$logInfo Successfully pinged NRS.")
         getLockStatus(identifier)
-      case _ =>
+      case _    =>
         auditService.audit(NRS_ERROR, JsString(s"$ServiceUnavailableResponse"))
         logger.error(s"$logInfo Failed to ping NRS. Aborted PDF request.")
         Future.successful(ServiceUnavailable)
     }
-  }
 
-  private def getLockStatus(identifier: String)(implicit request: IdentifierRequest[AnyContent]): Future[Result] = {
+  private def getLockStatus(identifier: String)(implicit request: IdentifierRequest[AnyContent]): Future[Result] =
     nrsLockRepository.getLock(request.internalId, identifier).flatMap {
       case true =>
         auditService.audit(EXCESSIVE_REQUESTS)
         Future.successful(TooManyRequests)
-      case _ =>
+      case _    =>
         setLockStatus(identifier, lock = true).flatMap { _ =>
           getTrustJson(identifier)
         }
     }
-  }
 
-  private def setLockStatus(identifier: String, lock: Boolean)(implicit request: IdentifierRequest[AnyContent]): Future[Boolean] = {
+  private def setLockStatus(identifier: String, lock: Boolean)(implicit
+    request: IdentifierRequest[AnyContent]
+  ): Future[Boolean] =
     nrsLockRepository.setLock(NrsLock.build(request.internalId, identifier, lock))
-  }
 
-  private def getTrustJson(identifier: String)
-                          (implicit request: IdentifierRequest[AnyContent]): Future[Result] = {
+  private def getTrustJson(identifier: String)(implicit request: IdentifierRequest[AnyContent]): Future[Result] =
     trustDataConnector.getTrustJson(request.identifier).flatMap {
       case SuccessfulTrustDataResponse(payload) =>
         auditService.audit(IF_DATA_RECEIVED, payload)
         validationService.get(config.trustsObligedEntityDataSchema).validate(payload.toString()) match {
-          case Right(_) =>
+          case Right(_)               =>
             val fileName = pdfFileNameGenerator.generate(identifier)
             generatePdf(identifier, payload, fileName)
           case Left(validationErrors) =>
-            logger.warn(s"[PdfController][getTrustJson][Session ID: ${request.sessionId}] problem with payload: $validationErrors")
+            logger.warn(
+              s"[PdfController][getTrustJson][Session ID: ${request.sessionId}] problem with payload: $validationErrors"
+            )
             Future.successful(InternalServerError)
         }
-      case e =>
+      case e                                    =>
         auditService.audit(IF_ERROR, JsString(s"$e"))
         e match {
           case ServiceUnavailableTrustDataResponse =>
             logger.error(s"$logInfo ServiceUnavailable returned from IF.")
             Future.successful(ServiceUnavailable)
-          case _ =>
+          case _                                   =>
             logger.error(s"$logInfo Error retrieving trust data from IF")
             Future.successful(InternalServerError)
         }
     }
-  }
 
-  private def generatePdf(identifier: String, payload: JsValue, fileName: String)
-                         (implicit request: IdentifierRequest[AnyContent]): Future[Result] = {
+  private def generatePdf(identifier: String, payload: JsValue, fileName: String)(implicit
+    request: IdentifierRequest[AnyContent]
+  ): Future[Result] =
     nrsConnector.getPdf(payload).flatMap {
       case response: SuccessfulResponse =>
         auditService.auditFileDetails(NRS_DATA_RECEIVED, FileDetails(fileName, PDF, response.length))
         setLockStatus(identifier, lock = false).map { _ =>
           pdf(fileName, response)
         }
-      case e =>
+      case e                            =>
         auditService.audit(NRS_ERROR, JsString(s"$e"))
         e match {
-          case BadRequestResponse(body) =>
+          case BadRequestResponse(body)   =>
             if (config.logNRS400ResponseBody) {
               logger.error(s"Response from NRS - $body")
             }
@@ -128,14 +128,13 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
           case ServiceUnavailableResponse =>
             logger.error(s"$logInfo ServiceUnavailable returned from NRS.")
             Future.successful(ServiceUnavailable)
-          case _ =>
+          case _                          =>
             logger.error(s"$logInfo Error retrieving PDF from NRS")
             Future.successful(InternalServerError)
         }
     }
-  }
 
-  private def pdf(fileName: String, response: SuccessfulResponse): Result = {
+  private def pdf(fileName: String, response: SuccessfulResponse): Result =
     Result(
       header = ResponseHeader(
         status = OK,
@@ -149,5 +148,5 @@ class PdfController @Inject()(identifierAction: IdentifierActionProvider,
         contentType = Some(PDF)
       )
     )
-  }
+
 }

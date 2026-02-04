@@ -19,10 +19,11 @@ package utils
 import javax.inject.Inject
 import services.LocalDateTimeService
 
-class PdfFileNameGenerator @Inject()(localDateTimeService: LocalDateTimeService) {
+class PdfFileNameGenerator @Inject() (localDateTimeService: LocalDateTimeService) {
 
   def generate(identifier: String): String = {
     val timestamp: String = localDateTimeService.nowFormatted
     s"$identifier-$timestamp.pdf"
   }
+
 }

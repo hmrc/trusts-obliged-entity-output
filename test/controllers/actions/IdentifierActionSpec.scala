@@ -39,7 +39,7 @@ class AuthActionSpec extends SpecBase {
 
   private val cc = stubControllerComponents()
 
-  private val mockAuthConnector: AuthConnector = mock(classOf[AuthConnector])
+  private val mockAuthConnector: AuthConnector       = mock(classOf[AuthConnector])
   private val mockAuthService: AuthenticationService = mock(classOf[AuthenticationService])
 
   private val fakeRequest = FakeRequest("POST", "")
@@ -47,14 +47,21 @@ class AuthActionSpec extends SpecBase {
     .withBody(Json.parse("{}"))
 
   class Harness(authAction: IdentifierAction) {
-    def onPageLoad(): Action[JsValue] = authAction.apply(cc.parsers.json) { _ => Results.Ok }
+    def onPageLoad(): Action[JsValue] = authAction.apply(cc.parsers.json)(_ => Results.Ok)
   }
 
   private def authRetrievals(affinityGroup: AffinityGroup): Future[Some[String] ~ Some[AffinityGroup]] =
     Future.successful(new ~(Some("id"), Some(affinityGroup)))
 
-  private def actionToTest(identifier: String, trustAuthService: AuthenticationService, authConnector: AuthConnector): AuthenticatedIdentifierAction =
-    new AuthenticatedIdentifierAction(identifier, trustAuthService, authConnector)(injector.instanceOf[BodyParsers.Default], ExecutionContext.Implicits.global)
+  private def actionToTest(
+    identifier: String,
+    trustAuthService: AuthenticationService,
+    authConnector: AuthConnector
+  ): AuthenticatedIdentifierAction =
+    new AuthenticatedIdentifierAction(identifier, trustAuthService, authConnector)(
+      injector.instanceOf[BodyParsers.Default],
+      ExecutionContext.Implicits.global
+    )
 
   "Auth Action" when {
 
@@ -62,9 +69,10 @@ class AuthActionSpec extends SpecBase {
 
       "return unauthorised" in {
 
-        val authAction = actionToTest("1234567890", mockAuthService, new FakeFailingAuthConnector(new MissingBearerToken))
+        val authAction =
+          actionToTest("1234567890", mockAuthService, new FakeFailingAuthConnector(new MissingBearerToken))
         val controller = new Harness(authAction)
-        val result = controller.onPageLoad()(fakeRequest)
+        val result     = controller.onPageLoad()(fakeRequest)
 
         status(result) mustBe UNAUTHORIZED
       }
@@ -74,9 +82,10 @@ class AuthActionSpec extends SpecBase {
 
       "return unauthorised" in {
 
-        val authAction = actionToTest("1234567890", mockAuthService, new FakeFailingAuthConnector(new BearerTokenExpired))
+        val authAction =
+          actionToTest("1234567890", mockAuthService, new FakeFailingAuthConnector(new BearerTokenExpired))
         val controller = new Harness(authAction)
-        val result = controller.onPageLoad()(fakeRequest)
+        val result     = controller.onPageLoad()(fakeRequest)
 
         status(result) mustBe UNAUTHORIZED
       }
@@ -89,11 +98,12 @@ class AuthActionSpec extends SpecBase {
         when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(any(), any()))
           .thenReturn(authRetrievals(AffinityGroup.Organisation))
 
-        when(mockAuthService.authenticateForIdentifier[JsValue](any())(any(), any())).thenReturn(Future.successful(Right(fakeRequest)))
+        when(mockAuthService.authenticateForIdentifier[JsValue](any())(any(), any()))
+          .thenReturn(Future.successful(Right(fakeRequest)))
 
-        val action = actionToTest("2647384758", mockAuthService, mockAuthConnector)
+        val action     = actionToTest("2647384758", mockAuthService, mockAuthConnector)
         val controller = new Harness(action)
-        val result = controller.onPageLoad()(fakeRequest)
+        val result     = controller.onPageLoad()(fakeRequest)
 
         status(result) mustBe OK
       }
@@ -107,11 +117,12 @@ class AuthActionSpec extends SpecBase {
         when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(any(), any()))
           .thenReturn(authRetrievals(AffinityGroup.Agent))
 
-        when(mockAuthService.authenticateForIdentifier[JsValue](any())(any(), any())).thenReturn(Future.successful(Right(fakeRequest)))
+        when(mockAuthService.authenticateForIdentifier[JsValue](any())(any(), any()))
+          .thenReturn(Future.successful(Right(fakeRequest)))
 
-        val action = actionToTest("XTTRUST80837546", mockAuthService, mockAuthConnector)
+        val action     = actionToTest("XTTRUST80837546", mockAuthService, mockAuthConnector)
         val controller = new Harness(action)
-        val result = controller.onPageLoad()(fakeRequest)
+        val result     = controller.onPageLoad()(fakeRequest)
 
         status(result) mustBe OK
       }
@@ -125,11 +136,12 @@ class AuthActionSpec extends SpecBase {
         when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(any(), any()))
           .thenReturn(authRetrievals(AffinityGroup.Organisation))
 
-        when(mockAuthService.authenticateForIdentifier[JsValue](any())(any(), any())).thenReturn(Future.successful(Left(Unauthorized)))
+        when(mockAuthService.authenticateForIdentifier[JsValue](any())(any(), any()))
+          .thenReturn(Future.successful(Left(Unauthorized)))
 
-        val action = actionToTest("XTTRUST80837546", mockAuthService, mockAuthConnector)
+        val action     = actionToTest("XTTRUST80837546", mockAuthService, mockAuthConnector)
         val controller = new Harness(action)
-        val result = controller.onPageLoad()(fakeRequest)
+        val result     = controller.onPageLoad()(fakeRequest)
 
         status(result) mustBe UNAUTHORIZED
       }
@@ -143,11 +155,12 @@ class AuthActionSpec extends SpecBase {
         when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(any(), any()))
           .thenReturn(authRetrievals(AffinityGroup.Agent))
 
-        when(mockAuthService.authenticateForIdentifier[JsValue](any())(any(), any())).thenReturn(Future.successful(Left(Unauthorized)))
+        when(mockAuthService.authenticateForIdentifier[JsValue](any())(any(), any()))
+          .thenReturn(Future.successful(Left(Unauthorized)))
 
-        val action = actionToTest("0043748273", mockAuthService, mockAuthConnector)
+        val action     = actionToTest("0043748273", mockAuthService, mockAuthConnector)
         val controller = new Harness(action)
-        val result = controller.onPageLoad()(fakeRequest)
+        val result     = controller.onPageLoad()(fakeRequest)
 
         status(result) mustBe UNAUTHORIZED
       }
@@ -161,9 +174,9 @@ class AuthActionSpec extends SpecBase {
         when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(any(), any()))
           .thenReturn(authRetrievals(AffinityGroup.Organisation))
 
-        val action = actionToTest("84759873598738597397598", mockAuthService, mockAuthConnector)
+        val action     = actionToTest("84759873598738597397598", mockAuthService, mockAuthConnector)
         val controller = new Harness(action)
-        val result = controller.onPageLoad()(fakeRequest)
+        val result     = controller.onPageLoad()(fakeRequest)
 
         status(result) mustBe UNAUTHORIZED
       }
@@ -180,27 +193,34 @@ class AuthActionSpec extends SpecBase {
         when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(any(), any()))
           .thenReturn(noneAuthRetrievals)
 
-        val action = actionToTest("1234567890", mockAuthService, mockAuthConnector)
+        val action     = actionToTest("1234567890", mockAuthService, mockAuthConnector)
         val controller = new Harness(action)
-        val result = controller.onPageLoad()(fakeRequest)
+        val result     = controller.onPageLoad()(fakeRequest)
 
         status(result) mustBe UNAUTHORIZED
       }
     }
 
   }
+
 }
 
-class FakeFailingAuthConnector @Inject()(exceptionToReturn: Throwable) extends AuthConnector {
+class FakeFailingAuthConnector @Inject() (exceptionToReturn: Throwable) extends AuthConnector {
 
-  override def authorise[A](predicate: Predicate, retrieval: Retrieval[A])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[A] = {
+  override def authorise[A](predicate: Predicate, retrieval: Retrieval[A])(implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext
+  ): Future[A] =
     Future.failed(exceptionToReturn)
-  }
+
 }
 
 class FakeAuthConnector(stubbedRetrievalResult: Future[_]) extends AuthConnector {
 
-  override def authorise[A](predicate: Predicate, retrieval: Retrieval[A])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[A] = {
+  override def authorise[A](predicate: Predicate, retrieval: Retrieval[A])(implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext
+  ): Future[A] =
     stubbedRetrievalResult.map(_.asInstanceOf[A])
-  }
+
 }

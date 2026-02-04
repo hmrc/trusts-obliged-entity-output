@@ -23,20 +23,16 @@ import scala.io.Source
 object JsonHelper {
 
   def getJsonFromFile(filename: String): String = {
-    val source = Source.fromInputStream(getClass.getResourceAsStream(s"/$filename"))
+    val source     = Source.fromInputStream(getClass.getResourceAsStream(s"/$filename"))
     val jsonString = source.mkString
     source.close()
     jsonString
   }
 
-  def getJsonValueFromFile(filename: String): JsValue = {
+  def getJsonValueFromFile(filename: String): JsValue =
     Json.parse(getJsonFromFile(filename))
-  }
 
-  def getJsonValueFromString(jsonString: String ): JsValue = {
+  def getJsonValueFromString(jsonString: String): JsValue =
     Json.parse(jsonString)
-  }
 
 }
-
-
