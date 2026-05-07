@@ -27,7 +27,7 @@ import org.scalatest.{EitherValues, RecoverMethods}
 import play.api.inject.bind
 import play.api.mvc.AnyContent
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import services.AuthenticationService
 import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
 
@@ -37,7 +37,7 @@ class AuthenticationServiceSpec extends SpecBase with ScalaFutures with EitherVa
 
   private val utr = "0987654321"
 
-  implicit private val request: IdentifierRequest[AnyContent] =
+  private given request: IdentifierRequest[AnyContent] =
     IdentifierRequest[AnyContent](FakeRequest(), "internalId", UTR(utr), "sessionId", Organisation)
 
   private lazy val trustAuthConnector = mock(classOf[TrustAuthConnector])
@@ -46,7 +46,7 @@ class AuthenticationServiceSpec extends SpecBase with ScalaFutures with EitherVa
 
     "user is authenticated" must {
       "return the data request" in {
-        when(trustAuthConnector.authorisedForIdentifier(any())(any(), any()))
+        when(trustAuthConnector.authorisedForIdentifier(any())(using any(), any()))
           .thenReturn(Future.successful(TrustAuthAllowed()))
 
         val app = buildApp
@@ -62,7 +62,7 @@ class AuthenticationServiceSpec extends SpecBase with ScalaFutures with EitherVa
     "user requires additional action" must {
 
       "return unauthorised" in {
-        when(trustAuthConnector.authorisedForIdentifier(any())(any(), any()))
+        when(trustAuthConnector.authorisedForIdentifier(any())(using any(), any()))
           .thenReturn(Future.successful(TrustAuthDenied("some-url")))
 
         val app = buildApp
@@ -78,7 +78,7 @@ class AuthenticationServiceSpec extends SpecBase with ScalaFutures with EitherVa
     "an internal server error is returned" must {
 
       "return an internal server error result" in {
-        when(trustAuthConnector.authorisedForIdentifier(any())(any(), any()))
+        when(trustAuthConnector.authorisedForIdentifier(any())(using any(), any()))
           .thenReturn(Future.successful(TrustAuthInternalServerError))
 
         val app = buildApp

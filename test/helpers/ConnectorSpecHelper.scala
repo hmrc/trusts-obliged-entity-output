@@ -17,11 +17,11 @@
 package helpers
 
 import base.SpecBase
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.http.HttpHeaders
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import config.Constants._
-import play.api.http.HeaderNames._
+import config.Constants.*
+import play.api.http.HeaderNames.*
 import org.scalatest.concurrent.IntegrationPatience
 import play.api.http.ContentTypes.JSON
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -45,7 +45,7 @@ class ConnectorSpecHelper extends SpecBase with WireMockHelper with IntegrationP
         Seq(
           "microservice.services.nrs-trusts.port" -> server.port(),
           "microservice.services.trust-data.port" -> server.port()
-        ): _*
+        )*
       )
 
   def stubForGet(url: String, responseStatus: Int, responseBody: String = "", delayResponse: Int = 0): StubMapping =

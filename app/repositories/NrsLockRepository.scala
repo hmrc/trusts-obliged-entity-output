@@ -19,7 +19,7 @@ package repositories
 import config.AppConfig
 import models.NrsLock
 import org.mongodb.scala.model.Filters.equal
-import org.mongodb.scala.model._
+import org.mongodb.scala.model.*
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
@@ -28,7 +28,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class NrsLockRepository @Inject() (mongoComponent: MongoComponent, config: AppConfig)(implicit val ec: ExecutionContext)
+class NrsLockRepository @Inject() (mongoComponent: MongoComponent, config: AppConfig)(using val ec: ExecutionContext)
     extends PlayMongoRepository[NrsLock](
       mongoComponent = mongoComponent,
       collectionName = "nrs-lock",
@@ -39,7 +39,7 @@ class NrsLockRepository @Inject() (mongoComponent: MongoComponent, config: AppCo
           Indexes.ascending("createdAt"),
           IndexOptions()
             .name("created-at-index")
-            .expireAfter(config.lockTtlInSeconds, TimeUnit.SECONDS)
+            .expireAfter(config.lockTtlInSeconds.toLong, TimeUnit.SECONDS)
         ),
         IndexModel(
           Indexes.ascending("identifier"),

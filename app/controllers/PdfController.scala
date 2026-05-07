@@ -18,16 +18,16 @@ package controllers
 
 import com.google.inject.Inject
 import config.AppConfig
-import config.Constants._
+import config.Constants.*
 import connectors.{NrsConnector, TrustDataConnector}
 import controllers.actions.IdentifierActionProvider
-import models._
-import models.auditing.Events._
+import models.*
+import models.auditing.Events.*
 import models.requests.IdentifierRequest
 import play.api.Logging
 import play.api.http.HttpEntity
 import play.api.libs.json.{JsString, JsValue}
-import play.api.mvc._
+import play.api.mvc.*
 import repositories.NrsLockRepository
 import services.{AuditService, ValidationService}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -45,17 +45,18 @@ class PdfController @Inject() (
   pdfFileNameGenerator: PdfFileNameGenerator,
   auditService: AuditService,
   validationService: ValidationService
-)(implicit ec: ExecutionContext)
+)(using ec: ExecutionContext)
     extends BackendController(cc) with Logging {
 
-  def getPdf(identifier: String): Action[AnyContent] = identifierAction(identifier).async { implicit request =>
+  def getPdf(identifier: String): Action[AnyContent] = identifierAction(identifier).async { request =>
+    given IdentifierRequest[AnyContent] = request
     pingNrs(identifier)
   }
 
-  private def logInfo(implicit request: IdentifierRequest[AnyContent]): String =
+  private def logInfo(using request: IdentifierRequest[AnyContent]): String =
     s"[SessionId: ${request.sessionId}][${request.identifier}: ${request.identifier.value}]"
 
-  private def pingNrs(identifier: String)(implicit request: IdentifierRequest[AnyContent]): Future[Result] =
+  private def pingNrs(identifier: String)(using request: IdentifierRequest[AnyContent]): Future[Result] =
     nrsConnector.ping().flatMap {
       case true =>
         logger.info(s"$logInfo Successfully pinged NRS.")
@@ -66,7 +67,7 @@ class PdfController @Inject() (
         Future.successful(ServiceUnavailable)
     }
 
-  private def getLockStatus(identifier: String)(implicit request: IdentifierRequest[AnyContent]): Future[Result] =
+  private def getLockStatus(identifier: String)(using request: IdentifierRequest[AnyContent]): Future[Result] =
     nrsLockRepository.getLock(request.internalId, identifier).flatMap {
       case true =>
         auditService.audit(EXCESSIVE_REQUESTS)
@@ -77,12 +78,12 @@ class PdfController @Inject() (
         }
     }
 
-  private def setLockStatus(identifier: String, lock: Boolean)(implicit
+  private def setLockStatus(identifier: String, lock: Boolean)(using
     request: IdentifierRequest[AnyContent]
   ): Future[Boolean] =
     nrsLockRepository.setLock(NrsLock.build(request.internalId, identifier, lock))
 
-  private def getTrustJson(identifier: String)(implicit request: IdentifierRequest[AnyContent]): Future[Result] =
+  private def getTrustJson(identifier: String)(using request: IdentifierRequest[AnyContent]): Future[Result] =
     trustDataConnector.getTrustJson(request.identifier).flatMap {
       case SuccessfulTrustDataResponse(payload) =>
         auditService.audit(IF_DATA_RECEIVED, payload)
@@ -108,7 +109,7 @@ class PdfController @Inject() (
         }
     }
 
-  private def generatePdf(identifier: String, payload: JsValue, fileName: String)(implicit
+  private def generatePdf(identifier: String, payload: JsValue, fileName: String)(using
     request: IdentifierRequest[AnyContent]
   ): Future[Result] =
     nrsConnector.getPdf(payload).flatMap {

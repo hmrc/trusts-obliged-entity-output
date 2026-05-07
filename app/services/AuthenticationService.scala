@@ -20,19 +20,19 @@ import com.google.inject.{ImplementedBy, Inject}
 import connectors.TrustAuthConnector
 import models.{TrustAuthAllowed, TrustAuthDenied}
 import play.api.Logging
-import play.api.mvc.Results._
-import play.api.mvc._
+import play.api.mvc.Results.*
+import play.api.mvc.*
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.Session
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class AuthenticationServiceImpl @Inject() (trustAuthConnector: TrustAuthConnector)(implicit ec: ExecutionContext)
+class AuthenticationServiceImpl @Inject() (trustAuthConnector: TrustAuthConnector)(using ec: ExecutionContext)
     extends AuthenticationService with Logging {
 
   override def authenticateForIdentifier[A](
     identifier: String
-  )(implicit request: Request[A], hc: HeaderCarrier): Future[Either[Result, Request[A]]] =
+  )(using request: Request[A], hc: HeaderCarrier): Future[Either[Result, Request[A]]] =
     trustAuthConnector.authorisedForIdentifier(identifier).flatMap {
       case _: TrustAuthAllowed =>
         Future.successful(Right(request))
@@ -52,6 +52,6 @@ trait AuthenticationService {
 
   def authenticateForIdentifier[A](
     identifier: String
-  )(implicit request: Request[A], hc: HeaderCarrier): Future[Either[Result, Request[A]]]
+  )(using request: Request[A], hc: HeaderCarrier): Future[Either[Result, Request[A]]]
 
 }

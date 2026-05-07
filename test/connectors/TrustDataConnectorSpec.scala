@@ -17,9 +17,9 @@
 package connectors
 
 import helpers.ConnectorSpecHelper
-import helpers.JsonHelper._
-import models.{BadRequestTrustDataResponse, _}
-import play.api.http.Status._
+import helpers.JsonHelper.*
+import models.{BadRequestTrustDataResponse, *}
+import play.api.http.Status.*
 import play.api.libs.json.{JsValue, Json}
 
 class TrustDataConnectorSpec extends ConnectorSpecHelper {

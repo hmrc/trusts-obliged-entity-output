@@ -27,7 +27,7 @@ case class ObligedEntityAuditEvent(
 )
 
 object ObligedEntityAuditEvent {
-  implicit val formats: Format[ObligedEntityAuditEvent] = Json.format[ObligedEntityAuditEvent]
+  given formats: Format[ObligedEntityAuditEvent] = Json.format[ObligedEntityAuditEvent]
 }
 
 case class ObligedEntityAuditResponseEvent(
@@ -39,7 +39,7 @@ case class ObligedEntityAuditResponseEvent(
 )
 
 object ObligedEntityAuditResponseEvent {
-  implicit val formats: Format[ObligedEntityAuditResponseEvent] = Json.format[ObligedEntityAuditResponseEvent]
+  given formats: Format[ObligedEntityAuditResponseEvent] = Json.format[ObligedEntityAuditResponseEvent]
 }
 
 case class ObligedEntityAuditFileDetailsEvent(
@@ -54,5 +54,5 @@ case class ObligedEntityAuditFileDetailsEvent(
 )
 
 object ObligedEntityAuditFileDetailsEvent {
-  implicit val formats: Format[ObligedEntityAuditFileDetailsEvent] = Json.format[ObligedEntityAuditFileDetailsEvent]
+  given formats: Format[ObligedEntityAuditFileDetailsEvent] = Json.format[ObligedEntityAuditFileDetailsEvent]
 }

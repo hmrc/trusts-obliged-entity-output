@@ -33,7 +33,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 class SpecBase
     extends AnyWordSpec with Matchers with ScalaFutures with BeforeAndAfter with GuiceOneServerPerSuite with Inside {
 
-  implicit lazy val hc: HeaderCarrier = HeaderCarrier()
+  given hc: HeaderCarrier = HeaderCarrier()
 
   lazy val application: Application = applicationBuilder().build()
 
@@ -48,7 +48,7 @@ class SpecBase
           "metrics.enabled"                -> false,
           "auditing.enabled"               -> false,
           "features.logNRS400ResponseBody" -> true
-        ): _*
+        )*
       )
       .overrides(
         bind[IdentifierActionProvider].toInstance(

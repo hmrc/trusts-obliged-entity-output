@@ -17,11 +17,11 @@
 package connectors
 
 import com.github.tomakehurst.wiremock.http.{HttpHeader, HttpHeaders}
-import play.api.http.HeaderNames._
+import play.api.http.HeaderNames.*
 import helpers.ConnectorSpecHelper
-import helpers.JsonHelper._
-import models._
-import play.api.http.Status._
+import helpers.JsonHelper.*
+import models.*
+import play.api.http.Status.*
 import play.api.libs.json.{JsValue, Json}
 
 import scala.concurrent.ExecutionContext.Implicits.global

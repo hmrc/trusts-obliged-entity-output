@@ -16,72 +16,69 @@
 
 package services
 
-import com.github.fge.jackson.JsonLoader
-import com.github.fge.jsonschema.core.report.LogLevel.ERROR
-import com.github.fge.jsonschema.core.report.ProcessingReport
-import com.github.fge.jsonschema.main.{JsonSchema, JsonSchemaFactory}
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.networknt.schema.path.PathType
+import com.networknt.schema.{Error as SchemaError, Schema, SchemaRegistry, SchemaRegistryConfig, SpecificationVersion}
 
 import play.api.Logging
-import play.api.libs.json._
+import play.api.libs.json.*
 
 import javax.inject.{Inject, Singleton}
-import scala.io.Source
-import scala.jdk.CollectionConverters.IteratorHasAsScala
+import scala.jdk.CollectionConverters.*
 import scala.util.{Failure, Success, Try}
 
 @Singleton
 class ValidationService @Inject() () {
 
-  private val factory = JsonSchemaFactory.byDefault()
+  private val mapper = new ObjectMapper()
+
+  private val registry: SchemaRegistry = {
+    val config = SchemaRegistryConfig
+      .builder()
+      .pathType(PathType.JSON_POINTER)
+      .build()
+    SchemaRegistry
+      .builder()
+      .defaultDialectId(SpecificationVersion.DRAFT_4.getDialectId)
+      .schemaRegistryConfig(config)
+      .build()
+  }
 
   def get(schemaFile: String): Validator = {
-    val source               = Source.fromInputStream(getClass.getResourceAsStream(schemaFile))
-    val schemaJsonFileString = source.mkString
-    source.close()
-    val schemaJson           = JsonLoader.fromString(schemaJsonFileString)
-    val schema               = factory.getJsonSchema(schemaJson)
-    new Validator(schema)
+    val schemaStream = getClass.getResourceAsStream(schemaFile)
+    val schema       = registry.getSchema(schemaStream)
+    new Validator(schema, mapper)
   }
 
 }
 
-class Validator(schema: JsonSchema) extends Logging {
-
-  private val JsonErrorMessageTag  = "message"
-  private val JsonErrorInstanceTag = "instance"
-  private val JsonErrorPointerTag  = "pointer"
+class Validator(schema: Schema, mapper: ObjectMapper) extends Logging {
 
   def validate(inputJson: String): Either[List[TrustsValidationError], Unit] =
-    Try(JsonLoader.fromString(inputJson)) match {
+    Try(mapper.readTree(inputJson)) match {
       case Success(json) =>
-        val result = schema.validate(json)
-
-        if (result.isSuccess) {
+        val errors = schema.validate(json).asScala.toList
+        if (errors.isEmpty) {
           Right(())
         } else {
           logger.error(s"[Validator][validate] unable to validate to schema")
-          val errors = getValidationErrors(result)
-          Left(errors)
+          Left(errors.map(toTrustsValidationError))
         }
       case Failure(e)    =>
         logger.error(s"[Validator][validate] IOException $e")
         Left(List(TrustsValidationError(s"[Validator][validate] IOException $e", "")))
     }
 
-  private def getValidationErrors(validationOutput: ProcessingReport): List[TrustsValidationError] =
-    validationOutput.iterator.asScala.toList.filter(m => m.getLogLevel == ERROR).map { m =>
-      val error     = m.asJson()
-      val message   = error.findValue(JsonErrorMessageTag).asText("")
-      val location  = error.findValue(JsonErrorInstanceTag).at(s"/$JsonErrorPointerTag").asText()
-      val locations = error.findValues(JsonErrorPointerTag)
-      logger.error(s"[Validator][getValidationErrors] validation failed at locations :  $locations")
-      TrustsValidationError(message, location)
-    }
+  private def toTrustsValidationError(error: SchemaError): TrustsValidationError = {
+    val location = error.getInstanceLocation.toString
+    logger.error(s"[Validator][getValidationErrors] validation failed at location: $location")
+    TrustsValidationError(error.getMessage, location)
+  }
 
 }
 
 case class TrustsValidationError(message: String, location: String)
 
 object TrustsValidationError {
-  implicit val formats: Format[TrustsValidationError] = Json.format[TrustsValidationError]
+  given formats: Format[TrustsValidationError] = Json.format[TrustsValidationError]
 }

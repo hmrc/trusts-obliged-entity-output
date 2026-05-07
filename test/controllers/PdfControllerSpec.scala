@@ -20,11 +20,11 @@ import base.SpecBase
 import config.Constants.PDF
 import connectors.{NrsConnector, TrustDataConnector}
 import helpers.JsonHelper.getJsonValueFromFile
-import models._
-import models.auditing.Events._
+import models.*
+import models.auditing.Events.*
 import org.apache.pekko.stream.scaladsl.{Sink, Source}
 import org.apache.pekko.util.ByteString
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{mock, reset, verify, when}
 import play.api.Play.materializer
 import play.api.http.Status.SERVICE_UNAVAILABLE
@@ -33,7 +33,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsString, JsValue}
 import play.api.mvc.Result
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import repositories.NrsLockRepository
 import services.{AuditService, LocalDateTimeService, TrustsValidationError, ValidationService, Validator}
 
@@ -92,14 +92,14 @@ class PdfControllerSpec extends SpecBase {
 
             reset(mockAuditService)
 
-            when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
+            when(mockNrsConnector.ping()(using any())).thenReturn(Future.successful(true))
 
             when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(false))
 
             when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
 
-            when(mockNrsConnector.getPdf(any())(any()))
+            when(mockNrsConnector.getPdf(any())(using any()))
               .thenReturn(Future.successful(SuccessfulResponse(Source(List(ByteString(responseBody))), contentLength)))
 
             when(mockLocalDateTimeService.nowFormatted).thenReturn("2021-02-03")
@@ -116,11 +116,11 @@ class PdfControllerSpec extends SpecBase {
 
               getSourceString(result) mustEqual responseBody
 
-              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(trustJson))(any(), any())
+              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(trustJson))(using any(), any())
               verify(mockAuditService).auditFileDetails(
                 eqTo(NRS_DATA_RECEIVED),
                 eqTo(FileDetails(fileName, PDF, contentLength))
-              )(any(), any())
+              )(using any(), any())
             }
           }
         }
@@ -131,7 +131,7 @@ class PdfControllerSpec extends SpecBase {
 
             reset(mockAuditService)
 
-            when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
+            when(mockNrsConnector.ping()(using any())).thenReturn(Future.successful(true))
 
             when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(false))
 
@@ -142,6 +142,7 @@ class PdfControllerSpec extends SpecBase {
               result.header.status mustBe SERVICE_UNAVAILABLE
 
               verify(mockAuditService).audit(eqTo(IF_ERROR), eqTo(JsString("ServiceUnavailableTrustDataResponse")))(
+                using
                 any(),
                 any()
               )
@@ -152,21 +153,21 @@ class PdfControllerSpec extends SpecBase {
 
             reset(mockAuditService)
 
-            when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
+            when(mockNrsConnector.ping()(using any())).thenReturn(Future.successful(true))
 
             when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(false))
 
             when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
 
-            when(mockNrsConnector.getPdf(any())(any()))
+            when(mockNrsConnector.getPdf(any())(using any()))
               .thenReturn(Future.successful(ServiceUnavailableResponse))
 
             whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
               result.header.status mustBe SERVICE_UNAVAILABLE
 
-              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(trustJson))(any(), any())
-              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(JsString("ServiceUnavailableResponse")))(
+              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(trustJson))(using any(), any())
+              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(JsString("ServiceUnavailableResponse")))(using
                 any(),
                 any()
               )
@@ -177,12 +178,12 @@ class PdfControllerSpec extends SpecBase {
 
             reset(mockAuditService)
 
-            when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(false))
+            when(mockNrsConnector.ping()(using any())).thenReturn(Future.successful(false))
 
             whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
               result.header.status mustBe SERVICE_UNAVAILABLE
 
-              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(JsString("ServiceUnavailableResponse")))(
+              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(JsString("ServiceUnavailableResponse")))(using
                 any(),
                 any()
               )
@@ -196,7 +197,7 @@ class PdfControllerSpec extends SpecBase {
 
             reset(mockAuditService)
 
-            when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
+            when(mockNrsConnector.ping()(using any())).thenReturn(Future.successful(true))
 
             when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(false))
 
@@ -207,6 +208,7 @@ class PdfControllerSpec extends SpecBase {
               result.header.status mustBe INTERNAL_SERVER_ERROR
 
               verify(mockAuditService).audit(eqTo(IF_ERROR), eqTo(JsString("InternalServerErrorTrustDataResponse")))(
+                using
                 any(),
                 any()
               )
@@ -217,21 +219,21 @@ class PdfControllerSpec extends SpecBase {
 
             reset(mockAuditService)
 
-            when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
+            when(mockNrsConnector.ping()(using any())).thenReturn(Future.successful(true))
 
             when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(false))
 
             when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
 
-            when(mockNrsConnector.getPdf(any())(any()))
+            when(mockNrsConnector.getPdf(any())(using any()))
               .thenReturn(Future.successful(InternalServerErrorResponse))
 
             whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
               result.header.status mustBe INTERNAL_SERVER_ERROR
 
-              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(trustJson))(any(), any())
-              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(JsString("InternalServerErrorResponse")))(
+              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(trustJson))(using any(), any())
+              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(JsString("InternalServerErrorResponse")))(using
                 any(),
                 any()
               )
@@ -242,20 +244,23 @@ class PdfControllerSpec extends SpecBase {
 
             reset(mockAuditService)
 
-            when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
+            when(mockNrsConnector.ping()(using any())).thenReturn(Future.successful(true))
 
             when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(false))
 
             when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
 
-            when(mockNrsConnector.getPdf(any())(any()))
+            when(mockNrsConnector.getPdf(any())(using any()))
               .thenReturn(Future.successful(BadRequestResponse()))
 
             whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
               result.header.status mustBe INTERNAL_SERVER_ERROR
 
-              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(JsString("BadRequestResponse()")))(any(), any())
+              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(JsString("BadRequestResponse()")))(using
+                any(),
+                any()
+              )
             }
           }
 
@@ -277,24 +282,24 @@ class PdfControllerSpec extends SpecBase {
 
             reset(mockAuditService)
 
-            when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
+            when(mockNrsConnector.ping()(using any())).thenReturn(Future.successful(true))
 
             when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(false))
 
             when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
 
-            when(mockNrsConnector.getPdf(any())(any()))
+            when(mockNrsConnector.getPdf(any())(using any()))
               .thenReturn(Future.successful(BadRequestResponse("Invalid request body")))
 
             whenReady(controllerWithLogging.getPdf(identifier)(FakeRequest())) { result =>
               result.header.status mustBe INTERNAL_SERVER_ERROR
 
-              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(trustJson))(any(), any())
+              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(trustJson))(using any(), any())
               verify(mockAuditService).audit(
                 eqTo(NRS_ERROR),
                 eqTo(JsString("BadRequestResponse(Invalid request body)"))
-              )(any(), any())
+              )(using any(), any())
             }
           }
 
@@ -306,14 +311,14 @@ class PdfControllerSpec extends SpecBase {
 
             reset(mockAuditService)
 
-            when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
+            when(mockNrsConnector.ping()(using any())).thenReturn(Future.successful(true))
 
             when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(false))
 
             when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
 
-            when(mockNrsConnector.getPdf(any())(any()))
+            when(mockNrsConnector.getPdf(any())(using any()))
               .thenReturn(Future.successful(SuccessfulResponse(Source(List(ByteString(responseBody))), contentLength)))
 
             when(mockLocalDateTimeService.nowFormatted).thenReturn("2021-02-03")
@@ -335,11 +340,11 @@ class PdfControllerSpec extends SpecBase {
 
               getSourceString(result) mustEqual responseBody
 
-              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(trustJson))(any(), any())
+              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(trustJson))(using any(), any())
               verify(mockAuditService).auditFileDetails(
                 eqTo(NRS_DATA_RECEIVED),
                 eqTo(FileDetails(fileName, PDF, contentLength))
-              )(any(), any())
+              )(using any(), any())
             }
           }
 
@@ -347,21 +352,24 @@ class PdfControllerSpec extends SpecBase {
 
             reset(mockAuditService)
 
-            when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
+            when(mockNrsConnector.ping()(using any())).thenReturn(Future.successful(true))
 
             when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(false))
 
             when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
 
-            when(mockNrsConnector.getPdf(any())(any()))
+            when(mockNrsConnector.getPdf(any())(using any()))
               .thenReturn(Future.successful(UnauthorisedResponse))
 
             whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
               result.header.status mustBe INTERNAL_SERVER_ERROR
 
-              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(trustJson))(any(), any())
-              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(JsString("UnauthorisedResponse")))(any(), any())
+              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(trustJson))(using any(), any())
+              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(JsString("UnauthorisedResponse")))(using
+                any(),
+                any()
+              )
             }
           }
 
@@ -369,21 +377,21 @@ class PdfControllerSpec extends SpecBase {
 
             reset(mockAuditService)
 
-            when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
+            when(mockNrsConnector.ping()(using any())).thenReturn(Future.successful(true))
 
             when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(false))
 
             when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
 
-            when(mockNrsConnector.getPdf(any())(any()))
+            when(mockNrsConnector.getPdf(any())(using any()))
               .thenReturn(Future.successful(NotFoundResponse))
 
             whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
               result.header.status mustBe INTERNAL_SERVER_ERROR
 
-              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(trustJson))(any(), any())
-              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(JsString("NotFoundResponse")))(any(), any())
+              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(trustJson))(using any(), any())
+              verify(mockAuditService).audit(eqTo(NRS_ERROR), eqTo(JsString("NotFoundResponse")))(using any(), any())
             }
           }
 
@@ -396,7 +404,7 @@ class PdfControllerSpec extends SpecBase {
             when(defaultValidator.validate(any[String]()))
               .thenReturn(Left(List(TrustsValidationError("schema error", "/correspondence/address"))))
 
-            when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
+            when(mockNrsConnector.ping()(using any())).thenReturn(Future.successful(true))
             when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(false))
             when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
@@ -405,7 +413,7 @@ class PdfControllerSpec extends SpecBase {
               result.header.status mustBe INTERNAL_SERVER_ERROR
 
               // IF payload is audited before validation
-              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(trustJson))(any(), any())
+              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(trustJson))(using any(), any())
             }
 
             // Restore default behaviour for other tests
@@ -419,14 +427,14 @@ class PdfControllerSpec extends SpecBase {
 
           reset(mockAuditService)
 
-          when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
+          when(mockNrsConnector.ping()(using any())).thenReturn(Future.successful(true))
 
           when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(true))
 
           whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
             result.header.status mustBe TOO_MANY_REQUESTS
 
-            verify(mockAuditService).audit(eqTo(EXCESSIVE_REQUESTS))(any(), any())
+            verify(mockAuditService).audit(eqTo(EXCESSIVE_REQUESTS))(using any(), any())
           }
         }
       }

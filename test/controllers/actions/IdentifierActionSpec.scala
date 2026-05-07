@@ -24,9 +24,9 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Results.Unauthorized
 import play.api.mvc.{Action, BodyParsers, Results}
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import services.AuthenticationService
-import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -58,7 +58,7 @@ class AuthActionSpec extends SpecBase {
     trustAuthService: AuthenticationService,
     authConnector: AuthConnector
   ): AuthenticatedIdentifierAction =
-    new AuthenticatedIdentifierAction(identifier, trustAuthService, authConnector)(
+    new AuthenticatedIdentifierAction(identifier, trustAuthService, authConnector)(using
       injector.instanceOf[BodyParsers.Default],
       ExecutionContext.Implicits.global
     )
@@ -95,10 +95,10 @@ class AuthActionSpec extends SpecBase {
 
       "continue with the request" in {
 
-        when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(any(), any()))
+        when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(using any(), any()))
           .thenReturn(authRetrievals(AffinityGroup.Organisation))
 
-        when(mockAuthService.authenticateForIdentifier[JsValue](any())(any(), any()))
+        when(mockAuthService.authenticateForIdentifier[JsValue](any())(using any(), any()))
           .thenReturn(Future.successful(Right(fakeRequest)))
 
         val action     = actionToTest("2647384758", mockAuthService, mockAuthConnector)
@@ -114,10 +114,10 @@ class AuthActionSpec extends SpecBase {
 
       "continue with the request" in {
 
-        when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(any(), any()))
+        when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(using any(), any()))
           .thenReturn(authRetrievals(AffinityGroup.Agent))
 
-        when(mockAuthService.authenticateForIdentifier[JsValue](any())(any(), any()))
+        when(mockAuthService.authenticateForIdentifier[JsValue](any())(using any(), any()))
           .thenReturn(Future.successful(Right(fakeRequest)))
 
         val action     = actionToTest("XTTRUST80837546", mockAuthService, mockAuthConnector)
@@ -133,10 +133,10 @@ class AuthActionSpec extends SpecBase {
 
       "return unauthorised" in {
 
-        when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(any(), any()))
+        when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(using any(), any()))
           .thenReturn(authRetrievals(AffinityGroup.Organisation))
 
-        when(mockAuthService.authenticateForIdentifier[JsValue](any())(any(), any()))
+        when(mockAuthService.authenticateForIdentifier[JsValue](any())(using any(), any()))
           .thenReturn(Future.successful(Left(Unauthorized)))
 
         val action     = actionToTest("XTTRUST80837546", mockAuthService, mockAuthConnector)
@@ -152,10 +152,10 @@ class AuthActionSpec extends SpecBase {
 
       "return unauthorised" in {
 
-        when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(any(), any()))
+        when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(using any(), any()))
           .thenReturn(authRetrievals(AffinityGroup.Agent))
 
-        when(mockAuthService.authenticateForIdentifier[JsValue](any())(any(), any()))
+        when(mockAuthService.authenticateForIdentifier[JsValue](any())(using any(), any()))
           .thenReturn(Future.successful(Left(Unauthorized)))
 
         val action     = actionToTest("0043748273", mockAuthService, mockAuthConnector)
@@ -171,7 +171,7 @@ class AuthActionSpec extends SpecBase {
 
       "return internal server error" in {
 
-        when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(any(), any()))
+        when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(using any(), any()))
           .thenReturn(authRetrievals(AffinityGroup.Organisation))
 
         val action     = actionToTest("84759873598738597397598", mockAuthService, mockAuthConnector)
@@ -190,7 +190,7 @@ class AuthActionSpec extends SpecBase {
         val noneAuthRetrievals: Future[Option[String] ~ Option[AffinityGroup]] =
           Future.successful(new ~(None, None))
 
-        when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(any(), any()))
+        when(mockAuthConnector.authorise(any(), any[Retrieval[RetrievalType]]())(using any(), any()))
           .thenReturn(noneAuthRetrievals)
 
         val action     = actionToTest("1234567890", mockAuthService, mockAuthConnector)
@@ -207,7 +207,7 @@ class AuthActionSpec extends SpecBase {
 
 class FakeFailingAuthConnector @Inject() (exceptionToReturn: Throwable) extends AuthConnector {
 
-  override def authorise[A](predicate: Predicate, retrieval: Retrieval[A])(implicit
+  override def authorise[A](predicate: Predicate, retrieval: Retrieval[A])(using
     hc: HeaderCarrier,
     ec: ExecutionContext
   ): Future[A] =
@@ -215,9 +215,9 @@ class FakeFailingAuthConnector @Inject() (exceptionToReturn: Throwable) extends 
 
 }
 
-class FakeAuthConnector(stubbedRetrievalResult: Future[_]) extends AuthConnector {
+class FakeAuthConnector(stubbedRetrievalResult: Future[?]) extends AuthConnector {
 
-  override def authorise[A](predicate: Predicate, retrieval: Retrieval[A])(implicit
+  override def authorise[A](predicate: Predicate, retrieval: Retrieval[A])(using
     hc: HeaderCarrier,
     ec: ExecutionContext
   ): Future[A] =

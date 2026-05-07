@@ -20,7 +20,7 @@ import com.google.inject.Inject
 import controllers.actions.IdentifierActionProvider
 import play.api.Logging
 import play.api.libs.json.JsBoolean
-import play.api.mvc._
+import play.api.mvc.*
 import repositories.NrsLockRepository
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -30,10 +30,10 @@ class NrsLockController @Inject() (
   identifierAction: IdentifierActionProvider,
   nrsLockRepository: NrsLockRepository,
   cc: ControllerComponents
-)(implicit ec: ExecutionContext)
+)(using ec: ExecutionContext)
     extends BackendController(cc) with Logging {
 
-  def getLockStatus(identifier: String): Action[AnyContent] = identifierAction(identifier).async { implicit request =>
+  def getLockStatus(identifier: String): Action[AnyContent] = identifierAction(identifier).async { request =>
     nrsLockRepository.getLock(request.internalId, identifier).map {
       case true => Ok(JsBoolean(true))
       case _    => Ok(JsBoolean(false))

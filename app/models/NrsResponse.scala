@@ -18,15 +18,15 @@ package models
 
 import org.apache.pekko.stream.scaladsl.Source
 import org.apache.pekko.util.ByteString
-import play.api.http.HeaderNames._
+import play.api.http.HeaderNames.*
 import play.api.Logging
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.libs.json.{JsArray, Json}
 import play.api.libs.ws.BodyReadable
 
 trait NrsResponse
 
-case class SuccessfulResponse(body: Source[ByteString, _], length: Long) extends NrsResponse
+case class SuccessfulResponse(body: Source[ByteString, ?], length: Long) extends NrsResponse
 case class BadRequestResponse(parsedNRS400Response: String = "") extends NrsResponse
 case object UnauthorisedResponse extends NrsResponse
 case object NotFoundResponse extends NrsResponse
@@ -35,13 +35,13 @@ case object InternalServerErrorResponse extends NrsResponse
 
 object NrsResponse extends Logging {
 
-  implicit val bodyReadable: BodyReadable[NrsResponse] = BodyReadable[NrsResponse] { response =>
+  given bodyReadable: BodyReadable[NrsResponse] = BodyReadable[NrsResponse] { response =>
     response.status match {
       case OK                  =>
         response.headers.get(CONTENT_LENGTH) match {
-          case Some(Seq(length)) =>
+          case Some(Seq(length: String)) =>
             SuccessfulResponse(response.bodyAsSource, length.toLong)
-          case _                 =>
+          case _                         =>
             logger.error(s"$CONTENT_LENGTH header is missing.")
             InternalServerErrorResponse
         }
