@@ -16,8 +16,8 @@
 
 package services
 
-import play.api.http.HeaderNames._
-import models.auditing._
+import play.api.http.HeaderNames.*
+import models.auditing.*
 import models.requests.IdentifierRequest
 import play.api.libs.json.JsValue
 import play.api.mvc.AnyContent
@@ -28,11 +28,11 @@ import models.FileDetails
 
 import scala.concurrent.ExecutionContext
 
-class AuditService @Inject() (auditConnector: AuditConnector, localDateTimeService: LocalDateTimeService)(implicit
+class AuditService @Inject() (auditConnector: AuditConnector, localDateTimeService: LocalDateTimeService)(using
   ec: ExecutionContext
 ) {
 
-  def audit(event: String)(implicit request: IdentifierRequest[AnyContent], hc: HeaderCarrier): Unit = {
+  def audit(event: String)(using request: IdentifierRequest[AnyContent], hc: HeaderCarrier): Unit = {
 
     val payload = ObligedEntityAuditEvent(
       internalAuthId = request.internalId,
@@ -44,7 +44,7 @@ class AuditService @Inject() (auditConnector: AuditConnector, localDateTimeServi
     auditConnector.sendExplicitAudit(event, payload)
   }
 
-  def audit(event: String, response: JsValue)(implicit
+  def audit(event: String, response: JsValue)(using
     request: IdentifierRequest[AnyContent],
     hc: HeaderCarrier
   ): Unit = {
@@ -60,7 +60,7 @@ class AuditService @Inject() (auditConnector: AuditConnector, localDateTimeServi
     auditConnector.sendExplicitAudit(event, payload)
   }
 
-  def auditFileDetails(event: String, fileDetails: FileDetails)(implicit
+  def auditFileDetails(event: String, fileDetails: FileDetails)(using
     request: IdentifierRequest[AnyContent],
     hc: HeaderCarrier
   ): Unit = {

@@ -31,7 +31,7 @@ class IdentifierActionProviderSpec extends SpecBase {
   "AuthenticatedIdentifierActionProvider" should {
     "create an AuthenticatedIdentifierAction when apply is invoked" in {
       val defaultParser = injector.instanceOf[play.api.mvc.BodyParsers.Default]
-      val provider      = new AuthenticatedIdentifierActionProvider()(
+      val provider      = new AuthenticatedIdentifierActionProvider()(using
         mockAuthConnector,
         mockAuthService,
         defaultParser,

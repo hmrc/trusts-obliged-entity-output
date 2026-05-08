@@ -22,7 +22,7 @@ sealed trait TrustAuthResponse
 
 object TrustAuthResponse {
 
-  implicit val reads: Reads[TrustAuthResponse] =
+  given reads: Reads[TrustAuthResponse] =
     __.read[TrustAuthAllowed].widen[TrustAuthResponse] orElse
       __.read[TrustAuthAgentAllowed].widen[TrustAuthResponse] orElse
       __.read[TrustAuthDenied].widen[TrustAuthResponse]
@@ -32,19 +32,24 @@ object TrustAuthResponse {
 case class TrustAuthAllowed(authorised: Boolean = true) extends TrustAuthResponse
 
 case object TrustAuthAllowed {
-  implicit val format: Format[TrustAuthAllowed] = Json.format[TrustAuthAllowed]
+
+  given format: Format[TrustAuthAllowed] = Format(
+    (__ \ "authorised").read[Boolean].map(TrustAuthAllowed.apply),
+    Json.writes[TrustAuthAllowed]
+  )
+
 }
 
 case class TrustAuthAgentAllowed(arn: String) extends TrustAuthResponse
 
 case object TrustAuthAgentAllowed {
-  implicit val format: Format[TrustAuthAgentAllowed] = Json.format[TrustAuthAgentAllowed]
+  given format: Format[TrustAuthAgentAllowed] = Json.format[TrustAuthAgentAllowed]
 }
 
 case class TrustAuthDenied(redirectUrl: String) extends TrustAuthResponse
 
 case object TrustAuthDenied {
-  implicit val format: Format[TrustAuthDenied] = Json.format[TrustAuthDenied]
+  given format: Format[TrustAuthDenied] = Json.format[TrustAuthDenied]
 }
 
 case object TrustAuthInternalServerError extends TrustAuthResponse

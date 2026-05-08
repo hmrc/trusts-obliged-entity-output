@@ -31,7 +31,7 @@ trait TrustAuthConnector {
 
   def authorisedForIdentifier(
     identifier: String
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[TrustAuthResponse]
+  )(using hc: HeaderCarrier, ec: ExecutionContext): Future[TrustAuthResponse]
 
 }
 
@@ -41,7 +41,7 @@ class TrustAuthConnectorImpl @Inject() (http: HttpClientV2, config: AppConfig) e
 
   override def authorisedForIdentifier(
     identifier: String
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[TrustAuthResponse] =
+  )(using hc: HeaderCarrier, ec: ExecutionContext): Future[TrustAuthResponse] =
     http
       .get(url"$baseUrl/authorised/$identifier")
       .execute[TrustAuthResponse]

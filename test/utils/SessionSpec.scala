@@ -24,8 +24,8 @@ class SessionSpec extends SpecBase {
   "Session" should {
 
     "return session ID when available" in {
-      val sessionId                  = "test-session-id"
-      implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(sessionId)))
+      val sessionId           = "test-session-id"
+      given hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(sessionId)))
 
       val result = Session.id(hc)
 
@@ -33,7 +33,7 @@ class SessionSpec extends SpecBase {
     }
 
     "return default message when session ID is not available" in {
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+      given hc: HeaderCarrier = HeaderCarrier()
 
       val result = Session.id(hc)
 

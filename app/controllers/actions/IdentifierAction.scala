@@ -20,10 +20,10 @@ import com.google.inject.Inject
 import models.requests.IdentifierRequest
 import models.{Identifier, URN, UTR}
 import play.api.Logging
-import play.api.mvc.Results._
-import play.api.mvc.{Request, Result, _}
+import play.api.mvc.Results.*
+import play.api.mvc.{Request, Result, *}
 import services.AuthenticationService
-import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.http.HeaderCarrier
@@ -37,26 +37,28 @@ class AuthenticatedIdentifierAction @Inject() (
   identifier: String,
   trustAuthService: AuthenticationService,
   val authConnector: AuthConnector
-)(implicit val parser: BodyParsers.Default, val executionContext: ExecutionContext)
+)(using val parser: BodyParsers.Default, val executionContext: ExecutionContext)
     extends IdentifierAction with AuthorisedFunctions with Logging {
 
   def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
 
-    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
+    given hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
 
-    (identifier match {
+    val maybeId: Option[Identifier] = identifier match {
       case Identifiers.utrPattern(_) => Some(UTR(identifier))
       case Identifiers.urnPattern(_) => Some(URN(identifier))
       case _                         => None
-    }) match {
+    }
+
+    maybeId match {
       case Some(id) =>
-        authenticate(id, block)(request, hc)
+        authenticate(id, block)(using request, hc)
       case None     =>
         Future.successful(Unauthorized)
     }
   }
 
-  private def authenticate[A](id: Identifier, block: IdentifierRequest[A] => Future[Result])(implicit
+  private def authenticate[A](id: Identifier, block: IdentifierRequest[A] => Future[Result])(using
     request: Request[A],
     hc: HeaderCarrier
   ) = {
@@ -64,7 +66,7 @@ class AuthenticatedIdentifierAction @Inject() (
 
     authorised().retrieve(retrievals) {
       case Some(internalId) ~ Some(affinity) =>
-        trustAuthService.authenticateForIdentifier(id.value)(request, hc) flatMap {
+        trustAuthService.authenticateForIdentifier(id.value)(using request, hc) flatMap {
           case Left(value) =>
             logger.info(s"[Session ID: ${Session.id(hc)}] Not authenticated for ${id.value}")
             Future.successful(value)

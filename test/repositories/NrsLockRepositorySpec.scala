@@ -18,6 +18,7 @@ package repositories
 
 import base.SpecBase
 import models.NrsLock
+import org.mongodb.scala.SingleObservableFuture
 import org.mongodb.scala.bson.BsonDocument
 import org.scalatest.BeforeAndAfterEach
 import play.api.test.Helpers.{await, defaultAwaitTimeout}

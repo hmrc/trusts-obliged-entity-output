@@ -17,7 +17,7 @@
 package connectors
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import helpers.WireMockHelper
 import models.{TrustAuthAllowed, TrustAuthDenied, TrustAuthInternalServerError}
 import org.scalatest.freespec.AsyncFreeSpec
@@ -31,7 +31,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 class TrustAuthConnectorSpec extends AsyncFreeSpec with Matchers with WireMockHelper with DefaultAwaitTimeout {
 
-  implicit lazy val hc: HeaderCarrier = HeaderCarrier()
+  given hc: HeaderCarrier = HeaderCarrier()
 
   private def authorisedUrlFor(utr: String): String = s"/trusts-auth/authorised/$utr"
 
@@ -50,7 +50,7 @@ class TrustAuthConnectorSpec extends AsyncFreeSpec with Matchers with WireMockHe
       Seq(
         "microservice.services.trusts-auth.port" -> server.port(),
         "auditing.enabled"                       -> false
-      ): _*
+      )*
     )
     .build()
 

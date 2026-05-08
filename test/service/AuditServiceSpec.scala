@@ -20,7 +20,7 @@ import base.SpecBase
 import models.auditing.{ObligedEntityAuditEvent, ObligedEntityAuditFileDetailsEvent, ObligedEntityAuditResponseEvent}
 import models.requests.IdentifierRequest
 import models.{FileDetails, Identifier, URN, UTR}
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{mock, reset, verify, when}
 import play.api.http.HeaderNames
 import play.api.libs.json.{JsNumber, JsString, JsValue}
@@ -28,18 +28,18 @@ import play.api.mvc.{AnyContent, Headers}
 import play.api.test.{FakeHeaders, FakeRequest}
 import services.{AuditService, LocalDateTimeService}
 import uk.gov.hmrc.auth.core.AffinityGroup
-import uk.gov.hmrc.auth.core.AffinityGroup._
+import uk.gov.hmrc.auth.core.AffinityGroup.*
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 import java.time.LocalDateTime
 
 class AuditServiceSpec extends SpecBase {
 
-  implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
+  given ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
 
   private val auditConnector: AuditConnector                 = mock(classOf[AuditConnector])
   private val mockLocalDateTimeService: LocalDateTimeService = mock(classOf[LocalDateTimeService])
-  private val auditService: AuditService                     = new AuditService(auditConnector, mockLocalDateTimeService)(ec)
+  private val auditService: AuditService                     = new AuditService(auditConnector, mockLocalDateTimeService)
 
   private val event: String      = "event"
   private val internalId: String = "internalId"
@@ -64,7 +64,7 @@ class AuditServiceSpec extends SpecBase {
         val request: IdentifierRequest[AnyContent] =
           IdentifierRequest(FakeRequest().withHeaders(headers), internalId, identifier, sessionId, affinity)
 
-        auditService.audit(event)(request, hc)
+        auditService.audit(event)(using request, hc)
 
         val expectedPayload = ObligedEntityAuditEvent(
           internalAuthId = internalId,
@@ -73,7 +73,7 @@ class AuditServiceSpec extends SpecBase {
           dateTime = date
         )
 
-        verify(auditConnector).sendExplicitAudit(eqTo(event), eqTo(expectedPayload))(any(), any(), any())
+        verify(auditConnector).sendExplicitAudit(eqTo(event), eqTo(expectedPayload))(using any(), any(), any())
       }
 
       "no date header; org affinity; urn identifier" in {
@@ -91,7 +91,7 @@ class AuditServiceSpec extends SpecBase {
         val request: IdentifierRequest[AnyContent] =
           IdentifierRequest(FakeRequest(), internalId, identifier, sessionId, affinity)
 
-        auditService.audit(event)(request, hc)
+        auditService.audit(event)(using request, hc)
 
         val expectedPayload = ObligedEntityAuditEvent(
           internalAuthId = internalId,
@@ -100,7 +100,7 @@ class AuditServiceSpec extends SpecBase {
           dateTime = date
         )
 
-        verify(auditConnector).sendExplicitAudit(eqTo(event), eqTo(expectedPayload))(any(), any(), any())
+        verify(auditConnector).sendExplicitAudit(eqTo(event), eqTo(expectedPayload))(using any(), any(), any())
       }
     }
 
@@ -122,7 +122,7 @@ class AuditServiceSpec extends SpecBase {
         val request: IdentifierRequest[AnyContent] =
           IdentifierRequest(FakeRequest(), internalId, identifier, sessionId, affinity)
 
-        auditService.audit(event, response)(request, hc)
+        auditService.audit(event, response)(using request, hc)
 
         val expectedPayload = ObligedEntityAuditResponseEvent(
           internalAuthId = internalId,
@@ -132,7 +132,7 @@ class AuditServiceSpec extends SpecBase {
           response = response
         )
 
-        verify(auditConnector).sendExplicitAudit(eqTo(event), eqTo(expectedPayload))(any(), any(), any())
+        verify(auditConnector).sendExplicitAudit(eqTo(event), eqTo(expectedPayload))(using any(), any(), any())
       }
 
       "with date header; agent affinity; utr identifier" in {
@@ -153,7 +153,7 @@ class AuditServiceSpec extends SpecBase {
         val request: IdentifierRequest[AnyContent] =
           IdentifierRequest(fakeRequest, internalId, identifier, sessionId, affinity)
 
-        auditService.audit(event, response)(request, hc)
+        auditService.audit(event, response)(using request, hc)
 
         val expectedPayload = ObligedEntityAuditResponseEvent(
           internalAuthId = internalId,
@@ -163,7 +163,7 @@ class AuditServiceSpec extends SpecBase {
           response = response
         )
 
-        verify(auditConnector).sendExplicitAudit(eqTo(event), eqTo(expectedPayload))(any(), any(), any())
+        verify(auditConnector).sendExplicitAudit(eqTo(event), eqTo(expectedPayload))(using any(), any(), any())
       }
 
       "with date header; agent affinity; utr identifier; string payload" in {
@@ -184,7 +184,7 @@ class AuditServiceSpec extends SpecBase {
         val request: IdentifierRequest[AnyContent] =
           IdentifierRequest(fakeRequest, internalId, identifier, sessionId, affinity)
 
-        auditService.audit(event, response)(request, hc)
+        auditService.audit(event, response)(using request, hc)
 
         val expectedPayload = ObligedEntityAuditResponseEvent(
           internalAuthId = internalId,
@@ -194,7 +194,7 @@ class AuditServiceSpec extends SpecBase {
           response = response
         )
 
-        verify(auditConnector).sendExplicitAudit(eqTo(event), eqTo(expectedPayload))(any(), any(), any())
+        verify(auditConnector).sendExplicitAudit(eqTo(event), eqTo(expectedPayload))(using any(), any(), any())
       }
     }
 
@@ -219,7 +219,7 @@ class AuditServiceSpec extends SpecBase {
         val request: IdentifierRequest[AnyContent] =
           IdentifierRequest(fakeRequest, internalId, identifier, sessionId, affinity)
 
-        auditService.auditFileDetails(event, fileDetails)(request, hc)
+        auditService.auditFileDetails(event, fileDetails)(using request, hc)
 
         val expectedPayload = ObligedEntityAuditFileDetailsEvent(
           internalAuthId = internalId,
@@ -231,7 +231,7 @@ class AuditServiceSpec extends SpecBase {
           fileSize = fileDetails.fileSize,
           fileGenerationDateTime = date2
         )
-        verify(auditConnector).sendExplicitAudit(eqTo(event), eqTo(expectedPayload))(any(), any(), any())
+        verify(auditConnector).sendExplicitAudit(eqTo(event), eqTo(expectedPayload))(using any(), any(), any())
       }
 
       "without date in header" in {
@@ -251,7 +251,7 @@ class AuditServiceSpec extends SpecBase {
         val request: IdentifierRequest[AnyContent] =
           IdentifierRequest(fakeRequest, internalId, identifier, sessionId, affinity)
 
-        auditService.auditFileDetails(event, fileDetails)(request, hc)
+        auditService.auditFileDetails(event, fileDetails)(using request, hc)
 
         val expectedPayload = ObligedEntityAuditFileDetailsEvent(
           internalAuthId = internalId,
@@ -263,7 +263,7 @@ class AuditServiceSpec extends SpecBase {
           fileSize = fileDetails.fileSize,
           fileGenerationDateTime = date
         )
-        verify(auditConnector).sendExplicitAudit(eqTo(event), eqTo(expectedPayload))(any(), any(), any())
+        verify(auditConnector).sendExplicitAudit(eqTo(event), eqTo(expectedPayload))(using any(), any(), any())
       }
     }
   }

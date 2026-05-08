@@ -19,17 +19,17 @@ package controllers
 import base.SpecBase
 import connectors.{NrsConnector, TrustDataConnector}
 import helpers.JsonHelper.getJsonValueFromFile
-import models._
-import models.auditing.Events._
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import models.*
+import models.auditing.Events.*
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{mock, reset, verify, when}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsString, JsValue}
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import repositories.NrsLockRepository
-import services._
+import services.*
 
 import scala.concurrent.Future
 
@@ -51,7 +51,7 @@ class PdfControllerLogNRSFalseSpec extends SpecBase {
           "metrics.enabled"                -> false,
           "auditing.enabled"               -> false,
           "features.logNRS400ResponseBody" -> false
-        ): _*
+        )*
       )
       .overrides(
         bind[TrustDataConnector].toInstance(mockTrustDataConnector),
@@ -80,21 +80,21 @@ class PdfControllerLogNRSFalseSpec extends SpecBase {
             when(mockNrsLockRepository.setLock(any())).thenReturn(Future.successful(true))
             when(mockValidationService.get(any())).thenReturn(defaultValidator)
             when(defaultValidator.validate(any[String]())).thenReturn(Right(()))
-            when(mockNrsConnector.ping()(any())).thenReturn(Future.successful(true))
+            when(mockNrsConnector.ping()(using any())).thenReturn(Future.successful(true))
             when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(false))
             when(mockTrustDataConnector.getTrustJson(any()))
               .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
-            when(mockNrsConnector.getPdf(any())(any()))
+            when(mockNrsConnector.getPdf(any())(using any()))
               .thenReturn(Future.successful(BadRequestResponse("Invalid request body")))
 
             whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
               result.header.status mustBe INTERNAL_SERVER_ERROR
 
-              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(trustJson))(any(), any())
+              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(trustJson))(using any(), any())
               verify(mockAuditService).audit(
                 eqTo(NRS_ERROR),
                 eqTo(JsString("BadRequestResponse(Invalid request body)"))
-              )(any(), any())
+              )(using any(), any())
             }
           }
 

@@ -18,7 +18,7 @@ package models
 
 import base.SpecBase
 import org.mockito.Mockito.{mock, when}
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.libs.ws.WSResponse
 
 class NrsResponseSpec extends SpecBase {
@@ -39,6 +39,13 @@ class NrsResponseSpec extends SpecBase {
       val result = NrsResponse.parseNRS400ResponseBody(input)
 
       result mustBe expectedResult
+    }
+
+    "return empty object string when message field is missing" in {
+      val input  = """[{"otherField":"value"}]"""
+      val result = NrsResponse.parseNRS400ResponseBody(input)
+
+      result mustBe "{}"
     }
   }
 

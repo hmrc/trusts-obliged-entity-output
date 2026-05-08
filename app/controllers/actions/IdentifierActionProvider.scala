@@ -23,7 +23,7 @@ import uk.gov.hmrc.auth.core.AuthConnector
 
 import scala.concurrent.ExecutionContext
 
-class AuthenticatedIdentifierActionProvider @Inject() ()(implicit
+class AuthenticatedIdentifierActionProvider @Inject() ()(using
   val authConnector: AuthConnector,
   trustAuthService: AuthenticationService,
   val parser: BodyParsers.Default,

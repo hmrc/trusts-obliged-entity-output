@@ -16,7 +16,7 @@
 
 package models
 
-import play.api.libs.functional.syntax._
+import play.api.libs.functional.syntax.*
 import play.api.libs.json.{Format, Reads, Writes, __}
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.instantFormat
 
@@ -31,18 +31,18 @@ object NrsLock {
 
   val format: Format[NrsLock] = Format(reads, writes)
 
-  implicit lazy val reads: Reads[NrsLock] =
+  given reads: Reads[NrsLock] =
     (
       (__ \ "identifier").read[String] and
         (__ \ "locked").read[Boolean] and
         (__ \ "createdAt").read(instantFormat)
-    )(NrsLock.apply _)
+    )(NrsLock.apply)
 
-  implicit lazy val writes: Writes[NrsLock] =
+  given writes: Writes[NrsLock] =
     (
       (__ \ "identifier").write[String] and
         (__ \ "locked").write[Boolean] and
         (__ \ "createdAt").write(instantFormat)
-    )(unlift(NrsLock.unapply))
+    )(o => (o.identifier, o.locked, o.createdAt))
 
 }
