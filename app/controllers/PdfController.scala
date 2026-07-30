@@ -19,7 +19,7 @@ package controllers
 import com.google.inject.Inject
 import config.AppConfig
 import config.Constants.*
-import connectors.{NrsConnector, TrustDataConnector}
+import connectors.NrsConnector
 import controllers.actions.IdentifierActionProvider
 import models.*
 import models.auditing.Events.*
@@ -29,7 +29,7 @@ import play.api.http.HttpEntity
 import play.api.libs.json.{JsString, JsValue}
 import play.api.mvc.*
 import repositories.NrsLockRepository
-import services.{AuditService, ValidationService}
+import services.{AuditService, TrustDataService, ValidationService}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.PdfFileNameGenerator
 
@@ -38,7 +38,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class PdfController @Inject() (
   identifierAction: IdentifierActionProvider,
   nrsConnector: NrsConnector,
-  trustDataConnector: TrustDataConnector,
+  trustDataService: TrustDataService,
   nrsLockRepository: NrsLockRepository,
   config: AppConfig,
   cc: ControllerComponents,
@@ -83,31 +83,49 @@ class PdfController @Inject() (
   ): Future[Boolean] =
     nrsLockRepository.setLock(NrsLock.build(request.internalId, identifier, lock))
 
+  private def dataReceivedEvent: String =
+    if (config.useHipObligedEntities) HIP_DATA_RECEIVED else IF_DATA_RECEIVED
+
+  private def dataErrorEvent: String =
+    if (config.useHipObligedEntities) HIP_ERROR else IF_ERROR
+
+  private def downstreamPlatformName: String =
+    if (config.useHipObligedEntities) "HIP" else "IF"
+
   private def getTrustJson(identifier: String)(using request: IdentifierRequest[AnyContent]): Future[Result] =
-    trustDataConnector.getTrustJson(request.identifier).flatMap {
-      case SuccessfulTrustDataResponse(payload) =>
-        auditService.audit(IF_DATA_RECEIVED, payload)
-        validationService.get(config.trustsObligedEntityDataSchema).validate(payload.toString()) match {
+    trustDataService.getTrustJson(request.identifier).flatMap {
+      case SuccessfulIfsTrustDataResponse(payload) =>
+        auditService.audit(dataReceivedEvent, payload)
+        validationService.get(config.trustsIfsObligedEntityDataSchema).validate(payload.toString()) match {
           case Right(_)               =>
-            val fileName = pdfFileNameGenerator.generate(identifier)
-            generatePdf(identifier, payload, fileName)
+            processValidatedPayload(identifier, payload)
           case Left(validationErrors) =>
             logger.warn(
               s"[PdfController][getTrustJson][Session ID: ${request.sessionId}] problem with payload: $validationErrors"
             )
             Future.successful(InternalServerError)
         }
-      case e                                    =>
-        auditService.audit(IF_ERROR, JsString(s"$e"))
+      case SuccessfulHipTrustDataResponse(payload) =>
+        auditService.audit(dataReceivedEvent, payload)
+        processValidatedPayload(identifier, payload)
+      case e                                       =>
+        auditService.audit(dataErrorEvent, JsString(s"$e"))
         e match {
           case ServiceUnavailableTrustDataResponse =>
-            logger.error(s"$logInfo ServiceUnavailable returned from IF.")
+            logger.error(s"$logInfo ServiceUnavailable returned from $downstreamPlatformName.")
             Future.successful(ServiceUnavailable)
           case _                                   =>
-            logger.error(s"$logInfo Error retrieving trust data from IF")
+            logger.error(s"$logInfo Error retrieving trust data from $downstreamPlatformName")
             Future.successful(InternalServerError)
         }
     }
+
+  private def processValidatedPayload(identifier: String, payload: JsValue)(using
+    request: IdentifierRequest[AnyContent]
+  ): Future[Result] = {
+    val fileName = pdfFileNameGenerator.generate(identifier)
+    generatePdf(identifier, payload, fileName)
+  }
 
   private def generatePdf(identifier: String, payload: JsValue, fileName: String)(using
     request: IdentifierRequest[AnyContent]

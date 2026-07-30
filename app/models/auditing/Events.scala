@@ -19,8 +19,10 @@ package models.auditing
 object Events {
 
   val IF_DATA_RECEIVED   = "IntegrationFrameworkDataReceived"
+  val HIP_DATA_RECEIVED  = "HipDataReceived"
   val NRS_DATA_RECEIVED  = "NonRepudiationStoreDataReceived"
   val IF_ERROR           = "IntegrationFrameworkError"
+  val HIP_ERROR          = "HipError"
   val NRS_ERROR          = "NonRepudiationStoreError"
   val EXCESSIVE_REQUESTS = "ExcessiveRequests"
 

@@ -16,6 +16,7 @@
 
 package config
 
+import java.util.Base64
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
@@ -36,6 +37,13 @@ class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig
   val trustDataEnvironment: String = config.get[String]("microservice.services.trust-data.environment")
   val trustDataToken: String       = config.get[String]("microservice.services.trust-data.token")
 
+  val useHipObligedEntities: Boolean = config.get[Boolean]("features.hip.obligedEntities")
+
+  val hipClientId: String = config.get[String]("microservice.services.hip.clientId")
+  val hipSecret: String   = config.get[String]("microservice.services.hip.secret")
+
+  val hipObligedEntitiesUrl: String = servicesConfig.baseUrl("hip.obliged-entities")
+
   /**
    * Content-Disposition is 'inline' by default. Change to 'attachment' to download the file with no preview
    */
@@ -45,7 +53,13 @@ class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig
 
   val logNRS400ResponseBody: Boolean = config.get[Boolean]("features.logNRS400ResponseBody")
 
-  val trustsObligedEntityDataSchema: String =
-    "/resources/schemas/get-trust-obliged-entities-data-schema-v1.2.0.json"
+  val trustsIfsObligedEntityDataSchema: String =
+    "/resources/schemas/ifs/get-trust-obliged-entities-data-schema-v1.2.0.json"
+
+  val trustsHipObligedEntityDataSchema: String =
+    "/resources/schemas/hip/ObligedEntitiesSuccessResponse_EPID1755_TRS_openapi_v0.1.3.json"
+
+  def hipAuthorizationToken: String =
+    Base64.getEncoder.encodeToString(s"$hipClientId:$hipSecret".getBytes("UTF-8"))
 
 }

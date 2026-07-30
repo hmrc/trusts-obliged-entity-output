@@ -14,26 +14,18 @@
  * limitations under the License.
  */
 
-package config
+package models
 
-object Constants {
+import play.api.libs.json.{Json, OFormat}
 
-  val X_API_KEY = "X-API-Key"
+case class HipCustomErr(processingDate: String, errorId: String, text: String)
 
-  val PDF = "application/pdf"
+object HipCustomErr {
+  given OFormat[HipCustomErr] = Json.format[HipCustomErr]
+}
 
-  val ENVIRONMENT = "Environment"
+case class HipCustomErrResponse(error: HipCustomErr)
 
-  val CORRELATION_ID = "CorrelationId"
-
-  val CONTENT_TYPE_JSON = "application/json; charset=utf-8"
-
-  val HIP_CORRELATION_ID = "correlationid"
-
-  val X_ORIGINATING_SYSTEM = "X-Originating-System"
-
-  val X_RECEIPT_DATE = "X-Receipt-Date"
-
-  val X_TRANSMITTING_SYSTEM = "X-Transmitting-System"
-
+object HipCustomErrResponse {
+  given OFormat[HipCustomErrResponse] = Json.format[HipCustomErrResponse]
 }

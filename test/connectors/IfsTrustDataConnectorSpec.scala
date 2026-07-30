@@ -18,13 +18,13 @@ package connectors
 
 import helpers.ConnectorSpecHelper
 import helpers.JsonHelper.*
-import models.{BadRequestTrustDataResponse, *}
+import models.*
 import play.api.http.Status.*
 import play.api.libs.json.{JsValue, Json}
 
-class TrustDataConnectorSpec extends ConnectorSpecHelper {
+class IfsTrustDataConnectorSpec extends ConnectorSpecHelper {
 
-  private lazy val connector: TrustDataConnector = injector.instanceOf[TrustDataConnector]
+  private lazy val connector: IfsTrustDataConnector = injector.instanceOf[IfsTrustDataConnector]
 
   private val utrIdentifier: Identifier     = UTR("2134514321")
   private val urnIdentifier: Identifier     = URN("XATRUST80000001")
@@ -34,18 +34,18 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
 
   private val json: JsValue = getJsonValueFromFile("nrs-request-body.json")
 
-  "TrustDataConnector" when {
+  "IfsTrustDataConnector" when {
 
     ".getTrustJson" must {
 
-      "return a SuccessfulTrustDataResponse with a Json payload" when {
+      "return a SuccessfulIfsTrustDataResponse with a Json payload" when {
 
         "a valid UTR is sent" in {
 
           stubForGet(url = url(utrIdentifier), responseStatus = OK, responseBody = Json.stringify(json))
 
           whenReady(connector.getTrustJson(utrIdentifier)) { response =>
-            response mustBe SuccessfulTrustDataResponse(json)
+            response mustBe SuccessfulIfsTrustDataResponse(json)
           }
         }
 
@@ -54,7 +54,7 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
           stubForGet(url = url(urnIdentifier), responseStatus = OK, responseBody = Json.stringify(json))
 
           whenReady(connector.getTrustJson(urnIdentifier)) { response =>
-            response mustBe SuccessfulTrustDataResponse(json)
+            response mustBe SuccessfulIfsTrustDataResponse(json)
           }
         }
       }
@@ -93,20 +93,19 @@ class TrustDataConnectorSpec extends ConnectorSpecHelper {
       }
 
       "return UnauthorisedTrustDataResponse" when {
-        "401 (UNAUTHORISED) response received" when {
-          "authorization header missing" in {
+        "401 (UNAUTHORIZED) response received" in {
 
-            stubForGet(url = url(utrIdentifier), responseStatus = UNAUTHORIZED)
+          stubForGet(url = url(utrIdentifier), responseStatus = UNAUTHORIZED)
 
-            whenReady(connector.getTrustJson(utrIdentifier)) { response =>
-              response mustBe UnauthorisedTrustDataResponse
-            }
+          whenReady(connector.getTrustJson(utrIdentifier)) { response =>
+            response mustBe UnauthorisedTrustDataResponse
           }
         }
       }
 
       "return ForbiddenTrustDataResponse" when {
         "403 (FORBIDDEN) response received" when {
+
           "environment and authorization headers missing" in {
 
             stubForGet(url = url(utrIdentifier), responseStatus = FORBIDDEN)

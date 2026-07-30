@@ -17,7 +17,7 @@
 package controllers
 
 import base.SpecBase
-import connectors.{NrsConnector, TrustDataConnector}
+import connectors.NrsConnector
 import helpers.JsonHelper.getJsonValueFromFile
 import models.*
 import models.auditing.Events.*
@@ -35,7 +35,7 @@ import scala.concurrent.Future
 
 class PdfControllerLogNRSFalseSpec extends SpecBase {
 
-  private val mockTrustDataConnector: TrustDataConnector     = mock(classOf[TrustDataConnector])
+  private val mockTrustDataService: TrustDataService         = mock(classOf[TrustDataService])
   private val mockNrsConnector: NrsConnector                 = mock(classOf[NrsConnector])
   private val mockNrsLockRepository: NrsLockRepository       = mock(classOf[NrsLockRepository])
   private val mockAuditService: AuditService                 = mock(classOf[AuditService])
@@ -54,7 +54,7 @@ class PdfControllerLogNRSFalseSpec extends SpecBase {
         )*
       )
       .overrides(
-        bind[TrustDataConnector].toInstance(mockTrustDataConnector),
+        bind[TrustDataService].toInstance(mockTrustDataService),
         bind[NrsConnector].toInstance(mockNrsConnector),
         bind[NrsLockRepository].toInstance(mockNrsLockRepository),
         bind[AuditService].toInstance(mockAuditService),
@@ -82,8 +82,8 @@ class PdfControllerLogNRSFalseSpec extends SpecBase {
             when(defaultValidator.validate(any[String]())).thenReturn(Right(()))
             when(mockNrsConnector.ping()(using any())).thenReturn(Future.successful(true))
             when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(false))
-            when(mockTrustDataConnector.getTrustJson(any()))
-              .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
+            when(mockTrustDataService.getTrustJson(any()))
+              .thenReturn(Future.successful(SuccessfulIfsTrustDataResponse(trustJson)))
             when(mockNrsConnector.getPdf(any())(using any()))
               .thenReturn(Future.successful(BadRequestResponse("Invalid request body")))
 
