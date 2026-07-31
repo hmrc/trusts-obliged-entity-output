@@ -64,6 +64,10 @@ class ValidationServiceSpec extends SpecBase with EitherValues {
         result.isLeft                   mustBe true
         result.left.value.head.location mustBe "/success/correspondence/address"
       }
+
+      "an exception is thrown" in {
+        trustIfsValidator.validate("{").isLeft mustBe true
+      }
     }
   }
 

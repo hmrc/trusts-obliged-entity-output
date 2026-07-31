@@ -193,6 +193,34 @@ class PdfControllerSpec extends SpecBase {
             }
           }
 
+          "HIP is unavailable" in {
+
+            val hipController = applicationBuilder()
+              .configure("features.hip.obligedEntities" -> true)
+              .build()
+              .injector
+              .instanceOf[PdfController]
+
+            reset(mockAuditService)
+
+            when(mockNrsConnector.ping()(using any())).thenReturn(Future.successful(true))
+
+            when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(false))
+
+            when(mockTrustDataService.getTrustJson(any()))
+              .thenReturn(Future.successful(ServiceUnavailableTrustDataResponse))
+
+            whenReady(hipController.getPdf(identifier)(FakeRequest())) { result =>
+              result.header.status mustBe SERVICE_UNAVAILABLE
+
+              verify(mockAuditService).audit(eqTo(HIP_ERROR), eqTo(JsString("ServiceUnavailableTrustDataResponse")))(
+                using
+                any(),
+                any()
+              )
+            }
+          }
+
           "NRS pings successfully but is unavailable when the getPdf call is made" in {
 
             reset(mockAuditService)
@@ -252,6 +280,34 @@ class PdfControllerSpec extends SpecBase {
               result.header.status mustBe INTERNAL_SERVER_ERROR
 
               verify(mockAuditService).audit(eqTo(IF_ERROR), eqTo(JsString("InternalServerErrorTrustDataResponse")))(
+                using
+                any(),
+                any()
+              )
+            }
+          }
+
+          "error retrieving trust data from HIP" in {
+
+            val hipController = applicationBuilder()
+              .configure("features.hip.obligedEntities" -> true)
+              .build()
+              .injector
+              .instanceOf[PdfController]
+
+            reset(mockAuditService)
+
+            when(mockNrsConnector.ping()(using any())).thenReturn(Future.successful(true))
+
+            when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(false))
+
+            when(mockTrustDataService.getTrustJson(any()))
+              .thenReturn(Future.successful(InternalServerErrorTrustDataResponse))
+
+            whenReady(hipController.getPdf(identifier)(FakeRequest())) { result =>
+              result.header.status mustBe INTERNAL_SERVER_ERROR
+
+              verify(mockAuditService).audit(eqTo(HIP_ERROR), eqTo(JsString("InternalServerErrorTrustDataResponse")))(
                 using
                 any(),
                 any()
