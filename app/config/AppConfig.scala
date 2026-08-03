@@ -57,7 +57,7 @@ class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig
     "/resources/schemas/ifs/get-trust-obliged-entities-data-schema-v1.2.0.json"
 
   val trustsHipObligedEntityDataSchema: String =
-    "/resources/schemas/hip/ObligedEntitiesSuccessResponse_EPID1755_TRS_openapi_v0.1.3.json"
+    "/resources/schemas/hip/ObligedEntitiesSuccessResponse_EPID1755_TRS_openapi_v0.1.4.json"
 
   def hipAuthorizationToken: String =
     Base64.getEncoder.encodeToString(s"$hipClientId:$hipSecret".getBytes("UTF-8"))

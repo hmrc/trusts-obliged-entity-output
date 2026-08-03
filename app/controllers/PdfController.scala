@@ -90,7 +90,7 @@ class PdfController @Inject() (
     if (config.useHipObligedEntities) HIP_ERROR else IF_ERROR
 
   private def downstreamPlatformName: String =
-    if (config.useHipObligedEntities) "HIP" else "IF"
+    if (config.useHipObligedEntities) HIP_NAME else IFS_NAME
 
   private def getTrustJson(identifier: String)(using request: IdentifierRequest[AnyContent]): Future[Result] =
     trustDataService.getTrustJson(request.identifier).flatMap {

@@ -1,12 +1,12 @@
 {
   "success": {
-    "submissionDate": "1520-02-29",
+    "submissionDate": "29/02/1520",
     "trustName": "Trust1234567890123456789012345678901234567890",
     "identifiers": {
       "utr": "1234567890",
       "urn": "XATRUST80000001"
     },
-    "trustStartDate": "1957-08-13",
+    "trustStartDate": "13/08/1957",
     "correspondence": {
       "address": {
         "line1": "AddressLine123456789011",
@@ -114,7 +114,7 @@
             "countryOfResidence": "PAP. NEW GUINEA"
           }
         ],
-        "trust": [
+        "trusts": [
           {
             "name": "A",
             "countryOfResidence": "BOUVET ISLANDS"

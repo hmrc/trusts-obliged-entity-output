@@ -6,7 +6,7 @@ info:
     \ to support the Trusts and Estates Registration Services (TRS)\n\nThe following\
     \ resources are offered by this API:\n\n- **Match Existing Trust or Estate**\n\
     \   \n\tAllows authorised HMRC systems to check whether a trust or estate is already\
-    \ recorded in HMRC  central regis ter before initiating a new registration or authorisation.\n\
+    \ recorded in HMRC  central register before initiating a new registration or authorisation.\n\
     \n- **Registration of Trust or Estate** \n\n     Allows a new trust or estate\
     \ to be registered with HMRC for tax purposes. \n\n- **Trust or Estate Variation**\n\
     \n\tAllows to notify HMRC of changes to a registered trust or estate, such as\
@@ -31,8 +31,8 @@ info:
     \ APIs  as this is creating ambiguity in the XSD. \n|0.1.3 | 2026-06-25|Hima V Pramod| As the\
     \ same definition names were being used in both Registration and Variation API,\
     \ this resulted in inconsistencies in the structures across the two APIs.This\
-    \ has now been fixed to align with the correct structure without any change to the payload.|\n||||Validations are added for **idType** and **idValue**.|\n||||Error texts are corrected for Registration and Match APIs.|"
-  version: "0.1.3"
+    \ has now been fixed to align with the correct structure without any change to the payload.|\n||||Validations are added for **idType** and **idValue**.|\n||||Error texts are corrected for Registration and Match APIs.|\n|0.1.4| 2026-07-29| HIma V Pramod/Rajasekhar Y|The success response of Registration API was pointing to a wrong schema ,this has been corrected now.\n|||| Included 003 error code for Registration API.\n|||| Typo **acknowledgment** has been fixed across the OAS to **acknowledgement**.\n|||| Updated filed name 'countryOfResidence' with camelCasing for all the fields under ObligedEntitiesSuccessResponse.\n||||  Updated 'entities' object filed to required.\n|||| Changed date formatting for submissionDate, trustStartDate, dateOfBirth fields under ObligedEntitiesSuccessResponse.\n|||| Updated regex for 'name' field under entities.trustees.trusteeCompany.name.\n|||| As per the testing we required to Change the field name to 'trusts'where the field comes as Array under entities.beneficiary.trusts in Obliged Entities & Display Registration API's."
+  version: "0.1.4"
   license:
     name: "Apache 2.0"
     url: "http://www.apache.org/licenses/LICENSE-2.0"
@@ -44,15 +44,15 @@ info:
     status: "BETA"
     api-type: "SIMPLE"
     backends:
-      - "ETMP"
+    - "ETMP"
     domain: "TBC"
     sub-domain: "TBC"
 servers:
-  - url: "http://etmp-egress-gateway.egress.svc.cluster.local"
-    description: "Egress Gateway to ETMP TEST"
+- url: "http://etmp-egress-gateway.egress.svc.cluster.local"
+  description: "Egress Gateway to ETMP TEST"
 tags:
-  - name: "trustsandestates"
-    description: "Operations Related to Trusts and Estates Registration Service(TRS)"
+- name: "trustsandestates"
+  description: "Operations Related to Trusts and Estates Registration Service(TRS)"
 paths:
   /RESTAdapter/trustsandestates/registration:
     post:
@@ -65,12 +65,12 @@ paths:
         \nEPID Reference:\n\nEPID1756"
       operationId: "postRegistration"
       tags:
-        - "trustsandestates"
+      - "trustsandestates"
       parameters:
-        - $ref: "#/components/parameters/correlationid"
-        - $ref: "#/components/parameters/X-Originating-System"
-        - $ref: "#/components/parameters/X-Receipt-Date"
-        - $ref: "#/components/parameters/X-Transmitting-System"
+      - $ref: "#/components/parameters/correlationid"
+      - $ref: "#/components/parameters/X-Originating-System"
+      - $ref: "#/components/parameters/X-Receipt-Date"
+      - $ref: "#/components/parameters/X-Transmitting-System"
       requestBody:
         $ref: "#/components/requestBodies/RegistrationRequest"
       responses:
@@ -127,12 +127,12 @@ paths:
         \ API will return error messages.\n\nEPID Reference:\n\nEPID1757"
       operationId: "putVariation"
       tags:
-        - "trustsandestates"
+      - "trustsandestates"
       parameters:
-        - $ref: "#/components/parameters/correlationid"
-        - $ref: "#/components/parameters/X-Originating-System"
-        - $ref: "#/components/parameters/X-Receipt-Date"
-        - $ref: "#/components/parameters/X-Transmitting-System"
+      - $ref: "#/components/parameters/correlationid"
+      - $ref: "#/components/parameters/X-Originating-System"
+      - $ref: "#/components/parameters/X-Receipt-Date"
+      - $ref: "#/components/parameters/X-Transmitting-System"
       requestBody:
         $ref: "#/components/requestBodies/VariationRequest"
       responses:
@@ -189,12 +189,12 @@ paths:
         \ will return error messages.\n\nEPID Reference:\n\nEPID1758"
       operationId: "postMatch"
       tags:
-        - "trustsandestates"
+      - "trustsandestates"
       parameters:
-        - $ref: "#/components/parameters/correlationid"
-        - $ref: "#/components/parameters/X-Originating-System"
-        - $ref: "#/components/parameters/X-Receipt-Date"
-        - $ref: "#/components/parameters/X-Transmitting-System"
+      - $ref: "#/components/parameters/correlationid"
+      - $ref: "#/components/parameters/X-Originating-System"
+      - $ref: "#/components/parameters/X-Receipt-Date"
+      - $ref: "#/components/parameters/X-Transmitting-System"
       requestBody:
         $ref: "#/components/requestBodies/MatchRequest"
       responses:
@@ -242,11 +242,11 @@ paths:
                       logID: "00000000000000000000000000000000"
   /RESTAdapter/trustsandestates/registration/{idType}/{idValue}:
     parameters:
-      - $ref: "#/components/parameters/idType"
-      - $ref: "#/components/parameters/idValue"
+    - $ref: "#/components/parameters/idType"
+    - $ref: "#/components/parameters/idValue"
     get:
       deprecated: false
-      summary: "Retrieve Trust or Estate Registartion"
+      summary: "Retrieve Trust or Estate Registration"
       description: "This API authorised services to retrieve the full registration\
         \ record for a trust or estate held in HMRC central back-office system.\n\n\
         The call is synchronous.\n\nFor the successful scenario the API returns correspondence\
@@ -254,12 +254,12 @@ paths:
         \ scenario, the API will return error messages.\n\nEPID Reference:\n\n EPID1780"
       operationId: "getRegistration"
       tags:
-        - "trustsandestates"
+      - "trustsandestates"
       parameters:
-        - $ref: "#/components/parameters/correlationid"
-        - $ref: "#/components/parameters/X-Originating-System"
-        - $ref: "#/components/parameters/X-Receipt-Date"
-        - $ref: "#/components/parameters/X-Transmitting-System"
+      - $ref: "#/components/parameters/correlationid"
+      - $ref: "#/components/parameters/X-Originating-System"
+      - $ref: "#/components/parameters/X-Receipt-Date"
+      - $ref: "#/components/parameters/X-Transmitting-System"
       responses:
         "200":
           $ref: "#/components/responses/200DisplayRegistrationSuccessResponse"
@@ -305,8 +305,8 @@ paths:
                       logID: "00000000000000000000000000000000"
   /RESTAdapter/trustsandestates/agent-known-fact-check/{idType}/{idValue}:
     parameters:
-      - $ref: "#/components/parameters/idType"
-      - $ref: "#/components/parameters/idValue"
+    - $ref: "#/components/parameters/idType"
+    - $ref: "#/components/parameters/idValue"
     get:
       deprecated: false
       summary: "Agent Known Fact Check"
@@ -318,12 +318,12 @@ paths:
         \nEPID Reference:\n\nEPID1781"
       operationId: "getAgentKnownFactCheck"
       tags:
-        - "trustsandestates"
+      - "trustsandestates"
       parameters:
-        - $ref: "#/components/parameters/correlationid"
-        - $ref: "#/components/parameters/X-Originating-System"
-        - $ref: "#/components/parameters/X-Receipt-Date"
-        - $ref: "#/components/parameters/X-Transmitting-System"
+      - $ref: "#/components/parameters/correlationid"
+      - $ref: "#/components/parameters/X-Originating-System"
+      - $ref: "#/components/parameters/X-Receipt-Date"
+      - $ref: "#/components/parameters/X-Transmitting-System"
       responses:
         "200":
           $ref: "#/components/responses/200AgentSuccessResponse"
@@ -369,8 +369,8 @@ paths:
                       logID: "00000000000000000000000000000000"
   /RESTAdapter/trustsandestates/obliged-entities/{idType}/{idValue}:
     parameters:
-      - $ref: "#/components/parameters/idType"
-      - $ref: "#/components/parameters/idValue"
+    - $ref: "#/components/parameters/idType"
+    - $ref: "#/components/parameters/idValue"
     get:
       deprecated: false
       summary: "Obliged Entities Data"
@@ -382,12 +382,12 @@ paths:
         \nEPID Reference:\n\nEPID1782"
       operationId: "getObligedEntitiesdata"
       tags:
-        - "trustsandestates"
+      - "trustsandestates"
       parameters:
-        - $ref: "#/components/parameters/correlationid"
-        - $ref: "#/components/parameters/X-Originating-System"
-        - $ref: "#/components/parameters/X-Receipt-Date"
-        - $ref: "#/components/parameters/X-Transmitting-System"
+      - $ref: "#/components/parameters/correlationid"
+      - $ref: "#/components/parameters/X-Originating-System"
+      - $ref: "#/components/parameters/X-Receipt-Date"
+      - $ref: "#/components/parameters/X-Transmitting-System"
       responses:
         "200":
           $ref: "#/components/responses/200ObligedEntitiesSuccessResponse"
@@ -466,7 +466,7 @@ components:
       style: "simple"
       schema:
         type: "string"
-        pattern: "^[A-Z0-9]{3,6}$"
+        pattern: "^[A-Z0-9]{3,6}$" 
       example: "URN"
     idValue:
       name: "idValue"
@@ -491,7 +491,7 @@ components:
       style: "simple"
       schema:
         enum:
-          - "TRS"
+        - "TRS"
         type: "string"
     X-Receipt-Date:
       name: "X-Receipt-Date"
@@ -517,7 +517,7 @@ components:
       style: "simple"
       schema:
         enum:
-          - "HIP"
+        - "HIP"
         type: "string"
   requestBodies:
     MatchRequest:
@@ -659,7 +659,7 @@ components:
         \ was successfully received without any technical issues, however it is unable\
         \ to process the data further for the reason given by the code and text.\n\
         \ \n```\n[errorId | text]\n\n001   FAIL – NO MATCH\n002   FAIL – ALREADY REGISTERED\n\
-        004   Duplicate submission acknowledgment reference\n999\t  Technical System\
+        004   Duplicate submission acknowledgement reference\n999\t  Technical System\
         \ Error\n\n\n\n\n\n\n\n"
       headers:
         correlationid:
@@ -675,8 +675,8 @@ components:
       description: "Validation errors.\n \nErrors of this kind indicate that data\
         \ was successfully received without any technical issues, however it is unable\
         \ to process the data further for the reason given by the code and text.\n\
-        \ \n```\n[errorId | text]\n\n001   FAIL – NO MATCH\n002   FAIL – ALREADY REGISTERED\n\
-        004   Duplicate submission acknowledgment reference\n999\t  Technical System\
+        \ \n```\n[errorId | text]\n\n001   FAIL – NO MATCH\n002   FAIL – ALREADY REGISTERED\n003    Request could not be Processed\n\
+        004   Duplicate submission acknowledgement reference\n999\t  Technical System\
         \ Error\n\n\n\n\n\n\n\n"
       headers:
         correlationid:
@@ -693,7 +693,7 @@ components:
         \ was successfully received without any technical issues, however it is unable\
         \ to process the data further for the reason given by the code and text.\n\
         \ \n```\n[errorId | text]\n\n003   Request could not be processed\n004   Duplicate\
-        \ submission acknowledgment reference\n999\t  Technical System Error\n\n\n\
+        \ submission acknowledgement reference\n999\t  Technical System Error\n\n\n\
         \n\n\n\n\n"
       headers:
         correlationid:
@@ -719,20 +719,20 @@ components:
             errorId:
               type: "string"
               enum:
-                - "000"
-                - "003"
-                - "999"
+              - "000"
+              - "003"
+              - "999"
             text:
               type: "string"
               minLength: 1
               maxLength: 100
           required:
-            - "processingDate"
-            - "errorId"
-            - "text"
+          - "processingDate"
+          - "errorId"
+          - "text"
           additionalProperties: false
       required:
-        - "error"
+      - "error"
       additionalProperties: false
     "422ValidationErrorsMatch":
       type: "object"
@@ -747,21 +747,21 @@ components:
             errorId:
               type: "string"
               enum:
-                - "001"
-                - "002"
-                - "004"
-                - "999"
+              - "001"
+              - "002"
+              - "004"
+              - "999"
             text:
               type: "string"
               minLength: 1
               maxLength: 100
           required:
-            - "processingDate"
-            - "errorId"
-            - "text"
+          - "processingDate"
+          - "errorId"
+          - "text"
           additionalProperties: false
       required:
-        - "error"
+      - "error"
       additionalProperties: false
     "422ValidationErrorsRegistration":
       type: "object"
@@ -776,21 +776,22 @@ components:
             errorId:
               type: "string"
               enum:
-                - "001"
-                - "002"
-                - "004"
-                - "999"
+              - "001"
+              - "002"
+              - "003"
+              - "004"
+              - "999"
             text:
               type: "string"
               minLength: 1
               maxLength: 100
           required:
-            - "processingDate"
-            - "errorId"
-            - "text"
+          - "processingDate"
+          - "errorId"
+          - "text"
           additionalProperties: false
       required:
-        - "error"
+      - "error"
       additionalProperties: false
     "422ValidationErrorsVariation":
       type: "object"
@@ -805,20 +806,20 @@ components:
             errorId:
               type: "string"
               enum:
-                - "003"
-                - "004"
-                - "999"
+              - "003"
+              - "004"
+              - "999"
             text:
               type: "string"
               minLength: 1
               maxLength: 100
           required:
-            - "processingDate"
-            - "errorId"
-            - "text"
+          - "processingDate"
+          - "errorId"
+          - "text"
           additionalProperties: false
       required:
-        - "error"
+      - "error"
       additionalProperties: false
     addressLineType:
       type: "string"
@@ -847,9 +848,9 @@ components:
         country:
           $ref: "#/components/schemas/countryType"
       required:
-        - "line1"
-        - "line2"
-        - "country"
+      - "line1"
+      - "line2"
+      - "country"
       additionalProperties: false
     addressType1:
       type: "object"
@@ -868,9 +869,9 @@ components:
         country:
           $ref: "#/components/schemas/countryType1"
       required:
-        - "line1"
-        - "line2"
-        - "country"
+      - "line1"
+      - "line2"
+      - "country"
       additionalProperties: false
     addressTypeVariation:
       type: "object"
@@ -890,9 +891,9 @@ components:
         country:
           $ref: "#/components/schemas/countryTypeVariation"
       required:
-        - "line1"
-        - "line2"
-        - "country"
+      - "line1"
+      - "line2"
+      - "country"
       additionalProperties: false
     agentAddressLineType:
       type: "string"
@@ -901,46 +902,46 @@ components:
       description: "Non-UK Country codes ISO Alpha-2 code"
       type: "object"
       oneOf:
-        - type: "object"
-          properties:
-            line1:
-              $ref: "#/components/schemas/agentAddressLineType"
-            line2:
-              $ref: "#/components/schemas/agentAddressLineType"
-            line3:
-              $ref: "#/components/schemas/agentAddressLineType"
-            line4:
-              $ref: "#/components/schemas/agentAddressLineType"
-            postCode:
-              type: "string"
-              pattern: "^[A-Za-z0-9 ]{1,10}$"
-            country:
-              type: "string"
-              enum:
-                - "GB "
-          required:
-            - "line1"
-            - "line2"
-            - "postCode"
-            - "country"
-          additionalProperties: false
-        - type: "object"
-          properties:
-            line1:
-              $ref: "#/components/schemas/agentAddressLineType"
-            line2:
-              $ref: "#/components/schemas/agentAddressLineType"
-            line3:
-              $ref: "#/components/schemas/agentAddressLineType"
-            line4:
-              $ref: "#/components/schemas/agentAddressLineType"
-            country:
-              $ref: "#/components/schemas/nonUKCountryType2"
-          required:
-            - "line1"
-            - "line2"
-            - "country"
-          additionalProperties: false
+      - type: "object"
+        properties:
+          line1:
+            $ref: "#/components/schemas/agentAddressLineType"
+          line2:
+            $ref: "#/components/schemas/agentAddressLineType"
+          line3:
+            $ref: "#/components/schemas/agentAddressLineType"
+          line4:
+            $ref: "#/components/schemas/agentAddressLineType"
+          postCode:
+            type: "string"
+            pattern: "^[A-Za-z0-9 ]{1,10}$"
+          country:
+            type: "string"
+            enum:
+            - "GB "
+        required:
+        - "line1"
+        - "line2"
+        - "postCode"
+        - "country"
+        additionalProperties: false
+      - type: "object"
+        properties:
+          line1:
+            $ref: "#/components/schemas/agentAddressLineType"
+          line2:
+            $ref: "#/components/schemas/agentAddressLineType"
+          line3:
+            $ref: "#/components/schemas/agentAddressLineType"
+          line4:
+            $ref: "#/components/schemas/agentAddressLineType"
+          country:
+            $ref: "#/components/schemas/nonUKCountryType2"
+        required:
+        - "line1"
+        - "line2"
+        - "country"
+        additionalProperties: false
     agentDetailsType:
       type: "object"
       properties:
@@ -958,11 +959,11 @@ components:
           type: "string"
           pattern: "^[A-Za-z0-9 ,.()/&'-]{1,56}$"
       required:
-        - "arn"
-        - "agentName"
-        - "agentAddress"
-        - "agentTelephoneNumber"
-        - "clientReference"
+      - "arn"
+      - "agentName"
+      - "agentAddress"
+      - "agentTelephoneNumber"
+      - "clientReference"
       additionalProperties: false
     agentDetailsTypeVariation:
       type: "object"
@@ -981,11 +982,11 @@ components:
           type: "string"
           pattern: "^[A-Za-z0-9 ,.()/&'-]{1,56}$"
       required:
-        - "arn"
-        - "agentName"
-        - "agentAddress"
-        - "agentTelephoneNumber"
-        - "clientReference"
+      - "arn"
+      - "agentName"
+      - "agentAddress"
+      - "agentTelephoneNumber"
+      - "clientReference"
       additionalProperties: false
     AgentSuccessResponse:
       description: "Comment describing your JSON Schema"
@@ -1016,18 +1017,18 @@ components:
                 serviceName:
                   type: "string"
                   enum:
-                    - "TERS"
+                  - "TERS"
               required:
-                - "identifiers"
-                - "trustName"
-                - "address"
-                - "serviceName"
+              - "identifiers"
+              - "trustName"
+              - "address"
+              - "serviceName"
               additionalProperties: false
           required:
-            - "trustDetails"
+          - "trustDetails"
           additionalProperties: false
       required:
-        - "success"
+      - "success"
       additionalProperties: false
     assetsType:
       type: "object"
@@ -1042,7 +1043,7 @@ components:
               assetMonetaryAmount:
                 $ref: "#/components/schemas/monetaryType"
             required:
-              - "assetMonetaryAmount"
+            - "assetMonetaryAmount"
             additionalProperties: false
         propertyOrLand:
           type: "array"
@@ -1094,7 +1095,7 @@ components:
               assetMonetaryAmount:
                 $ref: "#/components/schemas/monetaryType1"
             required:
-              - "assetMonetaryAmount"
+            - "assetMonetaryAmount"
             additionalProperties: false
         propertyOrLand:
           type: "array"
@@ -1146,7 +1147,7 @@ components:
               assetMonetaryAmount:
                 $ref: "#/components/schemas/monetaryTypeVariation"
             required:
-              - "assetMonetaryAmount"
+            - "assetMonetaryAmount"
             additionalProperties: false
         propertyOrLand:
           type: "array"
@@ -1199,7 +1200,7 @@ components:
         countryOfResidence:
           $ref: "#/components/schemas/countryType"
       required:
-        - "organisationName"
+      - "organisationName"
       additionalProperties: false
     beneficiaryTrustType1:
       type: "object"
@@ -1221,9 +1222,9 @@ components:
         countryOfResidence:
           $ref: "#/components/schemas/countryType1"
       required:
-        - "lineNo"
-        - "organisationName"
-        - "entityStart"
+      - "lineNo"
+      - "organisationName"
+      - "entityStart"
       additionalProperties: false
     beneficiaryTrustTypeVariation:
       type: "object"
@@ -1247,8 +1248,8 @@ components:
         countryOfResidence:
           $ref: "#/components/schemas/countryTypeVariation"
       required:
-        - "organisationName"
-        - "entityStart"
+      - "organisationName"
+      - "entityStart"
       additionalProperties: false
     beneficiaryType:
       type: "object"
@@ -1312,7 +1313,7 @@ components:
           maxItems: 25
           items:
             $ref: "#/components/schemas/companyType1"
-        trust:
+        trusts:
           type: "array"
           minItems: 1
           maxItems: 25
@@ -1409,8 +1410,8 @@ components:
         businessValue:
           $ref: "#/components/schemas/monetaryType"
       required:
-        - "orgName"
-        - "businessDescription"
+      - "orgName"
+      - "businessDescription"
       additionalProperties: false
     businessAssetType1:
       type: "object"
@@ -1427,8 +1428,8 @@ components:
         businessValue:
           $ref: "#/components/schemas/monetaryType1"
       required:
-        - "orgName"
-        - "businessDescription"
+      - "orgName"
+      - "businessDescription"
       additionalProperties: false
     businessAssetTypeVariation:
       type: "object"
@@ -1445,8 +1446,8 @@ components:
         businessValue:
           $ref: "#/components/schemas/monetaryTypeVariation"
       required:
-        - "orgName"
-        - "businessDescription"
+      - "orgName"
+      - "businessDescription"
       additionalProperties: false
     charityType:
       type: "object"
@@ -1462,7 +1463,7 @@ components:
         countryOfResidence:
           $ref: "#/components/schemas/countryType"
       required:
-        - "organisationName"
+      - "organisationName"
       additionalProperties: false
     charityType1:
       type: "object"
@@ -1484,9 +1485,9 @@ components:
         countryOfResidence:
           $ref: "#/components/schemas/countryType1"
       required:
-        - "lineNo"
-        - "organisationName"
-        - "entityStart"
+      - "lineNo"
+      - "organisationName"
+      - "entityStart"
       additionalProperties: false
     charityTypeVariation:
       type: "object"
@@ -1510,8 +1511,8 @@ components:
         countryOfResidence:
           $ref: "#/components/schemas/countryTypeVariation"
       required:
-        - "organisationName"
-        - "entityStart"
+      - "organisationName"
+      - "entityStart"
       additionalProperties: false
     checkElement:
       description: "True , False"
@@ -1535,7 +1536,7 @@ components:
         countryOfResidence:
           $ref: "#/components/schemas/countryType"
       required:
-        - "organisationName"
+      - "organisationName"
       additionalProperties: false
     companyType1:
       type: "object"
@@ -1557,19 +1558,20 @@ components:
         countryOfResidence:
           $ref: "#/components/schemas/countryType1"
       required:
-        - "lineNo"
-        - "organisationName"
-        - "entityStart"
+      - "lineNo"
+      - "organisationName"
+      - "entityStart"
       additionalProperties: false
     companyType2:
       type: "object"
       properties:
         name:
           type: "string"
-        countryofResidence:
+          pattern: "^[A-Z0-9 ,.()/&'-]{1,105}$"
+        countryOfResidence:
           $ref: "#/components/schemas/countryType2"
       required:
-        - "name"
+      - "name"
     companyTypeVariation:
       type: "object"
       properties:
@@ -1592,8 +1594,8 @@ components:
         countryOfResidence:
           $ref: "#/components/schemas/countryTypeVariation"
       required:
-        - "organisationName"
-        - "entityStart"
+      - "organisationName"
+      - "entityStart"
       additionalProperties: false
     corNameType1:
       type: "string"
@@ -1604,771 +1606,771 @@ components:
     countryType:
       type: "string"
       enum:
-        - "AD"
-        - "AE"
-        - "AF"
-        - "AG"
-        - "AI"
-        - "AL"
-        - "AM"
-        - "AN"
-        - "AO"
-        - "AQ"
-        - "AR"
-        - "AS"
-        - "AT"
-        - "AU"
-        - "AW"
-        - "AX"
-        - "AZ"
-        - "BA"
-        - "BB"
-        - "BD"
-        - "BE"
-        - "BF"
-        - "BG"
-        - "BH"
-        - "BI"
-        - "BJ"
-        - "BM"
-        - "BN"
-        - "BO"
-        - "BQ"
-        - "BR"
-        - "BS"
-        - "BT"
-        - "BV"
-        - "BW"
-        - "BY"
-        - "BZ"
-        - "CA"
-        - "CC"
-        - "CD"
-        - "CF"
-        - "CG"
-        - "CH"
-        - "CI"
-        - "CK"
-        - "CL"
-        - "CM"
-        - "CN"
-        - "CO"
-        - "CR"
-        - "CS"
-        - "CU"
-        - "CV"
-        - "CW"
-        - "CX"
-        - "CY"
-        - "CZ"
-        - "DE"
-        - "DJ"
-        - "DK"
-        - "DM"
-        - "DO"
-        - "DZ"
-        - "EC"
-        - "EE"
-        - "EG"
-        - "EH"
-        - "ER"
-        - "ES"
-        - "ET"
-        - "FC"
-        - "FI"
-        - "FJ"
-        - "FK"
-        - "FM"
-        - "FO"
-        - "FR"
-        - "GA"
-        - "GB"
-        - "GD"
-        - "GE"
-        - "GF"
-        - "GG"
-        - "GH"
-        - "GI"
-        - "GL"
-        - "GM"
-        - "GN"
-        - "GP"
-        - "GQ"
-        - "GR"
-        - "GS"
-        - "GT"
-        - "GU"
-        - "GW"
-        - "GY"
-        - "HK"
-        - "HM"
-        - "HN"
-        - "HR"
-        - "HT"
-        - "HU"
-        - "ID"
-        - "IE"
-        - "IL"
-        - "IM"
-        - "IN"
-        - "IO"
-        - "IQ"
-        - "IR"
-        - "IS"
-        - "IT"
-        - "JE"
-        - "JM"
-        - "JO"
-        - "JP"
-        - "KE"
-        - "KG"
-        - "KH"
-        - "KI"
-        - "KM"
-        - "KN"
-        - "KP"
-        - "KR"
-        - "KW"
-        - "KY"
-        - "KZ"
-        - "LA"
-        - "LB"
-        - "LC"
-        - "LI"
-        - "LK"
-        - "LR"
-        - "LS"
-        - "LT"
-        - "LU"
-        - "LV"
-        - "LY"
-        - "MA"
-        - "MC"
-        - "MD"
-        - "ME"
-        - "MF"
-        - "MG"
-        - "MH"
-        - "MK"
-        - "ML"
-        - "MM"
-        - "MN"
-        - "MO"
-        - "MP"
-        - "MQ"
-        - "MR"
-        - "MS"
-        - "MT"
-        - "MU"
-        - "MV"
-        - "MW"
-        - "MX"
-        - "MY"
-        - "MZ"
-        - "NA"
-        - "NC"
-        - "NE"
-        - "NF"
-        - "NG"
-        - "NI"
-        - "NL"
-        - "NO"
-        - "NP"
-        - "NR"
-        - "NU"
-        - "NZ"
-        - "OM"
-        - "PA"
-        - "PE"
-        - "PF"
-        - "PG"
-        - "PH"
-        - "PK"
-        - "PL"
-        - "PM"
-        - "PN"
-        - "PR"
-        - "PS"
-        - "PT"
-        - "PW"
-        - "PY"
-        - "QA"
-        - "RE"
-        - "RO"
-        - "RS"
-        - "RU"
-        - "RW"
-        - "SA"
-        - "SB"
-        - "SC"
-        - "SD"
-        - "SE"
-        - "SG"
-        - "SH"
-        - "SI"
-        - "SJ"
-        - "SK"
-        - "SL"
-        - "SM"
-        - "SN"
-        - "SO"
-        - "SR"
-        - "SS"
-        - "ST"
-        - "SV"
-        - "SX"
-        - "SY"
-        - "SZ"
-        - "TC"
-        - "TD"
-        - "TF"
-        - "TG"
-        - "TH"
-        - "TJ"
-        - "TK"
-        - "TL"
-        - "TM"
-        - "TN"
-        - "TO"
-        - "TP"
-        - "TR"
-        - "TT"
-        - "TV"
-        - "TW"
-        - "TZ"
-        - "UA"
-        - "UG"
-        - "UM"
-        - "US"
-        - "UY"
-        - "UZ"
-        - "VA"
-        - "VC"
-        - "VE"
-        - "VG"
-        - "VI"
-        - "VN"
-        - "VU"
-        - "WF"
-        - "WS"
-        - "YE"
-        - "YT"
-        - "ZA"
-        - "ZM"
-        - "ZW"
+      - "AD"
+      - "AE"
+      - "AF"
+      - "AG"
+      - "AI"
+      - "AL"
+      - "AM"
+      - "AN"
+      - "AO"
+      - "AQ"
+      - "AR"
+      - "AS"
+      - "AT"
+      - "AU"
+      - "AW"
+      - "AX"
+      - "AZ"
+      - "BA"
+      - "BB"
+      - "BD"
+      - "BE"
+      - "BF"
+      - "BG"
+      - "BH"
+      - "BI"
+      - "BJ"
+      - "BM"
+      - "BN"
+      - "BO"
+      - "BQ"
+      - "BR"
+      - "BS"
+      - "BT"
+      - "BV"
+      - "BW"
+      - "BY"
+      - "BZ"
+      - "CA"
+      - "CC"
+      - "CD"
+      - "CF"
+      - "CG"
+      - "CH"
+      - "CI"
+      - "CK"
+      - "CL"
+      - "CM"
+      - "CN"
+      - "CO"
+      - "CR"
+      - "CS"
+      - "CU"
+      - "CV"
+      - "CW"
+      - "CX"
+      - "CY"
+      - "CZ"
+      - "DE"
+      - "DJ"
+      - "DK"
+      - "DM"
+      - "DO"
+      - "DZ"
+      - "EC"
+      - "EE"
+      - "EG"
+      - "EH"
+      - "ER"
+      - "ES"
+      - "ET"
+      - "FC"
+      - "FI"
+      - "FJ"
+      - "FK"
+      - "FM"
+      - "FO"
+      - "FR"
+      - "GA"
+      - "GB"
+      - "GD"
+      - "GE"
+      - "GF"
+      - "GG"
+      - "GH"
+      - "GI"
+      - "GL"
+      - "GM"
+      - "GN"
+      - "GP"
+      - "GQ"
+      - "GR"
+      - "GS"
+      - "GT"
+      - "GU"
+      - "GW"
+      - "GY"
+      - "HK"
+      - "HM"
+      - "HN"
+      - "HR"
+      - "HT"
+      - "HU"
+      - "ID"
+      - "IE"
+      - "IL"
+      - "IM"
+      - "IN"
+      - "IO"
+      - "IQ"
+      - "IR"
+      - "IS"
+      - "IT"
+      - "JE"
+      - "JM"
+      - "JO"
+      - "JP"
+      - "KE"
+      - "KG"
+      - "KH"
+      - "KI"
+      - "KM"
+      - "KN"
+      - "KP"
+      - "KR"
+      - "KW"
+      - "KY"
+      - "KZ"
+      - "LA"
+      - "LB"
+      - "LC"
+      - "LI"
+      - "LK"
+      - "LR"
+      - "LS"
+      - "LT"
+      - "LU"
+      - "LV"
+      - "LY"
+      - "MA"
+      - "MC"
+      - "MD"
+      - "ME"
+      - "MF"
+      - "MG"
+      - "MH"
+      - "MK"
+      - "ML"
+      - "MM"
+      - "MN"
+      - "MO"
+      - "MP"
+      - "MQ"
+      - "MR"
+      - "MS"
+      - "MT"
+      - "MU"
+      - "MV"
+      - "MW"
+      - "MX"
+      - "MY"
+      - "MZ"
+      - "NA"
+      - "NC"
+      - "NE"
+      - "NF"
+      - "NG"
+      - "NI"
+      - "NL"
+      - "NO"
+      - "NP"
+      - "NR"
+      - "NU"
+      - "NZ"
+      - "OM"
+      - "PA"
+      - "PE"
+      - "PF"
+      - "PG"
+      - "PH"
+      - "PK"
+      - "PL"
+      - "PM"
+      - "PN"
+      - "PR"
+      - "PS"
+      - "PT"
+      - "PW"
+      - "PY"
+      - "QA"
+      - "RE"
+      - "RO"
+      - "RS"
+      - "RU"
+      - "RW"
+      - "SA"
+      - "SB"
+      - "SC"
+      - "SD"
+      - "SE"
+      - "SG"
+      - "SH"
+      - "SI"
+      - "SJ"
+      - "SK"
+      - "SL"
+      - "SM"
+      - "SN"
+      - "SO"
+      - "SR"
+      - "SS"
+      - "ST"
+      - "SV"
+      - "SX"
+      - "SY"
+      - "SZ"
+      - "TC"
+      - "TD"
+      - "TF"
+      - "TG"
+      - "TH"
+      - "TJ"
+      - "TK"
+      - "TL"
+      - "TM"
+      - "TN"
+      - "TO"
+      - "TP"
+      - "TR"
+      - "TT"
+      - "TV"
+      - "TW"
+      - "TZ"
+      - "UA"
+      - "UG"
+      - "UM"
+      - "US"
+      - "UY"
+      - "UZ"
+      - "VA"
+      - "VC"
+      - "VE"
+      - "VG"
+      - "VI"
+      - "VN"
+      - "VU"
+      - "WF"
+      - "WS"
+      - "YE"
+      - "YT"
+      - "ZA"
+      - "ZM"
+      - "ZW"
     countryType1:
       type: "string"
       enum:
-        - "AD"
-        - "AE"
-        - "AF"
-        - "AG"
-        - "AI"
-        - "AL"
-        - "AM"
-        - "AN"
-        - "AO"
-        - "AQ"
-        - "AR"
-        - "AS"
-        - "AT"
-        - "AU"
-        - "AW"
-        - "AX"
-        - "AZ"
-        - "BA"
-        - "BB"
-        - "BD"
-        - "BE"
-        - "BF"
-        - "BG"
-        - "BH"
-        - "BI"
-        - "BJ"
-        - "BM"
-        - "BN"
-        - "BO"
-        - "BQ"
-        - "BR"
-        - "BS"
-        - "BT"
-        - "BV"
-        - "BW"
-        - "BY"
-        - "BZ"
-        - "CA"
-        - "CC"
-        - "CD"
-        - "CF"
-        - "CG"
-        - "CH"
-        - "CI"
-        - "CK"
-        - "CL"
-        - "CM"
-        - "CN"
-        - "CO"
-        - "CR"
-        - "CS"
-        - "CU"
-        - "CV"
-        - "CW"
-        - "CX"
-        - "CY"
-        - "CZ"
-        - "DE"
-        - "DJ"
-        - "DK"
-        - "DM"
-        - "DO"
-        - "DZ"
-        - "EC"
-        - "EE"
-        - "EG"
-        - "EH"
-        - "ER"
-        - "ES"
-        - "ET"
-        - "FC"
-        - "FI"
-        - "FJ"
-        - "FK"
-        - "FM"
-        - "FO"
-        - "FR"
-        - "GA"
-        - "GB"
-        - "GD"
-        - "GE"
-        - "GF"
-        - "GG"
-        - "GH"
-        - "GI"
-        - "GL"
-        - "GM"
-        - "GN"
-        - "GP"
-        - "GQ"
-        - "GR"
-        - "GS"
-        - "GT"
-        - "GU"
-        - "GW"
-        - "GY"
-        - "HK"
-        - "HM"
-        - "HN"
-        - "HR"
-        - "HT"
-        - "HU"
-        - "ID"
-        - "IE"
-        - "IL"
-        - "IM"
-        - "IN"
-        - "IO"
-        - "IQ"
-        - "IR"
-        - "IS"
-        - "IT"
-        - "JE"
-        - "JM"
-        - "JO"
-        - "JP"
-        - "KE"
-        - "KG"
-        - "KH"
-        - "KI"
-        - "KM"
-        - "KN"
-        - "KP"
-        - "KR"
-        - "KW"
-        - "KY"
-        - "KZ"
-        - "LA"
-        - "LB"
-        - "LC"
-        - "LI"
-        - "LK"
-        - "LR"
-        - "LS"
-        - "LT"
-        - "LU"
-        - "LV"
-        - "LY"
-        - "MA"
-        - "MC"
-        - "MD"
-        - "ME"
-        - "MF"
-        - "MG"
-        - "MH"
-        - "MK"
-        - "ML"
-        - "MM"
-        - "MN"
-        - "MO"
-        - "MP"
-        - "MQ"
-        - "MR"
-        - "MS"
-        - "MT"
-        - "MU"
-        - "MV"
-        - "MW"
-        - "MX"
-        - "MY"
-        - "MZ"
-        - "NA"
-        - "NC"
-        - "NE"
-        - "NF"
-        - "NG"
-        - "NI"
-        - "NL"
-        - "NO"
-        - "NP"
-        - "NR"
-        - "NU"
-        - "NZ"
-        - "OM"
-        - "PA"
-        - "PE"
-        - "PF"
-        - "PG"
-        - "PH"
-        - "PK"
-        - "PL"
-        - "PM"
-        - "PN"
-        - "PR"
-        - "PS"
-        - "PT"
-        - "PW"
-        - "PY"
-        - "QA"
-        - "RE"
-        - "RO"
-        - "RS"
-        - "RU"
-        - "RW"
-        - "SA"
-        - "SB"
-        - "SC"
-        - "SD"
-        - "SE"
-        - "SG"
-        - "SH"
-        - "SI"
-        - "SJ"
-        - "SK"
-        - "SL"
-        - "SM"
-        - "SN"
-        - "SO"
-        - "SR"
-        - "SS"
-        - "ST"
-        - "SV"
-        - "SX"
-        - "SY"
-        - "SZ"
-        - "TC"
-        - "TD"
-        - "TF"
-        - "TG"
-        - "TH"
-        - "TJ"
-        - "TK"
-        - "TL"
-        - "TM"
-        - "TN"
-        - "TO"
-        - "TP"
-        - "TR"
-        - "TT"
-        - "TV"
-        - "TW"
-        - "TZ"
-        - "UA"
-        - "UG"
-        - "UM"
-        - "US"
-        - "UY"
-        - "UZ"
-        - "VA"
-        - "VC"
-        - "VE"
-        - "VG"
-        - "VI"
-        - "VN"
-        - "VU"
-        - "WF"
-        - "WS"
-        - "YE"
-        - "YT"
-        - "ZA"
-        - "ZM"
-        - "ZW"
+      - "AD"
+      - "AE"
+      - "AF"
+      - "AG"
+      - "AI"
+      - "AL"
+      - "AM"
+      - "AN"
+      - "AO"
+      - "AQ"
+      - "AR"
+      - "AS"
+      - "AT"
+      - "AU"
+      - "AW"
+      - "AX"
+      - "AZ"
+      - "BA"
+      - "BB"
+      - "BD"
+      - "BE"
+      - "BF"
+      - "BG"
+      - "BH"
+      - "BI"
+      - "BJ"
+      - "BM"
+      - "BN"
+      - "BO"
+      - "BQ"
+      - "BR"
+      - "BS"
+      - "BT"
+      - "BV"
+      - "BW"
+      - "BY"
+      - "BZ"
+      - "CA"
+      - "CC"
+      - "CD"
+      - "CF"
+      - "CG"
+      - "CH"
+      - "CI"
+      - "CK"
+      - "CL"
+      - "CM"
+      - "CN"
+      - "CO"
+      - "CR"
+      - "CS"
+      - "CU"
+      - "CV"
+      - "CW"
+      - "CX"
+      - "CY"
+      - "CZ"
+      - "DE"
+      - "DJ"
+      - "DK"
+      - "DM"
+      - "DO"
+      - "DZ"
+      - "EC"
+      - "EE"
+      - "EG"
+      - "EH"
+      - "ER"
+      - "ES"
+      - "ET"
+      - "FC"
+      - "FI"
+      - "FJ"
+      - "FK"
+      - "FM"
+      - "FO"
+      - "FR"
+      - "GA"
+      - "GB"
+      - "GD"
+      - "GE"
+      - "GF"
+      - "GG"
+      - "GH"
+      - "GI"
+      - "GL"
+      - "GM"
+      - "GN"
+      - "GP"
+      - "GQ"
+      - "GR"
+      - "GS"
+      - "GT"
+      - "GU"
+      - "GW"
+      - "GY"
+      - "HK"
+      - "HM"
+      - "HN"
+      - "HR"
+      - "HT"
+      - "HU"
+      - "ID"
+      - "IE"
+      - "IL"
+      - "IM"
+      - "IN"
+      - "IO"
+      - "IQ"
+      - "IR"
+      - "IS"
+      - "IT"
+      - "JE"
+      - "JM"
+      - "JO"
+      - "JP"
+      - "KE"
+      - "KG"
+      - "KH"
+      - "KI"
+      - "KM"
+      - "KN"
+      - "KP"
+      - "KR"
+      - "KW"
+      - "KY"
+      - "KZ"
+      - "LA"
+      - "LB"
+      - "LC"
+      - "LI"
+      - "LK"
+      - "LR"
+      - "LS"
+      - "LT"
+      - "LU"
+      - "LV"
+      - "LY"
+      - "MA"
+      - "MC"
+      - "MD"
+      - "ME"
+      - "MF"
+      - "MG"
+      - "MH"
+      - "MK"
+      - "ML"
+      - "MM"
+      - "MN"
+      - "MO"
+      - "MP"
+      - "MQ"
+      - "MR"
+      - "MS"
+      - "MT"
+      - "MU"
+      - "MV"
+      - "MW"
+      - "MX"
+      - "MY"
+      - "MZ"
+      - "NA"
+      - "NC"
+      - "NE"
+      - "NF"
+      - "NG"
+      - "NI"
+      - "NL"
+      - "NO"
+      - "NP"
+      - "NR"
+      - "NU"
+      - "NZ"
+      - "OM"
+      - "PA"
+      - "PE"
+      - "PF"
+      - "PG"
+      - "PH"
+      - "PK"
+      - "PL"
+      - "PM"
+      - "PN"
+      - "PR"
+      - "PS"
+      - "PT"
+      - "PW"
+      - "PY"
+      - "QA"
+      - "RE"
+      - "RO"
+      - "RS"
+      - "RU"
+      - "RW"
+      - "SA"
+      - "SB"
+      - "SC"
+      - "SD"
+      - "SE"
+      - "SG"
+      - "SH"
+      - "SI"
+      - "SJ"
+      - "SK"
+      - "SL"
+      - "SM"
+      - "SN"
+      - "SO"
+      - "SR"
+      - "SS"
+      - "ST"
+      - "SV"
+      - "SX"
+      - "SY"
+      - "SZ"
+      - "TC"
+      - "TD"
+      - "TF"
+      - "TG"
+      - "TH"
+      - "TJ"
+      - "TK"
+      - "TL"
+      - "TM"
+      - "TN"
+      - "TO"
+      - "TP"
+      - "TR"
+      - "TT"
+      - "TV"
+      - "TW"
+      - "TZ"
+      - "UA"
+      - "UG"
+      - "UM"
+      - "US"
+      - "UY"
+      - "UZ"
+      - "VA"
+      - "VC"
+      - "VE"
+      - "VG"
+      - "VI"
+      - "VN"
+      - "VU"
+      - "WF"
+      - "WS"
+      - "YE"
+      - "YT"
+      - "ZA"
+      - "ZM"
+      - "ZW"
     countryType2:
       type: "string"
       pattern: "^[A-Z ,-.Ç&'/]{1,44}$"
     countryTypeVariation:
       type: "string"
       enum:
-        - "AD"
-        - "AE"
-        - "AF"
-        - "AG"
-        - "AI"
-        - "AL"
-        - "AM"
-        - "AN"
-        - "AO"
-        - "AQ"
-        - "AR"
-        - "AS"
-        - "AT"
-        - "AU"
-        - "AW"
-        - "AX"
-        - "AZ"
-        - "BA"
-        - "BB"
-        - "BD"
-        - "BE"
-        - "BF"
-        - "BG"
-        - "BH"
-        - "BI"
-        - "BJ"
-        - "BM"
-        - "BN"
-        - "BO"
-        - "BQ"
-        - "BR"
-        - "BS"
-        - "BT"
-        - "BV"
-        - "BW"
-        - "BY"
-        - "BZ"
-        - "CA"
-        - "CC"
-        - "CD"
-        - "CF"
-        - "CG"
-        - "CH"
-        - "CI"
-        - "CK"
-        - "CL"
-        - "CM"
-        - "CN"
-        - "CO"
-        - "CR"
-        - "CS"
-        - "CU"
-        - "CV"
-        - "CW"
-        - "CX"
-        - "CY"
-        - "CZ"
-        - "DE"
-        - "DJ"
-        - "DK"
-        - "DM"
-        - "DO"
-        - "DZ"
-        - "EC"
-        - "EE"
-        - "EG"
-        - "EH"
-        - "ER"
-        - "ES"
-        - "ET"
-        - "FC"
-        - "FI"
-        - "FJ"
-        - "FK"
-        - "FM"
-        - "FO"
-        - "FR"
-        - "GA"
-        - "GB"
-        - "GD"
-        - "GE"
-        - "GF"
-        - "GG"
-        - "GH"
-        - "GI"
-        - "GL"
-        - "GM"
-        - "GN"
-        - "GP"
-        - "GQ"
-        - "GR"
-        - "GS"
-        - "GT"
-        - "GU"
-        - "GW"
-        - "GY"
-        - "HK"
-        - "HM"
-        - "HN"
-        - "HR"
-        - "HT"
-        - "HU"
-        - "ID"
-        - "IE"
-        - "IL"
-        - "IM"
-        - "IN"
-        - "IO"
-        - "IQ"
-        - "IR"
-        - "IS"
-        - "IT"
-        - "JE"
-        - "JM"
-        - "JO"
-        - "JP"
-        - "KE"
-        - "KG"
-        - "KH"
-        - "KI"
-        - "KM"
-        - "KN"
-        - "KP"
-        - "KR"
-        - "KW"
-        - "KY"
-        - "KZ"
-        - "LA"
-        - "LB"
-        - "LC"
-        - "LI"
-        - "LK"
-        - "LR"
-        - "LS"
-        - "LT"
-        - "LU"
-        - "LV"
-        - "LY"
-        - "MA"
-        - "MC"
-        - "MD"
-        - "ME"
-        - "MF"
-        - "MG"
-        - "MH"
-        - "MK"
-        - "ML"
-        - "MM"
-        - "MN"
-        - "MO"
-        - "MP"
-        - "MQ"
-        - "MR"
-        - "MS"
-        - "MT"
-        - "MU"
-        - "MV"
-        - "MW"
-        - "MX"
-        - "MY"
-        - "MZ"
-        - "NA"
-        - "NC"
-        - "NE"
-        - "NF"
-        - "NG"
-        - "NI"
-        - "NL"
-        - "NO"
-        - "NP"
-        - "NR"
-        - "NU"
-        - "NZ"
-        - "OM"
-        - "PA"
-        - "PE"
-        - "PF"
-        - "PG"
-        - "PH"
-        - "PK"
-        - "PL"
-        - "PM"
-        - "PN"
-        - "PR"
-        - "PS"
-        - "PT"
-        - "PW"
-        - "PY"
-        - "QA"
-        - "RE"
-        - "RO"
-        - "RS"
-        - "RU"
-        - "RW"
-        - "SA"
-        - "SB"
-        - "SC"
-        - "SD"
-        - "SE"
-        - "SG"
-        - "SH"
-        - "SI"
-        - "SJ"
-        - "SK"
-        - "SL"
-        - "SM"
-        - "SN"
-        - "SO"
-        - "SR"
-        - "SS"
-        - "ST"
-        - "SV"
-        - "SX"
-        - "SY"
-        - "SZ"
-        - "TC"
-        - "TD"
-        - "TF"
-        - "TG"
-        - "TH"
-        - "TJ"
-        - "TK"
-        - "TL"
-        - "TM"
-        - "TN"
-        - "TO"
-        - "TP"
-        - "TR"
-        - "TT"
-        - "TV"
-        - "TW"
-        - "TZ"
-        - "UA"
-        - "UG"
-        - "UM"
-        - "US"
-        - "UY"
-        - "UZ"
-        - "VA"
-        - "VC"
-        - "VE"
-        - "VG"
-        - "VI"
-        - "VN"
-        - "VU"
-        - "WF"
-        - "WS"
-        - "YE"
-        - "YT"
-        - "ZA"
-        - "ZM"
-        - "ZW"
+      - "AD"
+      - "AE"
+      - "AF"
+      - "AG"
+      - "AI"
+      - "AL"
+      - "AM"
+      - "AN"
+      - "AO"
+      - "AQ"
+      - "AR"
+      - "AS"
+      - "AT"
+      - "AU"
+      - "AW"
+      - "AX"
+      - "AZ"
+      - "BA"
+      - "BB"
+      - "BD"
+      - "BE"
+      - "BF"
+      - "BG"
+      - "BH"
+      - "BI"
+      - "BJ"
+      - "BM"
+      - "BN"
+      - "BO"
+      - "BQ"
+      - "BR"
+      - "BS"
+      - "BT"
+      - "BV"
+      - "BW"
+      - "BY"
+      - "BZ"
+      - "CA"
+      - "CC"
+      - "CD"
+      - "CF"
+      - "CG"
+      - "CH"
+      - "CI"
+      - "CK"
+      - "CL"
+      - "CM"
+      - "CN"
+      - "CO"
+      - "CR"
+      - "CS"
+      - "CU"
+      - "CV"
+      - "CW"
+      - "CX"
+      - "CY"
+      - "CZ"
+      - "DE"
+      - "DJ"
+      - "DK"
+      - "DM"
+      - "DO"
+      - "DZ"
+      - "EC"
+      - "EE"
+      - "EG"
+      - "EH"
+      - "ER"
+      - "ES"
+      - "ET"
+      - "FC"
+      - "FI"
+      - "FJ"
+      - "FK"
+      - "FM"
+      - "FO"
+      - "FR"
+      - "GA"
+      - "GB"
+      - "GD"
+      - "GE"
+      - "GF"
+      - "GG"
+      - "GH"
+      - "GI"
+      - "GL"
+      - "GM"
+      - "GN"
+      - "GP"
+      - "GQ"
+      - "GR"
+      - "GS"
+      - "GT"
+      - "GU"
+      - "GW"
+      - "GY"
+      - "HK"
+      - "HM"
+      - "HN"
+      - "HR"
+      - "HT"
+      - "HU"
+      - "ID"
+      - "IE"
+      - "IL"
+      - "IM"
+      - "IN"
+      - "IO"
+      - "IQ"
+      - "IR"
+      - "IS"
+      - "IT"
+      - "JE"
+      - "JM"
+      - "JO"
+      - "JP"
+      - "KE"
+      - "KG"
+      - "KH"
+      - "KI"
+      - "KM"
+      - "KN"
+      - "KP"
+      - "KR"
+      - "KW"
+      - "KY"
+      - "KZ"
+      - "LA"
+      - "LB"
+      - "LC"
+      - "LI"
+      - "LK"
+      - "LR"
+      - "LS"
+      - "LT"
+      - "LU"
+      - "LV"
+      - "LY"
+      - "MA"
+      - "MC"
+      - "MD"
+      - "ME"
+      - "MF"
+      - "MG"
+      - "MH"
+      - "MK"
+      - "ML"
+      - "MM"
+      - "MN"
+      - "MO"
+      - "MP"
+      - "MQ"
+      - "MR"
+      - "MS"
+      - "MT"
+      - "MU"
+      - "MV"
+      - "MW"
+      - "MX"
+      - "MY"
+      - "MZ"
+      - "NA"
+      - "NC"
+      - "NE"
+      - "NF"
+      - "NG"
+      - "NI"
+      - "NL"
+      - "NO"
+      - "NP"
+      - "NR"
+      - "NU"
+      - "NZ"
+      - "OM"
+      - "PA"
+      - "PE"
+      - "PF"
+      - "PG"
+      - "PH"
+      - "PK"
+      - "PL"
+      - "PM"
+      - "PN"
+      - "PR"
+      - "PS"
+      - "PT"
+      - "PW"
+      - "PY"
+      - "QA"
+      - "RE"
+      - "RO"
+      - "RS"
+      - "RU"
+      - "RW"
+      - "SA"
+      - "SB"
+      - "SC"
+      - "SD"
+      - "SE"
+      - "SG"
+      - "SH"
+      - "SI"
+      - "SJ"
+      - "SK"
+      - "SL"
+      - "SM"
+      - "SN"
+      - "SO"
+      - "SR"
+      - "SS"
+      - "ST"
+      - "SV"
+      - "SX"
+      - "SY"
+      - "SZ"
+      - "TC"
+      - "TD"
+      - "TF"
+      - "TG"
+      - "TH"
+      - "TJ"
+      - "TK"
+      - "TL"
+      - "TM"
+      - "TN"
+      - "TO"
+      - "TP"
+      - "TR"
+      - "TT"
+      - "TV"
+      - "TW"
+      - "TZ"
+      - "UA"
+      - "UG"
+      - "UM"
+      - "US"
+      - "UY"
+      - "UZ"
+      - "VA"
+      - "VC"
+      - "VE"
+      - "VG"
+      - "VI"
+      - "VN"
+      - "VU"
+      - "WF"
+      - "WS"
+      - "YE"
+      - "YT"
+      - "ZA"
+      - "ZM"
+      - "ZW"
     dateString:
       description: "YYYY-MM-DD"
       type: "string"
@@ -2376,6 +2378,10 @@ components:
     dateString1:
       type: "string"
       pattern: "^(((15|16|17|18|19|20)([2468][048]|[13579][26]|0[48])|2000|1600)[-]02[-]29|((15|16|17|18|19|20)[0-9]{2}[-](0[469]|11)[-](0[1-9]|1[0-9]|2[0-9]|30)|(15|16|17|18|19|20)[0-9]{2}[-](0[13578]|1[02])[-](0[1-9]|[12][0-9]|3[01])|(15|16|17|18|19|20)[0-9]{2}[-]02[-](0[1-9]|1[0-9]|2[0-8])))$"
+    dateStringObliged:
+      description: DD-MM-YYYY
+      type: string
+      pattern: "^(29[/]02[/]((15|16|17|18|19|20)([2468][048]|[13579][26]|0[48])|2000|1600)|((0[1-9]|1[0-9]|2[0-9]|30)[/](0[469]|11)[/](15|16|17|18|19|20)[0-9]{2}|(0[1-9]|[12][0-9]|3[01])[/](0[13578]|1[02])[/](15|16|17|18|19|20)[0-9]{2}|(0[1-9]|1[0-9]|2[0-8])[/]02[/](15|16|17|18|19|20)[0-9]{2}))$"
     dateStringVariation:
       description: "YYYY-MM-DD"
       type: "string"
@@ -2396,19 +2402,19 @@ components:
                 dfmcaReturnUserStatus:
                   type: "string"
                   enum:
-                    - "Processed"
-                    - "In Processing"
-                    - "Pending Closure"
-                    - "Closed"
-                    - "Suspended"
-                    - "Parked"
-                    - "Obsoleted "
+                  - "Processed"
+                  - "In Processing"
+                  - "Pending Closure"
+                  - "Closed"
+                  - "Suspended"
+                  - "Parked"
+                  - "Obsoleted "
                 formBundleNo:
                   type: "string"
                   pattern: "^[0-9]{12}$"
               required:
-                - "dfmcaReturnUserStatus"
-                - "formBundleNo"
+              - "dfmcaReturnUserStatus"
+              - "formBundleNo"
               additionalProperties: false
             trustOrEstateDisplay:
               type: "object"
@@ -2417,8 +2423,8 @@ components:
                   description: "01-Trust,02-Estate"
                   type: "string"
                   enum:
-                    - "01"
-                    - "02"
+                  - "01"
+                  - "02"
                 matchData:
                   description: "Possible options - UTR to be returned for Taxable\
                     \ , URN for Non- Taxable , UTR and URN if Trust has converted\
@@ -2446,10 +2452,10 @@ components:
                     braille:
                       $ref: "#/components/schemas/checkElement1"
                   required:
-                    - "abroadIndicator"
-                    - "name"
-                    - "address"
-                    - "phoneNumber"
+                  - "abroadIndicator"
+                  - "name"
+                  - "address"
+                  - "phoneNumber"
                   additionalProperties: false
                 declaration:
                   type: "object"
@@ -2459,8 +2465,8 @@ components:
                     address:
                       $ref: "#/components/schemas/addressType1"
                   required:
-                    - "name"
-                    - "address"
+                  - "name"
+                  - "address"
                   additionalProperties: false
                 details:
                   type: "object"
@@ -2475,8 +2481,8 @@ components:
                         assets:
                           $ref: "#/components/schemas/assetsType1"
                       required:
-                        - "details"
-                        - "entities"
+                      - "details"
+                      - "entities"
                       additionalProperties: false
                     estate:
                       type: "object"
@@ -2496,30 +2502,30 @@ components:
                             \ than 2.5 million at the death of death"
                           type: "string"
                           enum:
-                            - ""
-                            - "01"
-                            - "02"
-                            - "03"
-                            - "04"
+                          - ""
+                          - "01"
+                          - "02"
+                          - "03"
+                          - "04"
                       required:
-                        - "entities"
-                        - "periodTaxDues"
+                      - "entities"
+                      - "periodTaxDues"
                       additionalProperties: false
                   additionalProperties: false
                 submissionDate:
                   $ref: "#/components/schemas/dateString1"
               required:
-                - "applicationType"
-                - "matchData"
-                - "correspondence"
-                - "declaration"
-                - "details"
+              - "applicationType"
+              - "matchData"
+              - "correspondence"
+              - "declaration"
+              - "details"
               additionalProperties: false
           required:
-            - "responseHeader"
+          - "responseHeader"
           additionalProperties: false
       required:
-        - "success"
+      - "success"
       additionalProperties: false
     entitiesType:
       type: "object"
@@ -2529,11 +2535,11 @@ components:
         personalRepresentative:
           type: "object"
           oneOf:
-            - $ref: "#/components/schemas/estatePerRepInd"
-            - $ref: "#/components/schemas/estatePerRepOrg"
+          - $ref: "#/components/schemas/estatePerRepInd"
+          - $ref: "#/components/schemas/estatePerRepOrg"
       required:
-        - "deceased"
-        - "personalRepresentative"
+      - "deceased"
+      - "personalRepresentative"
       additionalProperties: false
     entitiesType1:
       type: "object"
@@ -2543,11 +2549,11 @@ components:
         personalRepresentative:
           type: "object"
           oneOf:
-            - $ref: "#/components/schemas/estatePerRepInd1"
-            - $ref: "#/components/schemas/estatePerRepOrg1"
+          - $ref: "#/components/schemas/estatePerRepInd1"
+          - $ref: "#/components/schemas/estatePerRepOrg1"
       required:
-        - "deceased"
-        - "personalRepresentative"
+      - "deceased"
+      - "personalRepresentative"
       additionalProperties: false
     entitiesTypeVariation:
       type: "object"
@@ -2561,8 +2567,8 @@ components:
           items:
             $ref: "#/components/schemas/personalRepresentativeTypeVariation"
       required:
-        - "deceased"
-        - "personalRepresentative"
+      - "deceased"
+      - "personalRepresentative"
       additionalProperties: false
     estatePerRepInd:
       type: "object"
@@ -2579,10 +2585,10 @@ components:
           type: "string"
           format: "email"
       required:
-        - "name"
-        - "dateOfBirth"
-        - "identification"
-        - "phoneNumber"
+      - "name"
+      - "dateOfBirth"
+      - "identification"
+      - "phoneNumber"
       additionalProperties: false
     estatePerRepInd1:
       type: "object"
@@ -2605,12 +2611,12 @@ components:
         entityStart:
           $ref: "#/components/schemas/dateString1"
       required:
-        - "lineNo"
-        - "name"
-        - "dateOfBirth"
-        - "identification"
-        - "phoneNumber"
-        - "entityStart"
+      - "lineNo"
+      - "name"
+      - "dateOfBirth"
+      - "identification"
+      - "phoneNumber"
+      - "entityStart"
       additionalProperties: false
     estatePerRepIndVariation:
       type: "object"
@@ -2638,14 +2644,14 @@ components:
             entityEnd:
               $ref: "#/components/schemas/dateStringVariation"
           required:
-            - "name"
-            - "dateOfBirth"
-            - "identification"
-            - "phoneNumber"
-            - "entityStart"
+          - "name"
+          - "dateOfBirth"
+          - "identification"
+          - "phoneNumber"
+          - "entityStart"
           additionalProperties: false
       required:
-        - "estatePerRepInd"
+      - "estatePerRepInd"
       additionalProperties: false
     estatePerRepOrg:
       type: "object"
@@ -2660,9 +2666,9 @@ components:
         identification:
           $ref: "#/components/schemas/identificationOrgType"
       required:
-        - "orgName"
-        - "phoneNumber"
-        - "identification"
+      - "orgName"
+      - "phoneNumber"
+      - "identification"
       additionalProperties: false
     estatePerRepOrg1:
       type: "object"
@@ -2683,11 +2689,11 @@ components:
         entityStart:
           $ref: "#/components/schemas/dateString1"
       required:
-        - "lineNo"
-        - "orgName"
-        - "phoneNumber"
-        - "identification"
-        - "entityStart"
+      - "lineNo"
+      - "orgName"
+      - "phoneNumber"
+      - "identification"
+      - "entityStart"
       additionalProperties: false
     estatePerRepOrgVariation:
       type: "object"
@@ -2713,13 +2719,13 @@ components:
             entityEnd:
               $ref: "#/components/schemas/dateStringVariation"
           required:
-            - "orgName"
-            - "phoneNumber"
-            - "identification"
-            - "entityStart"
+          - "orgName"
+          - "phoneNumber"
+          - "identification"
+          - "entityStart"
           additionalProperties: false
       required:
-        - "estatePerRepOrg"
+      - "estatePerRepOrg"
       additionalProperties: false
     identificationOrgType:
       description: "Either UTR or address details to be sent mandatorily"
@@ -2822,9 +2828,9 @@ components:
         beneficiaryType:
           type: "string"
           enum:
-            - "Director"
-            - "Employee"
-            - "NA"
+          - "Director"
+          - "Employee"
+          - "NA"
         beneficiaryDiscretion:
           type: "boolean"
         beneficiaryShareOfIncome:
@@ -2838,7 +2844,7 @@ components:
         legallyIncapable:
           $ref: "#/components/schemas/checkElement"
       required:
-        - "name"
+      - "name"
       additionalProperties: false
     individualDetailsType1:
       type: "object"
@@ -2856,9 +2862,9 @@ components:
         beneficiaryType:
           type: "string"
           enum:
-            - "Director"
-            - "Employee"
-            - "NA"
+          - "Director"
+          - "Employee"
+          - "NA"
         beneficiaryDiscretion:
           type: "boolean"
         beneficiaryShareOfIncome:
@@ -2874,9 +2880,9 @@ components:
         legallyIncapable:
           $ref: "#/components/schemas/checkElement1"
       required:
-        - "lineNo"
-        - "name"
-        - "entityStart"
+      - "lineNo"
+      - "name"
+      - "entityStart"
       additionalProperties: false
     individualDetailsTypeVariation:
       type: "object"
@@ -2894,9 +2900,9 @@ components:
         beneficiaryType:
           type: "string"
           enum:
-            - "Director"
-            - "Employee"
-            - "NA"
+          - "Director"
+          - "Employee"
+          - "NA"
         beneficiaryDiscretion:
           type: "boolean"
         beneficiaryShareOfIncome:
@@ -2914,8 +2920,8 @@ components:
         legallyIncapable:
           $ref: "#/components/schemas/checkElementVariation"
       required:
-        - "name"
-        - "entityStart"
+      - "name"
+      - "entityStart"
       additionalProperties: false
     individualType:
       type: "object"
@@ -2927,14 +2933,14 @@ components:
         lastName:
           $ref: "#/components/schemas/nameString1"
         dateOfBirth:
-          $ref: "#/components/schemas/monthYearString"
+          $ref: "#/components/schemas/monthYearString1"
         nationality:
           $ref: "#/components/schemas/countryType2"
         countryOfResidence:
           $ref: "#/components/schemas/countryType2"
       required:
-        - "firstName"
-        - "lastName"
+      - "firstName"
+      - "lastName"
     largeType:
       type: "object"
       properties:
@@ -2967,9 +2973,9 @@ components:
         countryOfResidence:
           $ref: "#/components/schemas/countryType"
       required:
-        - "organisationName"
-        - "description"
-        - "numberOfBeneficiary"
+      - "organisationName"
+      - "description"
+      - "numberOfBeneficiary"
       additionalProperties: false
     largeType1:
       type: "object"
@@ -3009,11 +3015,11 @@ components:
         countryOfResidence:
           $ref: "#/components/schemas/countryType1"
       required:
-        - "lineNo"
-        - "organisationName"
-        - "description"
-        - "numberOfBeneficiary"
-        - "entityStart"
+      - "lineNo"
+      - "organisationName"
+      - "description"
+      - "numberOfBeneficiary"
+      - "entityStart"
       additionalProperties: false
     largeTypeVariation:
       type: "object"
@@ -3055,10 +3061,10 @@ components:
         countryOfResidence:
           $ref: "#/components/schemas/countryTypeVariation"
       required:
-        - "organisationName"
-        - "description"
-        - "numberOfBeneficiary"
-        - "entityStart"
+      - "organisationName"
+      - "description"
+      - "numberOfBeneficiary"
+      - "entityStart"
       additionalProperties: false
     leadTrusteeIndType:
       type: "object"
@@ -3081,12 +3087,12 @@ components:
         legallyIncapable:
           $ref: "#/components/schemas/checkElement"
       required:
-        - "name"
-        - "dateOfBirth"
-        - "identification"
-        - "phoneNumber"
-        - "countryOfResidence"
-        - "nationality"
+      - "name"
+      - "dateOfBirth"
+      - "identification"
+      - "phoneNumber"
+      - "countryOfResidence"
+      - "nationality"
       additionalProperties: false
     leadTrusteeIndTypeVariation:
       type: "object"
@@ -3120,14 +3126,14 @@ components:
             legallyIncapable:
               $ref: "#/components/schemas/checkElementVariation"
           required:
-            - "name"
-            - "dateOfBirth"
-            - "identification"
-            - "phoneNumber"
-            - "entityStart"
+          - "name"
+          - "dateOfBirth"
+          - "identification"
+          - "phoneNumber"
+          - "entityStart"
           additionalProperties: false
       required:
-        - "leadTrusteeInd"
+      - "leadTrusteeInd"
       additionalProperties: false
     leadTrusteeOrgType:
       type: "object"
@@ -3144,10 +3150,10 @@ components:
         countryOfResidence:
           $ref: "#/components/schemas/countryType"
       required:
-        - "orgName"
-        - "phoneNumber"
-        - "identification"
-        - "countryOfResidence"
+      - "orgName"
+      - "phoneNumber"
+      - "identification"
+      - "countryOfResidence"
       additionalProperties: false
     leadTrusteeOrgType1:
       type: "object"
@@ -3170,10 +3176,10 @@ components:
         countryOfResidence:
           $ref: "#/components/schemas/countryType1"
       required:
-        - "lineNo"
-        - "orgName"
-        - "phoneNumber"
-        - "entityStart"
+      - "lineNo"
+      - "orgName"
+      - "phoneNumber"
+      - "entityStart"
       additionalProperties: false
     leadTrusteeOrgTypeVariation:
       type: "object"
@@ -3201,13 +3207,13 @@ components:
             countryOfResidence:
               $ref: "#/components/schemas/countryTypeVariation"
           required:
-            - "orgName"
-            - "phoneNumber"
-            - "identification"
-            - "entityStart"
+          - "orgName"
+          - "phoneNumber"
+          - "identification"
+          - "entityStart"
           additionalProperties: false
       required:
-        - "leadTrusteeOrg"
+      - "leadTrusteeOrg"
       additionalProperties: false
     leadTrusteesIndType1:
       type: "object"
@@ -3237,16 +3243,16 @@ components:
         legallyIncapable:
           $ref: "#/components/schemas/checkElement1"
       required:
-        - "lineNo"
-        - "name"
-        - "dateOfBirth"
-        - "identification"
-        - "phoneNumber"
-        - "entityStart"
+      - "lineNo"
+      - "name"
+      - "dateOfBirth"
+      - "identification"
+      - "phoneNumber"
+      - "entityStart"
     leadTrusteeTypeVariation:
       oneOf:
-        - $ref: "#/components/schemas/leadTrusteeIndTypeVariation"
-        - $ref: "#/components/schemas/leadTrusteeOrgTypeVariation"
+      - $ref: "#/components/schemas/leadTrusteeIndTypeVariation"
+      - $ref: "#/components/schemas/leadTrusteeOrgTypeVariation"
     lineNoType1:
       type: "string"
       pattern: "^[0-9]{1,4}$"
@@ -3273,8 +3279,8 @@ components:
           example: "B17 3UY"
           description: "Postcode"
       required:
-        - "sa-utr"
-        - "name"
+      - "sa-utr"
+      - "name"
     MatchSuccessResponse:
       type: "object"
       properties:
@@ -3285,10 +3291,10 @@ components:
               type: "boolean"
               example: true
           required:
-            - "match"
+          - "match"
           additionalProperties: false
       required:
-        - "success"
+      - "success"
       additionalProperties: false
     monetaryType:
       description: "Integer up to 12 digits max; 1500 represents 1500 pounds"
@@ -3307,6 +3313,10 @@ components:
       maximum: 999999999999
     monthYearString:
       type: "string"
+      pattern: "^(0[1-9]|1[0-2])/(15|16|17|18|19|20)[0-9]{2}$"
+    monthYearString1:
+      description: MM-YYYY
+      type: string
       pattern: "^(0[1-9]|1[0-2])/(15|16|17|18|19|20)[0-9]{2}$"
     nameString:
       type: "string"
@@ -3327,8 +3337,8 @@ components:
         lastName:
           $ref: "#/components/schemas/nameString"
       required:
-        - "firstName"
-        - "lastName"
+      - "firstName"
+      - "lastName"
       additionalProperties: false
     nameType1:
       type: "object"
@@ -3340,8 +3350,8 @@ components:
         lastName:
           $ref: "#/components/schemas/nameString1"
       required:
-        - "firstName"
-        - "lastName"
+      - "firstName"
+      - "lastName"
       additionalProperties: false
     nameTypeVariation:
       type: "object"
@@ -3353,8 +3363,8 @@ components:
         lastName:
           $ref: "#/components/schemas/nameStringVariation"
       required:
-        - "firstName"
-        - "lastName"
+      - "firstName"
+      - "lastName"
       additionalProperties: false
     naturalPersonType:
       type: "object"
@@ -3372,7 +3382,7 @@ components:
         legallyIncapable:
           $ref: "#/components/schemas/checkElement"
       required:
-        - "name"
+      - "name"
       additionalProperties: false
     naturalPersonType1:
       type: "object"
@@ -3396,9 +3406,9 @@ components:
         legallyIncapable:
           $ref: "#/components/schemas/checkElement1"
       required:
-        - "lineNo"
-        - "name"
-        - "entityStart"
+      - "lineNo"
+      - "name"
+      - "entityStart"
       additionalProperties: false
     naturalPersonTypeVariation:
       type: "object"
@@ -3424,8 +3434,8 @@ components:
         legallyIncapable:
           $ref: "#/components/schemas/checkElementVariation"
       required:
-        - "name"
-        - "entityStart"
+      - "name"
+      - "entityStart"
       additionalProperties: false
     ninoType:
       type: "string"
@@ -3450,10 +3460,10 @@ components:
         endDate:
           $ref: "#/components/schemas/dateString"
       required:
-        - "orgName"
-        - "address"
-        - "govLawCountry"
-        - "startDate"
+      - "orgName"
+      - "address"
+      - "govLawCountry"
+      - "startDate"
       additionalProperties: false
     nonEEABusinessType1:
       type: "object"
@@ -3471,11 +3481,11 @@ components:
         endDate:
           $ref: "#/components/schemas/dateString1"
       required:
-        - "lineNo"
-        - "orgName"
-        - "address"
-        - "govLawCountry"
-        - "startDate"
+      - "lineNo"
+      - "orgName"
+      - "address"
+      - "govLawCountry"
+      - "startDate"
       additionalProperties: false
     nonEEABusinessTypeVariation:
       type: "object"
@@ -3493,519 +3503,519 @@ components:
         endDate:
           $ref: "#/components/schemas/dateStringVariation"
       required:
-        - "orgName"
-        - "address"
-        - "govLawCountry"
-        - "startDate"
+      - "orgName"
+      - "address"
+      - "govLawCountry"
+      - "startDate"
       additionalProperties: false
     nonUKCountryType:
       type: "string"
       enum:
-        - "AD"
-        - "AE"
-        - "AF"
-        - "AG"
-        - "AI"
-        - "AL"
-        - "AM"
-        - "AN"
-        - "AO"
-        - "AQ"
-        - "AR"
-        - "AS"
-        - "AT"
-        - "AU"
-        - "AW"
-        - "AX"
-        - "AZ"
-        - "BA"
-        - "BB"
-        - "BD"
-        - "BE"
-        - "BF"
-        - "BG"
-        - "BH"
-        - "BI"
-        - "BJ"
-        - "BM"
-        - "BN"
-        - "BO"
-        - "BQ"
-        - "BR"
-        - "BS"
-        - "BT"
-        - "BV"
-        - "BW"
-        - "BY"
-        - "BZ"
-        - "CA"
-        - "CC"
-        - "CD"
-        - "CF"
-        - "CG"
-        - "CH"
-        - "CI"
-        - "CK"
-        - "CL"
-        - "CM"
-        - "CN"
-        - "CO"
-        - "CR"
-        - "CS"
-        - "CU"
-        - "CV"
-        - "CW"
-        - "CX"
-        - "CY"
-        - "CZ"
-        - "DE"
-        - "DJ"
-        - "DK"
-        - "DM"
-        - "DO"
-        - "DZ"
-        - "EC"
-        - "EE"
-        - "EG"
-        - "EH"
-        - "ER"
-        - "ES"
-        - "ET"
-        - "FC"
-        - "FI"
-        - "FJ"
-        - "FK"
-        - "FM"
-        - "FO"
-        - "FR"
-        - "GA"
-        - "GD"
-        - "GE"
-        - "GF"
-        - "GG"
-        - "GH"
-        - "GI"
-        - "GL"
-        - "GM"
-        - "GN"
-        - "GP"
-        - "GQ"
-        - "GR"
-        - "GS"
-        - "GT"
-        - "GU"
-        - "GW"
-        - "GY"
-        - "HK"
-        - "HM"
-        - "HN"
-        - "HR"
-        - "HT"
-        - "HU"
-        - "ID"
-        - "IE"
-        - "IL"
-        - "IM"
-        - "IN"
-        - "IO"
-        - "IQ"
-        - "IR"
-        - "IS"
-        - "IT"
-        - "JE"
-        - "JM"
-        - "JO"
-        - "JP"
-        - "KE"
-        - "KG"
-        - "KH"
-        - "KI"
-        - "KM"
-        - "KN"
-        - "KP"
-        - "KR"
-        - "KW"
-        - "KY"
-        - "KZ"
-        - "LA"
-        - "LB"
-        - "LC"
-        - "LI"
-        - "LK"
-        - "LR"
-        - "LS"
-        - "LT"
-        - "LU"
-        - "LV"
-        - "LY"
-        - "MA"
-        - "MC"
-        - "MD"
-        - "ME"
-        - "MF"
-        - "MG"
-        - "MH"
-        - "MK"
-        - "ML"
-        - "MM"
-        - "MN"
-        - "MO"
-        - "MP"
-        - "MQ"
-        - "MR"
-        - "MS"
-        - "MT"
-        - "MU"
-        - "MV"
-        - "MW"
-        - "MX"
-        - "MY"
-        - "MZ"
-        - "NA"
-        - "NC"
-        - "NE"
-        - "NF"
-        - "NG"
-        - "NI"
-        - "NL"
-        - "NO"
-        - "NP"
-        - "NR"
-        - "NU"
-        - "NZ"
-        - "OM"
-        - "PA"
-        - "PE"
-        - "PF"
-        - "PG"
-        - "PH"
-        - "PK"
-        - "PL"
-        - "PM"
-        - "PN"
-        - "PR"
-        - "PS"
-        - "PT"
-        - "PW"
-        - "PY"
-        - "QA"
-        - "RE"
-        - "RO"
-        - "RS"
-        - "RU"
-        - "RW"
-        - "SA"
-        - "SB"
-        - "SC"
-        - "SD"
-        - "SE"
-        - "SG"
-        - "SH"
-        - "SI"
-        - "SJ"
-        - "SK"
-        - "SL"
-        - "SM"
-        - "SN"
-        - "SO"
-        - "SR"
-        - "SS"
-        - "ST"
-        - "SV"
-        - "SX"
-        - "SY"
-        - "SZ"
-        - "TC"
-        - "TD"
-        - "TF"
-        - "TG"
-        - "TH"
-        - "TJ"
-        - "TK"
-        - "TL"
-        - "TM"
-        - "TN"
-        - "TO"
-        - "TP"
-        - "TR"
-        - "TT"
-        - "TV"
-        - "TW"
-        - "TZ"
-        - "UA"
-        - "UG"
-        - "UM"
-        - "US"
-        - "UY"
-        - "UZ"
-        - "VA"
-        - "VC"
-        - "VE"
-        - "VG"
-        - "VI"
-        - "VN"
-        - "VU"
-        - "WF"
-        - "WS"
-        - "YE"
-        - "YT"
-        - "ZA"
-        - "ZM"
-        - "ZW"
+      - "AD"
+      - "AE"
+      - "AF"
+      - "AG"
+      - "AI"
+      - "AL"
+      - "AM"
+      - "AN"
+      - "AO"
+      - "AQ"
+      - "AR"
+      - "AS"
+      - "AT"
+      - "AU"
+      - "AW"
+      - "AX"
+      - "AZ"
+      - "BA"
+      - "BB"
+      - "BD"
+      - "BE"
+      - "BF"
+      - "BG"
+      - "BH"
+      - "BI"
+      - "BJ"
+      - "BM"
+      - "BN"
+      - "BO"
+      - "BQ"
+      - "BR"
+      - "BS"
+      - "BT"
+      - "BV"
+      - "BW"
+      - "BY"
+      - "BZ"
+      - "CA"
+      - "CC"
+      - "CD"
+      - "CF"
+      - "CG"
+      - "CH"
+      - "CI"
+      - "CK"
+      - "CL"
+      - "CM"
+      - "CN"
+      - "CO"
+      - "CR"
+      - "CS"
+      - "CU"
+      - "CV"
+      - "CW"
+      - "CX"
+      - "CY"
+      - "CZ"
+      - "DE"
+      - "DJ"
+      - "DK"
+      - "DM"
+      - "DO"
+      - "DZ"
+      - "EC"
+      - "EE"
+      - "EG"
+      - "EH"
+      - "ER"
+      - "ES"
+      - "ET"
+      - "FC"
+      - "FI"
+      - "FJ"
+      - "FK"
+      - "FM"
+      - "FO"
+      - "FR"
+      - "GA"
+      - "GD"
+      - "GE"
+      - "GF"
+      - "GG"
+      - "GH"
+      - "GI"
+      - "GL"
+      - "GM"
+      - "GN"
+      - "GP"
+      - "GQ"
+      - "GR"
+      - "GS"
+      - "GT"
+      - "GU"
+      - "GW"
+      - "GY"
+      - "HK"
+      - "HM"
+      - "HN"
+      - "HR"
+      - "HT"
+      - "HU"
+      - "ID"
+      - "IE"
+      - "IL"
+      - "IM"
+      - "IN"
+      - "IO"
+      - "IQ"
+      - "IR"
+      - "IS"
+      - "IT"
+      - "JE"
+      - "JM"
+      - "JO"
+      - "JP"
+      - "KE"
+      - "KG"
+      - "KH"
+      - "KI"
+      - "KM"
+      - "KN"
+      - "KP"
+      - "KR"
+      - "KW"
+      - "KY"
+      - "KZ"
+      - "LA"
+      - "LB"
+      - "LC"
+      - "LI"
+      - "LK"
+      - "LR"
+      - "LS"
+      - "LT"
+      - "LU"
+      - "LV"
+      - "LY"
+      - "MA"
+      - "MC"
+      - "MD"
+      - "ME"
+      - "MF"
+      - "MG"
+      - "MH"
+      - "MK"
+      - "ML"
+      - "MM"
+      - "MN"
+      - "MO"
+      - "MP"
+      - "MQ"
+      - "MR"
+      - "MS"
+      - "MT"
+      - "MU"
+      - "MV"
+      - "MW"
+      - "MX"
+      - "MY"
+      - "MZ"
+      - "NA"
+      - "NC"
+      - "NE"
+      - "NF"
+      - "NG"
+      - "NI"
+      - "NL"
+      - "NO"
+      - "NP"
+      - "NR"
+      - "NU"
+      - "NZ"
+      - "OM"
+      - "PA"
+      - "PE"
+      - "PF"
+      - "PG"
+      - "PH"
+      - "PK"
+      - "PL"
+      - "PM"
+      - "PN"
+      - "PR"
+      - "PS"
+      - "PT"
+      - "PW"
+      - "PY"
+      - "QA"
+      - "RE"
+      - "RO"
+      - "RS"
+      - "RU"
+      - "RW"
+      - "SA"
+      - "SB"
+      - "SC"
+      - "SD"
+      - "SE"
+      - "SG"
+      - "SH"
+      - "SI"
+      - "SJ"
+      - "SK"
+      - "SL"
+      - "SM"
+      - "SN"
+      - "SO"
+      - "SR"
+      - "SS"
+      - "ST"
+      - "SV"
+      - "SX"
+      - "SY"
+      - "SZ"
+      - "TC"
+      - "TD"
+      - "TF"
+      - "TG"
+      - "TH"
+      - "TJ"
+      - "TK"
+      - "TL"
+      - "TM"
+      - "TN"
+      - "TO"
+      - "TP"
+      - "TR"
+      - "TT"
+      - "TV"
+      - "TW"
+      - "TZ"
+      - "UA"
+      - "UG"
+      - "UM"
+      - "US"
+      - "UY"
+      - "UZ"
+      - "VA"
+      - "VC"
+      - "VE"
+      - "VG"
+      - "VI"
+      - "VN"
+      - "VU"
+      - "WF"
+      - "WS"
+      - "YE"
+      - "YT"
+      - "ZA"
+      - "ZM"
+      - "ZW"
     nonUKCountryType1:
       type: "string"
       enum:
-        - "AD"
-        - "AE"
-        - "AF"
-        - "AG"
-        - "AI"
-        - "AL"
-        - "AM"
-        - "AN"
-        - "AO"
-        - "AQ"
-        - "AR"
-        - "AS"
-        - "AT"
-        - "AU"
-        - "AW"
-        - "AX"
-        - "AZ"
-        - "BA"
-        - "BB"
-        - "BD"
-        - "BE"
-        - "BF"
-        - "BG"
-        - "BH"
-        - "BI"
-        - "BJ"
-        - "BM"
-        - "BN"
-        - "BO"
-        - "BQ"
-        - "BR"
-        - "BS"
-        - "BT"
-        - "BV"
-        - "BW"
-        - "BY"
-        - "BZ"
-        - "CA"
-        - "CC"
-        - "CD"
-        - "CF"
-        - "CG"
-        - "CH"
-        - "CI"
-        - "CK"
-        - "CL"
-        - "CM"
-        - "CN"
-        - "CO"
-        - "CR"
-        - "CS"
-        - "CU"
-        - "CV"
-        - "CW"
-        - "CX"
-        - "CY"
-        - "CZ"
-        - "DE"
-        - "DJ"
-        - "DK"
-        - "DM"
-        - "DO"
-        - "DZ"
-        - "EC"
-        - "EE"
-        - "EG"
-        - "EH"
-        - "ER"
-        - "ES"
-        - "ET"
-        - "FC"
-        - "FI"
-        - "FJ"
-        - "FK"
-        - "FM"
-        - "FO"
-        - "FR"
-        - "GA"
-        - "GD"
-        - "GE"
-        - "GF"
-        - "GG"
-        - "GH"
-        - "GI"
-        - "GL"
-        - "GM"
-        - "GN"
-        - "GP"
-        - "GQ"
-        - "GR"
-        - "GS"
-        - "GT"
-        - "GU"
-        - "GW"
-        - "GY"
-        - "HK"
-        - "HM"
-        - "HN"
-        - "HR"
-        - "HT"
-        - "HU"
-        - "ID"
-        - "IE"
-        - "IL"
-        - "IM"
-        - "IN"
-        - "IO"
-        - "IQ"
-        - "IR"
-        - "IS"
-        - "IT"
-        - "JE"
-        - "JM"
-        - "JO"
-        - "JP"
-        - "KE"
-        - "KG"
-        - "KH"
-        - "KI"
-        - "KM"
-        - "KN"
-        - "KP"
-        - "KR"
-        - "KW"
-        - "KY"
-        - "KZ"
-        - "LA"
-        - "LB"
-        - "LC"
-        - "LI"
-        - "LK"
-        - "LR"
-        - "LS"
-        - "LT"
-        - "LU"
-        - "LV"
-        - "LY"
-        - "MA"
-        - "MC"
-        - "MD"
-        - "ME"
-        - "MF"
-        - "MG"
-        - "MH"
-        - "MK"
-        - "ML"
-        - "MM"
-        - "MN"
-        - "MO"
-        - "MP"
-        - "MQ"
-        - "MR"
-        - "MS"
-        - "MT"
-        - "MU"
-        - "MV"
-        - "MW"
-        - "MX"
-        - "MY"
-        - "MZ"
-        - "NA"
-        - "NC"
-        - "NE"
-        - "NF"
-        - "NG"
-        - "NI"
-        - "NL"
-        - "NO"
-        - "NP"
-        - "NR"
-        - "NU"
-        - "NZ"
-        - "OM"
-        - "PA"
-        - "PE"
-        - "PF"
-        - "PG"
-        - "PH"
-        - "PK"
-        - "PL"
-        - "PM"
-        - "PN"
-        - "PR"
-        - "PS"
-        - "PT"
-        - "PW"
-        - "PY"
-        - "QA"
-        - "RE"
-        - "RO"
-        - "RS"
-        - "RU"
-        - "RW"
-        - "SA"
-        - "SB"
-        - "SC"
-        - "SD"
-        - "SE"
-        - "SG"
-        - "SH"
-        - "SI"
-        - "SJ"
-        - "SK"
-        - "SL"
-        - "SM"
-        - "SN"
-        - "SO"
-        - "SR"
-        - "SS"
-        - "ST"
-        - "SV"
-        - "SX"
-        - "SY"
-        - "SZ"
-        - "TC"
-        - "TD"
-        - "TF"
-        - "TG"
-        - "TH"
-        - "TJ"
-        - "TK"
-        - "TL"
-        - "TM"
-        - "TN"
-        - "TO"
-        - "TP"
-        - "TR"
-        - "TT"
-        - "TV"
-        - "TW"
-        - "TZ"
-        - "UA"
-        - "UG"
-        - "UM"
-        - "US"
-        - "UY"
-        - "UZ"
-        - "VA"
-        - "VC"
-        - "VE"
-        - "VG"
-        - "VI"
-        - "VN"
-        - "VU"
-        - "WF"
-        - "WS"
-        - "YE"
-        - "YT"
-        - "ZA"
-        - "ZM"
-        - "ZW"
+      - "AD"
+      - "AE"
+      - "AF"
+      - "AG"
+      - "AI"
+      - "AL"
+      - "AM"
+      - "AN"
+      - "AO"
+      - "AQ"
+      - "AR"
+      - "AS"
+      - "AT"
+      - "AU"
+      - "AW"
+      - "AX"
+      - "AZ"
+      - "BA"
+      - "BB"
+      - "BD"
+      - "BE"
+      - "BF"
+      - "BG"
+      - "BH"
+      - "BI"
+      - "BJ"
+      - "BM"
+      - "BN"
+      - "BO"
+      - "BQ"
+      - "BR"
+      - "BS"
+      - "BT"
+      - "BV"
+      - "BW"
+      - "BY"
+      - "BZ"
+      - "CA"
+      - "CC"
+      - "CD"
+      - "CF"
+      - "CG"
+      - "CH"
+      - "CI"
+      - "CK"
+      - "CL"
+      - "CM"
+      - "CN"
+      - "CO"
+      - "CR"
+      - "CS"
+      - "CU"
+      - "CV"
+      - "CW"
+      - "CX"
+      - "CY"
+      - "CZ"
+      - "DE"
+      - "DJ"
+      - "DK"
+      - "DM"
+      - "DO"
+      - "DZ"
+      - "EC"
+      - "EE"
+      - "EG"
+      - "EH"
+      - "ER"
+      - "ES"
+      - "ET"
+      - "FC"
+      - "FI"
+      - "FJ"
+      - "FK"
+      - "FM"
+      - "FO"
+      - "FR"
+      - "GA"
+      - "GD"
+      - "GE"
+      - "GF"
+      - "GG"
+      - "GH"
+      - "GI"
+      - "GL"
+      - "GM"
+      - "GN"
+      - "GP"
+      - "GQ"
+      - "GR"
+      - "GS"
+      - "GT"
+      - "GU"
+      - "GW"
+      - "GY"
+      - "HK"
+      - "HM"
+      - "HN"
+      - "HR"
+      - "HT"
+      - "HU"
+      - "ID"
+      - "IE"
+      - "IL"
+      - "IM"
+      - "IN"
+      - "IO"
+      - "IQ"
+      - "IR"
+      - "IS"
+      - "IT"
+      - "JE"
+      - "JM"
+      - "JO"
+      - "JP"
+      - "KE"
+      - "KG"
+      - "KH"
+      - "KI"
+      - "KM"
+      - "KN"
+      - "KP"
+      - "KR"
+      - "KW"
+      - "KY"
+      - "KZ"
+      - "LA"
+      - "LB"
+      - "LC"
+      - "LI"
+      - "LK"
+      - "LR"
+      - "LS"
+      - "LT"
+      - "LU"
+      - "LV"
+      - "LY"
+      - "MA"
+      - "MC"
+      - "MD"
+      - "ME"
+      - "MF"
+      - "MG"
+      - "MH"
+      - "MK"
+      - "ML"
+      - "MM"
+      - "MN"
+      - "MO"
+      - "MP"
+      - "MQ"
+      - "MR"
+      - "MS"
+      - "MT"
+      - "MU"
+      - "MV"
+      - "MW"
+      - "MX"
+      - "MY"
+      - "MZ"
+      - "NA"
+      - "NC"
+      - "NE"
+      - "NF"
+      - "NG"
+      - "NI"
+      - "NL"
+      - "NO"
+      - "NP"
+      - "NR"
+      - "NU"
+      - "NZ"
+      - "OM"
+      - "PA"
+      - "PE"
+      - "PF"
+      - "PG"
+      - "PH"
+      - "PK"
+      - "PL"
+      - "PM"
+      - "PN"
+      - "PR"
+      - "PS"
+      - "PT"
+      - "PW"
+      - "PY"
+      - "QA"
+      - "RE"
+      - "RO"
+      - "RS"
+      - "RU"
+      - "RW"
+      - "SA"
+      - "SB"
+      - "SC"
+      - "SD"
+      - "SE"
+      - "SG"
+      - "SH"
+      - "SI"
+      - "SJ"
+      - "SK"
+      - "SL"
+      - "SM"
+      - "SN"
+      - "SO"
+      - "SR"
+      - "SS"
+      - "ST"
+      - "SV"
+      - "SX"
+      - "SY"
+      - "SZ"
+      - "TC"
+      - "TD"
+      - "TF"
+      - "TG"
+      - "TH"
+      - "TJ"
+      - "TK"
+      - "TL"
+      - "TM"
+      - "TN"
+      - "TO"
+      - "TP"
+      - "TR"
+      - "TT"
+      - "TV"
+      - "TW"
+      - "TZ"
+      - "UA"
+      - "UG"
+      - "UM"
+      - "US"
+      - "UY"
+      - "UZ"
+      - "VA"
+      - "VC"
+      - "VE"
+      - "VG"
+      - "VI"
+      - "VN"
+      - "VU"
+      - "WF"
+      - "WS"
+      - "YE"
+      - "YT"
+      - "ZA"
+      - "ZM"
+      - "ZW"
     nonUKCountryType2:
       description: "Non-UK Country codes ISO Alpha-2 code"
       type: "string"
@@ -4018,7 +4028,7 @@ components:
           type: "object"
           properties:
             submissionDate:
-              $ref: "#/components/schemas/dateString1"
+              $ref: "#/components/schemas/dateStringObliged"
             trustName:
               $ref: "#/components/schemas/orgName56String1"
             identifiers:
@@ -4033,7 +4043,7 @@ components:
                   $ref: "#/components/schemas/urnString1"
               additionalProperties: false
             trustStartDate:
-              $ref: "#/components/schemas/dateString1"
+              $ref: "#/components/schemas/dateStringObliged"
             correspondence:
               type: "object"
               properties:
@@ -4046,7 +4056,7 @@ components:
                   description: "Braille Preference"
                   type: "boolean"
               required:
-                - "address"
+              - "address"
               additionalProperties: false
             entities:
               type: "object"
@@ -4063,26 +4073,26 @@ components:
                           $ref: "#/components/schemas/nameString1"
                         lastName:
                           $ref: "#/components/schemas/nameString1"
-                        dateofBirth:
-                          $ref: "#/components/schemas/dateString1"
+                        dateOfBirth:
+                          $ref: "#/components/schemas/monthYearString1"
                         nationality:
                           $ref: "#/components/schemas/countryType2"
-                        countryofResidence:
+                        countryOfResidence:
                           $ref: "#/components/schemas/countryType2"
                       required:
-                        - "firstName"
-                        - "lastName"
-                        - "dateofBirth"
+                      - "firstName"
+                      - "lastName"
+                      - "dateOfBirth"
                     leadTrusteeCompany:
                       type: "object"
                       properties:
                         orgName:
                           type: "string"
-                          pattern: "^[A-Za-z0-9 ,.()/&'-]{1,56}$"
+                          pattern: "^[A-Z0-9 ,.()/&'-]{1,105}$"
                         countryOfResidence:
                           $ref: "#/components/schemas/countryType2"
                       required:
-                        - "orgName"
+                      - "orgName"
                   additionalProperties: false
                 trustees:
                   type: "array"
@@ -4153,7 +4163,7 @@ components:
                       maxItems: 25
                       items:
                         $ref: "#/components/schemas/companyType2"
-                    trust:
+                    trusts:
                       type: "array"
                       minItems: 1
                       maxItems: 25
@@ -4204,18 +4214,19 @@ components:
                         properties:
                           otherBeneficiaryDescription:
                             $ref: "#/components/schemas/descriptionType"
-                          countryofResidence:
+                          countryOfResidence:
                             $ref: "#/components/schemas/countryType2"
               required:
-                - "leadTrustee"
+              - "leadTrustee"
           required:
-            - "trustName"
-            - "identifiers"
-            - "trustStartDate"
-            - "correspondence"
+          - "trustName"
+          - "identifiers"
+          - "trustStartDate"
+          - "correspondence"
+          - "entities"
           additionalProperties: false
       required:
-        - "success"
+      - "success"
       additionalProperties: false
     orgName56String:
       type: "string"
@@ -4244,7 +4255,7 @@ components:
         value:
           $ref: "#/components/schemas/monetaryType"
       required:
-        - "description"
+      - "description"
       additionalProperties: false
     otherAssetType1:
       type: "object"
@@ -4255,7 +4266,7 @@ components:
         value:
           $ref: "#/components/schemas/monetaryType1"
       required:
-        - "description"
+      - "description"
       additionalProperties: false
     otherAssetTypeVariation:
       type: "object"
@@ -4266,7 +4277,7 @@ components:
         value:
           $ref: "#/components/schemas/monetaryTypeVariation"
       required:
-        - "description"
+      - "description"
       additionalProperties: false
     otherType:
       type: "object"
@@ -4283,7 +4294,7 @@ components:
         countryOfResidence:
           $ref: "#/components/schemas/countryType"
       required:
-        - "description"
+      - "description"
       additionalProperties: false
     otherType1:
       type: "object"
@@ -4305,9 +4316,9 @@ components:
         countryOfResidence:
           $ref: "#/components/schemas/countryType1"
       required:
-        - "lineNo"
-        - "description"
-        - "entityStart"
+      - "lineNo"
+      - "description"
+      - "entityStart"
       additionalProperties: false
     otherTypeVariation:
       type: "object"
@@ -4332,8 +4343,8 @@ components:
         countryOfResidence:
           $ref: "#/components/schemas/countryTypeVariation"
       required:
-        - "description"
-        - "entityStart"
+      - "description"
+      - "entityStart"
       additionalProperties: false
     partnershipType:
       type: "object"
@@ -4346,7 +4357,7 @@ components:
         partnershipStart:
           $ref: "#/components/schemas/dateString"
       required:
-        - "description"
+      - "description"
       additionalProperties: false
     partnerShipType1:
       type: "object"
@@ -4359,7 +4370,7 @@ components:
         partnershipStart:
           $ref: "#/components/schemas/dateString1"
       required:
-        - "description"
+      - "description"
       additionalProperties: false
     partnershipTypeVariation:
       type: "object"
@@ -4372,7 +4383,7 @@ components:
         partnershipStart:
           $ref: "#/components/schemas/dateStringVariation"
       required:
-        - "description"
+      - "description"
       additionalProperties: false
     passportType:
       type: "object"
@@ -4385,9 +4396,9 @@ components:
         countryOfIssue:
           $ref: "#/components/schemas/countryType"
       required:
-        - "number"
-        - "expirationDate"
-        - "countryOfIssue"
+      - "number"
+      - "expirationDate"
+      - "countryOfIssue"
       additionalProperties: false
     passportType1:
       type: "object"
@@ -4400,9 +4411,9 @@ components:
         countryOfIssue:
           $ref: "#/components/schemas/countryType1"
       required:
-        - "number"
-        - "expirationDate"
-        - "countryOfIssue"
+      - "number"
+      - "expirationDate"
+      - "countryOfIssue"
       additionalProperties: false
     passportTypeVariation:
       type: "object"
@@ -4415,14 +4426,14 @@ components:
         countryOfIssue:
           $ref: "#/components/schemas/countryTypeVariation"
       required:
-        - "number"
-        - "expirationDate"
-        - "countryOfIssue"
+      - "number"
+      - "expirationDate"
+      - "countryOfIssue"
       additionalProperties: false
     personalRepresentativeTypeVariation:
       oneOf:
-        - $ref: "#/components/schemas/estatePerRepIndVariation"
-        - $ref: "#/components/schemas/estatePerRepOrgVariation"
+      - $ref: "#/components/schemas/estatePerRepIndVariation"
+      - $ref: "#/components/schemas/estatePerRepOrgVariation"
     phoneString:
       type: "string"
       pattern: "^\\+[0-9 ]{1,18}$|^[0-9 ]{1,19}$"
@@ -4487,8 +4498,8 @@ components:
               type: "string"
               pattern: "^[a-zA-Z0-9 ]{1,10}$"
           required:
-            - "utr"
-            - "name"
+          - "utr"
+          - "name"
           additionalProperties: false
         correspondence:
           type: "object"
@@ -4507,10 +4518,10 @@ components:
             braille:
               $ref: "#/components/schemas/checkElement"
           required:
-            - "abroadIndicator"
-            - "name"
-            - "address"
-            - "phoneNumber"
+          - "abroadIndicator"
+          - "name"
+          - "address"
+          - "phoneNumber"
           additionalProperties: false
         yearsReturns:
           $ref: "#/components/schemas/yearsReturnType"
@@ -4522,8 +4533,8 @@ components:
             address:
               $ref: "#/components/schemas/addressType"
           required:
-            - "name"
-            - "address"
+          - "name"
+          - "address"
           additionalProperties: false
         details:
           type: "object"
@@ -4546,13 +4557,13 @@ components:
                     \ million at the death of death"
                   type: "string"
                   enum:
-                    - "01"
-                    - "02"
-                    - "03"
-                    - "04"
+                  - "01"
+                  - "02"
+                  - "03"
+                  - "04"
               required:
-                - "entities"
-                - "periodTaxDues"
+              - "entities"
+              - "periodTaxDues"
               additionalProperties: false
             trust:
               type: "object"
@@ -4564,8 +4575,8 @@ components:
                 assets:
                   $ref: "#/components/schemas/assetsType"
               required:
-                - "details"
-                - "entities"
+              - "details"
+              - "entities"
               additionalProperties: false
           additionalProperties: false
         agentDetails:
@@ -4573,10 +4584,10 @@ components:
         submissionDate:
           $ref: "#/components/schemas/dateString"
       required:
-        - "correspondence"
-        - "declaration"
-        - "details"
-        - "submissionDate"
+      - "correspondence"
+      - "declaration"
+      - "details"
+      - "submissionDate"
       additionalProperties: false
     RegistrationSuccessResponse:
       description: "Comment describing your JSON Schema"
@@ -4585,134 +4596,14 @@ components:
         success:
           type: "object"
           properties:
-            responseHeader:
-              type: "object"
-              properties:
-                dfmcaReturnUserStatus:
-                  type: "string"
-                  enum:
-                    - "Processed"
-                    - "In Processing"
-                    - "Pending Closure"
-                    - "Closed"
-                    - "Suspended"
-                    - "Parked"
-                    - "Obsoleted "
-                formBundleNo:
-                  type: "string"
-                  pattern: "^[0-9]{12}$"
-              required:
-                - "dfmcaReturnUserStatus"
-                - "formBundleNo"
-              additionalProperties: false
-            trustOrEstateDisplay:
-              type: "object"
-              properties:
-                applicationType:
-                  description: "01-Trust,02-Estate"
-                  type: "string"
-                  enum:
-                    - "01"
-                    - "02"
-                matchData:
-                  description: "Possible options - UTR to be returned for Taxable\
-                    \ , URN for Non- Taxable , UTR and URN if Trust has converted\
-                    \ from Non-taxable to Taxable"
-                  type: "object"
-                  properties:
-                    utr:
-                      $ref: "#/components/schemas/utrString1"
-                    urn:
-                      $ref: "#/components/schemas/urnString1"
-                  additionalProperties: false
-                correspondence:
-                  type: "object"
-                  properties:
-                    abroadIndicator:
-                      type: "boolean"
-                    name:
-                      $ref: "#/components/schemas/corNameType1"
-                    address:
-                      $ref: "#/components/schemas/addressType1"
-                    phoneNumber:
-                      $ref: "#/components/schemas/phoneString1"
-                    welsh:
-                      $ref: "#/components/schemas/checkElement1"
-                    braille:
-                      $ref: "#/components/schemas/checkElement1"
-                  required:
-                    - "abroadIndicator"
-                    - "name"
-                    - "address"
-                    - "phoneNumber"
-                  additionalProperties: false
-                declaration:
-                  type: "object"
-                  properties:
-                    name:
-                      $ref: "#/components/schemas/nameType1"
-                    address:
-                      $ref: "#/components/schemas/addressType1"
-                  required:
-                    - "name"
-                    - "address"
-                  additionalProperties: false
-                details:
-                  type: "object"
-                  properties:
-                    trust:
-                      type: "object"
-                      properties:
-                        details:
-                          $ref: "#/components/schemas/trustDetailsType1"
-                        entities:
-                          $ref: "#/components/schemas/trustEntitiesType1"
-                        assets:
-                          $ref: "#/components/schemas/assetsType1"
-                      required:
-                        - "details"
-                        - "entities"
-                      additionalProperties: false
-                    estate:
-                      type: "object"
-                      properties:
-                        entities:
-                          $ref: "#/components/schemas/entitiesType1"
-                        administrationEndDate:
-                          $ref: "#/components/schemas/dateString1"
-                        periodTaxDues:
-                          description: "01-Total Income Tax and Capital Gains due\
-                            \ for the administration period more than £10,000, \r\n\
-                            02-Date of Death before 05 April 2016 and the sale of\
-                            \ estates assets by administrators is £225,000 in any\
-                            \ one tax year, \r\n03-Date of Death After 05 April 2016\
-                            \ and the sale of estates assets by administrators is\
-                            \ £250.00 in any one tax year, \r\n04-Estate worth more\
-                            \ than 2.5 million at the death of death"
-                          type: "string"
-                          enum:
-                            - ""
-                            - "01"
-                            - "02"
-                            - "03"
-                            - "04"
-                      required:
-                        - "entities"
-                        - "periodTaxDues"
-                      additionalProperties: false
-                  additionalProperties: false
-                submissionDate:
-                  $ref: "#/components/schemas/dateString1"
-              required:
-                - "applicationType"
-                - "matchData"
-                - "correspondence"
-                - "declaration"
-                - "details"
-              additionalProperties: false
+            trn:
+              type: "string"
+              pattern: "^[a-zA-Z0-9]{1,15}$"
           required:
-            - "responseHeader"
+          - "trn"
           additionalProperties: false
+      required:
+        - "success"
       additionalProperties: false
     responseSystemErrorType:
       type: "object"
@@ -4726,8 +4617,8 @@ components:
                 \ value will be 500."
               type: "string"
               enum:
-                - "400"
-                - "500"
+              - "400"
+              - "500"
             message:
               type: "string"
               minLength: 1
@@ -4738,12 +4629,12 @@ components:
               maxLength: 32
               pattern: "^[A-F0-9]{32}$"
           required:
-            - "code"
-            - "message"
-            - "logID"
+          - "code"
+          - "message"
+          - "logID"
           additionalProperties: false
       required:
-        - "error"
+      - "error"
       additionalProperties: false
     safeIdType1:
       type: "string"
@@ -4773,26 +4664,26 @@ components:
         shareClass:
           type: "string"
           enum:
-            - "Ordinary shares"
-            - "Non-voting shares"
-            - "Redeemable shares"
-            - "Preference shares"
-            - "Deferred ordinary shares"
-            - "Management shares"
-            - "Other classes of shares"
-            - "Voting shares"
-            - "Dividend shares"
-            - "Capital share"
-            - "Other"
+          - "Ordinary shares"
+          - "Non-voting shares"
+          - "Redeemable shares"
+          - "Preference shares"
+          - "Deferred ordinary shares"
+          - "Management shares"
+          - "Other classes of shares"
+          - "Voting shares"
+          - "Dividend shares"
+          - "Capital share"
+          - "Other"
         typeOfShare:
           type: "string"
           enum:
-            - "Quoted"
-            - "Unquoted"
+          - "Quoted"
+          - "Unquoted"
         value:
           $ref: "#/components/schemas/monetaryType"
       required:
-        - "orgName"
+      - "orgName"
       additionalProperties: false
     sharesType1:
       type: "object"
@@ -4807,26 +4698,26 @@ components:
         shareClass:
           type: "string"
           enum:
-            - "Ordinary shares"
-            - "Non-voting shares"
-            - "Redeemable shares"
-            - "Preference shares"
-            - "Deferred ordinary shares"
-            - "Management shares"
-            - "Other classes of shares"
-            - "Voting shares"
-            - "Dividend shares"
-            - "Capital share"
-            - "Other"
+          - "Ordinary shares"
+          - "Non-voting shares"
+          - "Redeemable shares"
+          - "Preference shares"
+          - "Deferred ordinary shares"
+          - "Management shares"
+          - "Other classes of shares"
+          - "Voting shares"
+          - "Dividend shares"
+          - "Capital share"
+          - "Other"
         typeOfShare:
           type: "string"
           enum:
-            - "Quoted"
-            - "Unquoted "
+          - "Quoted"
+          - "Unquoted "
         value:
           $ref: "#/components/schemas/monetaryType1"
       required:
-        - "orgName"
+      - "orgName"
       additionalProperties: false
     sharesTypeVariation:
       type: "object"
@@ -4841,26 +4732,26 @@ components:
         shareClass:
           type: "string"
           enum:
-            - "Ordinary shares"
-            - "Non-voting shares"
-            - "Redeemable shares"
-            - "Preference shares"
-            - "Deferred ordinary shares"
-            - "Management shares"
-            - "Other classes of shares"
-            - "Voting shares"
-            - "Dividend shares"
-            - "Capital share"
-            - "Other"
+          - "Ordinary shares"
+          - "Non-voting shares"
+          - "Redeemable shares"
+          - "Preference shares"
+          - "Deferred ordinary shares"
+          - "Management shares"
+          - "Other classes of shares"
+          - "Voting shares"
+          - "Dividend shares"
+          - "Capital share"
+          - "Other"
         typeOfShare:
           type: "string"
           enum:
-            - "Quoted"
-            - "Unquoted"
+          - "Quoted"
+          - "Unquoted"
         value:
           $ref: "#/components/schemas/monetaryTypeVariation"
       required:
-        - "orgName"
+      - "orgName"
       additionalProperties: false
     trustDetailsType:
       type: "object"
@@ -4897,7 +4788,7 @@ components:
                 preOffShore:
                   $ref: "#/components/schemas/countryType"
               required:
-                - "scottishLaw"
+              - "scottishLaw"
               additionalProperties: false
             nonUK:
               type: "object"
@@ -4911,37 +4802,37 @@ components:
                 trusteeStatus:
                   type: "string"
                   enum:
-                    - "Non Resident Domiciled"
-                    - "Non Resident Non Domiciled"
-                    - "Non Resident Cease Resident"
+                  - "Non Resident Domiciled"
+                  - "Non Resident Non Domiciled"
+                  - "Non Resident Cease Resident"
               required:
-                - "sch5atcgga92"
+              - "sch5atcgga92"
               additionalProperties: false
           additionalProperties: false
         typeOfTrust:
           type: "string"
           enum:
-            - "Will Trust or Intestacy Trust"
-            - "Deed of Variation Trust or Family Arrangement"
-            - "Inter vivos Settlement"
-            - "Employment Related"
-            - "Heritage Maintenance Fund"
-            - "Flat Management Company or Sinking Fund"
+          - "Will Trust or Intestacy Trust"
+          - "Deed of Variation Trust or Family Arrangement"
+          - "Inter vivos Settlement"
+          - "Employment Related"
+          - "Heritage Maintenance Fund"
+          - "Flat Management Company or Sinking Fund"
         deedOfVariation:
           type: "string"
           enum:
-            - "Previously there was only an absolute interest under the will"
-            - "Replaced the will trust"
-            - "Addition to the will trust"
+          - "Previously there was only an absolute interest under the will"
+          - "Replaced the will trust"
+          - "Addition to the will trust"
         interVivos:
           type: "boolean"
         efrbsStartDate:
           $ref: "#/components/schemas/dateString"
       required:
-        - "startDate"
-        - "trustTaxable"
-        - "expressTrust"
-        - "trustUKResident"
+      - "startDate"
+      - "trustTaxable"
+      - "expressTrust"
+      - "trustUKResident"
       additionalProperties: false
     trustDetailsType1:
       type: "object"
@@ -4977,7 +4868,7 @@ components:
                 preOffShore:
                   $ref: "#/components/schemas/countryType1"
               required:
-                - "scottishLaw"
+              - "scottishLaw"
               additionalProperties: false
             nonUK:
               type: "object"
@@ -4991,34 +4882,34 @@ components:
                 trusteeStatus:
                   type: "string"
                   enum:
-                    - "Non Resident Domiciled"
-                    - "Non Resident Non Domiciled"
-                    - "Non Resident Cease Resident"
+                  - "Non Resident Domiciled"
+                  - "Non Resident Non Domiciled"
+                  - "Non Resident Cease Resident"
               required:
-                - "sch5atcgga92"
+              - "sch5atcgga92"
               additionalProperties: false
           additionalProperties: false
         typeOfTrust:
           type: "string"
           enum:
-            - "Will Trust or Intestacy Trust"
-            - "Deed of Variation Trust or Family Arrangement"
-            - "Inter vivos Settlement"
-            - "Employment Related, Heritage Maintenance Fund"
-            - "Flat Management Company or Sinking Fund"
+          - "Will Trust or Intestacy Trust"
+          - "Deed of Variation Trust or Family Arrangement"
+          - "Inter vivos Settlement"
+          - "Employment Related, Heritage Maintenance Fund"
+          - "Flat Management Company or Sinking Fund"
         deedOfVariation:
           type: "string"
           enum:
-            - "Previously there was only an absolute interest under the will"
-            - "Replaced the will trust"
-            - "Addition to the will trust"
+          - "Previously there was only an absolute interest under the will"
+          - "Replaced the will trust"
+          - "Addition to the will trust"
         interVivos:
           type: "boolean"
         efrbsStartDate:
           $ref: "#/components/schemas/dateString1"
       required:
-        - "startDate"
-        - "trustUKResident"
+      - "startDate"
+      - "trustUKResident"
       additionalProperties: false
     trustDetailsTypeVariation:
       type: "object"
@@ -5054,7 +4945,7 @@ components:
                 preOffShore:
                   $ref: "#/components/schemas/countryTypeVariation"
               required:
-                - "scottishLaw"
+              - "scottishLaw"
               additionalProperties: false
             nonUK:
               type: "object"
@@ -5068,36 +4959,36 @@ components:
                 trusteeStatus:
                   type: "string"
                   enum:
-                    - "Non Resident Domiciled"
-                    - "Non Resident Non Domiciled"
-                    - "Non Resident Cease Resident"
+                  - "Non Resident Domiciled"
+                  - "Non Resident Non Domiciled"
+                  - "Non Resident Cease Resident"
               required:
-                - "sch5atcgga92"
+              - "sch5atcgga92"
               additionalProperties: false
           additionalProperties: false
         typeOfTrust:
           type: "string"
           enum:
-            - "Will Trust or Intestacy Trust"
-            - "Deed of Variation Trust or Family Arrangement"
-            - "Inter vivos Settlement"
-            - "Employment Related"
-            - "Heritage Maintenance Fund"
-            - "Flat Management Company or Sinking Fund"
+          - "Will Trust or Intestacy Trust"
+          - "Deed of Variation Trust or Family Arrangement"
+          - "Inter vivos Settlement"
+          - "Employment Related"
+          - "Heritage Maintenance Fund"
+          - "Flat Management Company or Sinking Fund"
         deedOfVariation:
           type: "string"
           enum:
-            - "Previously there was only an absolute interest under the will"
-            - "Replaced the will trust"
-            - "Addition to the will trust"
+          - "Previously there was only an absolute interest under the will"
+          - "Replaced the will trust"
+          - "Addition to the will trust"
         interVivos:
           type: "boolean"
         efrbsStartDate:
           $ref: "#/components/schemas/dateStringVariation"
       required:
-        - "startDate"
-        - "expressTrust"
-        - "trustUKResident"
+      - "startDate"
+      - "expressTrust"
+      - "trustUKResident"
       additionalProperties: false
     trusteeIndType:
       type: "object"
@@ -5117,7 +5008,7 @@ components:
         legallyIncapable:
           $ref: "#/components/schemas/checkElement"
       required:
-        - "name"
+      - "name"
       additionalProperties: false
     trusteeIndType1:
       type: "object"
@@ -5143,9 +5034,9 @@ components:
         legallyIncapable:
           $ref: "#/components/schemas/checkElement1"
       required:
-        - "lineNo"
-        - "name"
-        - "entityStart"
+      - "lineNo"
+      - "name"
+      - "entityStart"
       additionalProperties: false
     trusteeIndTypeVariation:
       type: "object"
@@ -5173,8 +5064,8 @@ components:
         legallyIncapable:
           $ref: "#/components/schemas/checkElementVariation"
       required:
-        - "name"
-        - "entityStart"
+      - "name"
+      - "entityStart"
       additionalProperties: false
     trusteeOrgType:
       type: "object"
@@ -5191,7 +5082,7 @@ components:
         countryOfResidence:
           $ref: "#/components/schemas/countryType"
       required:
-        - "name"
+      - "name"
       additionalProperties: false
     trusteeOrgType1:
       type: "object"
@@ -5214,9 +5105,9 @@ components:
         countryOfResidence:
           $ref: "#/components/schemas/countryType1"
       required:
-        - "lineNo"
-        - "name"
-        - "entityStart"
+      - "lineNo"
+      - "name"
+      - "entityStart"
       additionalProperties: false
     trusteeOrgTypeVariation:
       type: "object"
@@ -5241,8 +5132,8 @@ components:
         countryOfResidence:
           $ref: "#/components/schemas/countryTypeVariation"
       required:
-        - "name"
-        - "entityStart"
+      - "name"
+      - "entityStart"
       additionalProperties: false
     trusteesType1:
       type: "object"
@@ -5283,8 +5174,8 @@ components:
         leadTrustees:
           type: "object"
           oneOf:
-            - $ref: "#/components/schemas/leadTrusteeOrgType"
-            - $ref: "#/components/schemas/leadTrusteeIndType"
+          - $ref: "#/components/schemas/leadTrusteeOrgType"
+          - $ref: "#/components/schemas/leadTrusteeIndType"
         trustees:
           type: "array"
           minItems: 1
@@ -5314,7 +5205,7 @@ components:
                   legallyIncapable:
                     $ref: "#/components/schemas/checkElement"
                 required:
-                  - "name"
+                - "name"
                 additionalProperties: false
             protectorCompany:
               type: "array"
@@ -5330,7 +5221,7 @@ components:
                   countryOfResidence:
                     $ref: "#/components/schemas/countryType"
                 required:
-                  - "name"
+                - "name"
                 additionalProperties: false
           additionalProperties: false
         settlors:
@@ -5356,7 +5247,7 @@ components:
                   legallyIncapable:
                     $ref: "#/components/schemas/checkElement"
                 required:
-                  - "name"
+                - "name"
                 additionalProperties: false
             settlorCompany:
               type: "array"
@@ -5370,8 +5261,8 @@ components:
                   companyType:
                     type: "string"
                     enum:
-                      - "Trading"
-                      - "Investment"
+                    - "Trading"
+                    - "Investment"
                   companyTime:
                     type: "boolean"
                   identification:
@@ -5379,12 +5270,12 @@ components:
                   countryOfResidence:
                     $ref: "#/components/schemas/countryType"
                 required:
-                  - "name"
+                - "name"
                 additionalProperties: false
           additionalProperties: false
       required:
-        - "beneficiary"
-        - "leadTrustees"
+      - "beneficiary"
+      - "leadTrustees"
       additionalProperties: false
     trustEntitiesType1:
       type: "object"
@@ -5402,8 +5293,8 @@ components:
         leadTrustees:
           type: "object"
           oneOf:
-            - $ref: "#/components/schemas/leadTrusteeOrgType1"
-            - $ref: "#/components/schemas/leadTrusteesIndType1"
+          - $ref: "#/components/schemas/leadTrusteeOrgType1"
+          - $ref: "#/components/schemas/leadTrusteesIndType1"
         trustees:
           type: "array"
           minItems: 1
@@ -5439,9 +5330,9 @@ components:
                   legallyIncapable:
                     $ref: "#/components/schemas/checkElement1"
                 required:
-                  - "lineNo"
-                  - "name"
-                  - "entityStart"
+                - "lineNo"
+                - "name"
+                - "entityStart"
                 additionalProperties: false
             protectorCompany:
               type: "array"
@@ -5462,9 +5353,9 @@ components:
                   countryOfResidence:
                     $ref: "#/components/schemas/countryType1"
                 required:
-                  - "lineNo"
-                  - "name"
-                  - "entityStart"
+                - "lineNo"
+                - "name"
+                - "entityStart"
                 additionalProperties: false
           additionalProperties: false
         settlors:
@@ -5495,9 +5386,9 @@ components:
                   legallyIncapable:
                     $ref: "#/components/schemas/checkElement1"
                 required:
-                  - "lineNo"
-                  - "name"
-                  - "entityStart"
+                - "lineNo"
+                - "name"
+                - "entityStart"
                 additionalProperties: false
             settlorCompany:
               type: "array"
@@ -5514,8 +5405,8 @@ components:
                   companyType:
                     type: "string"
                     enum:
-                      - "Trading"
-                      - "Investment "
+                    - "Trading"
+                    - "Investment "
                   companyTime:
                     type: "boolean"
                   identification:
@@ -5525,14 +5416,14 @@ components:
                   countryOfResidence:
                     $ref: "#/components/schemas/countryType1"
                 required:
-                  - "lineNo"
-                  - "name"
-                  - "entityStart"
+                - "lineNo"
+                - "name"
+                - "entityStart"
                 additionalProperties: false
           additionalProperties: false
       required:
-        - "beneficiary"
-        - "leadTrustees"
+      - "beneficiary"
+      - "leadTrustees"
       additionalProperties: false
     trustEntitiesTypeVariation:
       type: "object"
@@ -5590,8 +5481,8 @@ components:
                   legallyIncapable:
                     $ref: "#/components/schemas/checkElementVariation"
                 required:
-                  - "name"
-                  - "entityStart"
+                - "name"
+                - "entityStart"
                 additionalProperties: false
             protectorCompany:
               type: "array"
@@ -5615,8 +5506,8 @@ components:
                   countryOfResidence:
                     $ref: "#/components/schemas/countryTypeVariation"
                 required:
-                  - "name"
-                  - "entityStart"
+                - "name"
+                - "entityStart"
                 additionalProperties: false
           additionalProperties: false
         settlors:
@@ -5650,8 +5541,8 @@ components:
                   legallyIncapable:
                     $ref: "#/components/schemas/checkElementVariation"
                 required:
-                  - "name"
-                  - "entityStart"
+                - "name"
+                - "entityStart"
                 additionalProperties: false
             settlorCompany:
               type: "array"
@@ -5669,8 +5560,8 @@ components:
                   companyType:
                     type: "string"
                     enum:
-                      - "Trading"
-                      - "Investment"
+                    - "Trading"
+                    - "Investment"
                   companyTime:
                     type: "boolean"
                   identification:
@@ -5682,13 +5573,13 @@ components:
                   countryOfResidence:
                     $ref: "#/components/schemas/countryTypeVariation"
                 required:
-                  - "name"
-                  - "entityStart"
+                - "name"
+                - "entityStart"
                 additionalProperties: false
           additionalProperties: false
       required:
-        - "beneficiary"
-        - "leadTrustees"
+      - "beneficiary"
+      - "leadTrustees"
       additionalProperties: false
     unidentifiedType:
       type: "object"
@@ -5701,7 +5592,7 @@ components:
         beneficiaryShareOfIncome:
           $ref: "#/components/schemas/shareofIncomeString"
       required:
-        - "description"
+      - "description"
       additionalProperties: false
     unidentifiedType1:
       type: "object"
@@ -5720,9 +5611,9 @@ components:
         entityStart:
           $ref: "#/components/schemas/dateString1"
       required:
-        - "lineNo"
-        - "description"
-        - "entityStart"
+      - "lineNo"
+      - "description"
+      - "entityStart"
       additionalProperties: false
     unidentifiedTypeVariation:
       type: "object"
@@ -5743,8 +5634,8 @@ components:
         entityEnd:
           $ref: "#/components/schemas/dateStringVariation"
       required:
-        - "description"
-        - "entityStart"
+      - "description"
+      - "entityStart"
       additionalProperties: false
     urnString:
       type: "string"
@@ -5794,10 +5685,10 @@ components:
             braille:
               $ref: "#/components/schemas/checkElementVariation"
           required:
-            - "abroadIndicator"
-            - "name"
-            - "address"
-            - "phoneNumber"
+          - "abroadIndicator"
+          - "name"
+          - "address"
+          - "phoneNumber"
           additionalProperties: false
         yearsReturns:
           $ref: "#/components/schemas/yearsReturnTypeVariation"
@@ -5809,8 +5700,8 @@ components:
             address:
               $ref: "#/components/schemas/addressTypeVariation"
           required:
-            - "name"
-            - "address"
+          - "name"
+          - "address"
           additionalProperties: false
         details:
           type: "object"
@@ -5832,13 +5723,13 @@ components:
                     \ million at the death of death"
                   type: "string"
                   enum:
-                    - "01"
-                    - "02"
-                    - "03"
-                    - "04"
+                  - "01"
+                  - "02"
+                  - "03"
+                  - "04"
               required:
-                - "entities"
-                - "periodTaxDues"
+              - "entities"
+              - "periodTaxDues"
               additionalProperties: false
             trust:
               type: "object"
@@ -5850,8 +5741,8 @@ components:
                 assets:
                   $ref: "#/components/schemas/assetsTypeVariation"
               required:
-                - "details"
-                - "entities"
+              - "details"
+              - "entities"
               additionalProperties: false
         submissionDate:
           $ref: "#/components/schemas/dateStringVariation"
@@ -5866,15 +5757,15 @@ components:
               type: "string"
               pattern: "^[a-zA-Z0-9]{12}$"
           required:
-            - "formBundleNo"
+          - "formBundleNo"
           additionalProperties: false
       required:
-        - "matchData"
-        - "correspondence"
-        - "declaration"
-        - "details"
-        - "submissionDate"
-        - "reqHeader"
+      - "matchData"
+      - "correspondence"
+      - "declaration"
+      - "details"
+      - "submissionDate"
+      - "reqHeader"
       additionalProperties: false
     VariationSuccessResponse:
       description: "Comment describing your JSON Schema"
@@ -5887,10 +5778,10 @@ components:
               type: "string"
               pattern: "^[a-zA-Z0-9]{1,15}$"
           required:
-            - "tvn"
+          - "tvn"
           additionalProperties: false
       required:
-        - "success"
+      - "success"
       additionalProperties: false
     willType:
       type: "object"
@@ -5908,7 +5799,7 @@ components:
         nationality:
           $ref: "#/components/schemas/countryType"
       required:
-        - "name"
+      - "name"
       additionalProperties: false
     willType1:
       type: "object"
@@ -5932,9 +5823,9 @@ components:
         nationality:
           $ref: "#/components/schemas/countryType1"
       required:
-        - "lineNo"
-        - "name"
-        - "entityStart"
+      - "lineNo"
+      - "name"
+      - "entityStart"
       additionalProperties: false
     willTypeEstate:
       type: "object"
@@ -5948,8 +5839,8 @@ components:
         identification:
           $ref: "#/components/schemas/identificationType"
       required:
-        - "name"
-        - "dateOfDeath"
+      - "name"
+      - "dateOfDeath"
       additionalProperties: false
     willTypeEstate1:
       type: "object"
@@ -5969,10 +5860,10 @@ components:
         entityStart:
           $ref: "#/components/schemas/dateString1"
       required:
-        - "lineNo"
-        - "name"
-        - "dateOfDeath"
-        - "entityStart"
+      - "lineNo"
+      - "name"
+      - "dateOfDeath"
+      - "entityStart"
       additionalProperties: false
     willTypeEstateVariation:
       type: "object"
@@ -5994,9 +5885,9 @@ components:
         entityEnd:
           $ref: "#/components/schemas/dateStringVariation"
       required:
-        - "name"
-        - "dateOfDeath"
-        - "entityStart"
+      - "name"
+      - "dateOfDeath"
+      - "entityStart"
       additionalProperties: false
     willTypeVariation:
       type: "object"
@@ -6022,8 +5913,8 @@ components:
         nationality:
           $ref: "#/components/schemas/countryTypeVariation"
       required:
-        - "name"
-        - "entityStart"
+      - "name"
+      - "entityStart"
       additionalProperties: false
     yearReturnType:
       type: "object"
@@ -6034,8 +5925,8 @@ components:
         taxConsequence:
           type: "boolean"
       required:
-        - "taxReturnYear"
-        - "taxConsequence"
+      - "taxReturnYear"
+      - "taxConsequence"
       additionalProperties: false
     yearReturnTypeVariation:
       type: "object"
@@ -6046,8 +5937,8 @@ components:
         taxConsequence:
           type: "boolean"
       required:
-        - "taxReturnYear"
-        - "taxConsequence"
+      - "taxReturnYear"
+      - "taxConsequence"
       additionalProperties: false
     yearsReturnType:
       type: "object"
@@ -6086,19 +5977,19 @@ components:
         error:
           processingDate: "2001-12-17T09:30:47.0"
           errorId: "004"
-          text: "Duplicate submission acknowledgment reference"
+          text: "Duplicate submission acknowledgement reference"
     "422ValidationErrorsRegistration":
       value:
         error:
           processingDate: "2001-12-17T09:30:47.0"
           errorId: "004"
-          text: "Duplicate submission acknowledgment reference"
+          text: "Duplicate submission acknowledgement reference"
     "422ValidationErrorsVariation":
       value:
         error:
           processingDate: "2001-12-17T09:30:47.0"
           errorId: "004"
-          text: "Duplicate submission acknowledgment reference"
+          text: "Duplicate submission acknowledgement reference"
     AgentSuccessResponse:
       value:
         success:
@@ -6180,6 +6071,33 @@ components:
                   efrbsStartDate: "2001-01-01"
                 entities:
                   naturalPerson:
+                  - lineNo: "1"
+                    bpMatchStatus: "01"
+                    name:
+                      firstName: "Nicola"
+                      middleName: "Andrey"
+                      lastName: "Jackson"
+                    dateOfBirth: "1970-02-28"
+                    identification:
+                      nino: "AA000000"
+                      passport:
+                        number: "0"
+                        expirationDate: "1520-02-29"
+                        countryOfIssue: "GB"
+                      address:
+                        line1: "1344 Army Road"
+                        line2: "Suite 111"
+                        line3: "Telford"
+                        line4: "ONTARIO"
+                        postCode: "TF1 5DR"
+                        country: "GB"
+                      safeId: "2222200000000"
+                    entityStart: "1520-02-29"
+                    countryOfResidence: "GB"
+                    nationality: "GB"
+                    legallyIncapable: true
+                  beneficiary:
+                    individualDetails:
                     - lineNo: "1"
                       bpMatchStatus: "01"
                       name:
@@ -6187,144 +6105,16 @@ components:
                         middleName: "Andrey"
                         lastName: "Jackson"
                       dateOfBirth: "1970-02-28"
+                      vulnerableBeneficiary: true
+                      beneficiaryType: "Director"
+                      beneficiaryDiscretion: true
+                      beneficiaryShareOfIncome: "0"
                       identification:
                         nino: "AA000000"
                         passport:
-                          number: "0"
-                          expirationDate: "1520-02-29"
+                          number: "1"
+                          expirationDate: "2001-01-01"
                           countryOfIssue: "GB"
-                        address:
-                          line1: "1344 Army Road"
-                          line2: "Suite 111"
-                          line3: "Telford"
-                          line4: "ONTARIO"
-                          postCode: "TF1 5DR"
-                          country: "GB"
-                        safeId: "2222200000000"
-                      entityStart: "1520-02-29"
-                      countryOfResidence: "GB"
-                      nationality: "GB"
-                      legallyIncapable: true
-                  beneficiary:
-                    individualDetails:
-                      - lineNo: "1"
-                        bpMatchStatus: "01"
-                        name:
-                          firstName: "Nicola"
-                          middleName: "Andrey"
-                          lastName: "Jackson"
-                        dateOfBirth: "1970-02-28"
-                        vulnerableBeneficiary: true
-                        beneficiaryType: "Director"
-                        beneficiaryDiscretion: true
-                        beneficiaryShareOfIncome: "0"
-                        identification:
-                          nino: "AA000000"
-                          passport:
-                            number: "1"
-                            expirationDate: "2001-01-01"
-                            countryOfIssue: "GB"
-                          address:
-                            line1: "1344 Army Road"
-                            line2: "Suite 111"
-                            line3: "Telford"
-                            line4: "Telford"
-                            postCode: "TF1 5DR"
-                            country: "GB"
-                          safeId: "2222200000000"
-                        entityStart: "2017-02-28"
-                        countryOfResidence: "GB"
-                        nationality: "GB"
-                        legallyIncapable: true
-                    company:
-                      - lineNo: "1"
-                        bpMatchStatus: "01"
-                        organisationName: " "
-                        beneficiaryDiscretion: true
-                        beneficiaryShareOfIncome: "0"
-                        identification:
-                          utr: "0000000000"
-                          address:
-                            line1: "1344 Army Road"
-                            line2: "Suite 111"
-                            line3: "Telford"
-                            line4: "Telford"
-                            postCode: "TF1 5DR"
-                            country: "GB"
-                          safeId: "2222200000000"
-                        entityStart: "2017-02-28"
-                        countryOfResidence: "GB"
-                    trust:
-                      - lineNo: "1"
-                        bpMatchStatus: "01"
-                        organisationName: "Nelson Ltd"
-                        beneficiaryDiscretion: true
-                        beneficiaryShareOfIncome: "0"
-                        identification:
-                          utr: "0000000000"
-                          address:
-                            line1: "1344 Army Road"
-                            line2: "Suite 111"
-                            line3: "Telford"
-                            line4: "Telford"
-                            postCode: "TF1 5DR"
-                            country: "GB"
-                          safeId: "2222200000000"
-                        entityStart: "1520-02-29"
-                        countryOfResidence: "GB"
-                    charity:
-                      - lineNo: "1"
-                        bpMatchStatus: "01"
-                        organisationName: " "
-                        beneficiaryDiscretion: true
-                        beneficiaryShareOfIncome: "0"
-                        identification:
-                          utr: "0000000000"
-                          address:
-                            line1: "1344 Army Road"
-                            line2: "Suite 111"
-                            line3: "Telford"
-                            line4: "Telford"
-                            postCode: "TF1 5DR"
-                            country: "GB"
-                          safeId: "2222200000000"
-                        entityStart: "1520-02-29"
-                        countryOfResidence: "AD"
-                    unidentified:
-                      - lineNo: "1"
-                        bpMatchStatus: "01"
-                        description: "Reserve money"
-                        beneficiaryDiscretion: true
-                        beneficiaryShareOfIncome: "0"
-                        entityStart: "2017-02-28"
-                    large:
-                      - lineNo: "1"
-                        bpMatchStatus: "01"
-                        organisationName: "Nelson Ltd"
-                        description: "This is a must"
-                        description1: "This is a optional"
-                        description2: "This is a optional"
-                        description3: "This is a optional"
-                        description4: "This is a optional"
-                        numberOfBeneficiary: "0"
-                        identification:
-                          utr: "0000000000"
-                          address:
-                            line1: "1344 Army Road"
-                            line2: "Suite 111"
-                            line3: "Telford"
-                            line4: "Telford"
-                            postCode: "TF1 5DR"
-                            country: "GB"
-                          safeId: "2222200000000"
-                        beneficiaryDiscretion: true
-                        beneficiaryShareOfIncome: "0"
-                        entityStart: "2017-02-28"
-                        countryOfResidence: "GB"
-                    other:
-                      - lineNo: "1"
-                        bpMatchStatus: "01"
-                        description: " "
                         address:
                           line1: "1344 Army Road"
                           line2: "Suite 111"
@@ -6332,10 +6122,111 @@ components:
                           line4: "Telford"
                           postCode: "TF1 5DR"
                           country: "GB"
-                        beneficiaryDiscretion: true
-                        beneficiaryShareOfIncome: "0"
-                        entityStart: "2017-02-28"
-                        countryOfResidence: "GB"
+                        safeId: "2222200000000"
+                      entityStart: "2017-02-28"
+                      countryOfResidence: "GB"
+                      nationality: "GB"
+                      legallyIncapable: true
+                    company:
+                    - lineNo: "1"
+                      bpMatchStatus: "01"
+                      organisationName: " "
+                      beneficiaryDiscretion: true
+                      beneficiaryShareOfIncome: "0"
+                      identification:
+                        utr: "0000000000"
+                        address:
+                          line1: "1344 Army Road"
+                          line2: "Suite 111"
+                          line3: "Telford"
+                          line4: "Telford"
+                          postCode: "TF1 5DR"
+                          country: "GB"
+                        safeId: "2222200000000"
+                      entityStart: "2017-02-28"
+                      countryOfResidence: "GB"
+                    trusts:
+                    - lineNo: "1"
+                      bpMatchStatus: "01"
+                      organisationName: "Nelson Ltd"
+                      beneficiaryDiscretion: true
+                      beneficiaryShareOfIncome: "0"
+                      identification:
+                        utr: "0000000000"
+                        address:
+                          line1: "1344 Army Road"
+                          line2: "Suite 111"
+                          line3: "Telford"
+                          line4: "Telford"
+                          postCode: "TF1 5DR"
+                          country: "GB"
+                        safeId: "2222200000000"
+                      entityStart: "1520-02-29"
+                      countryOfResidence: "GB"
+                    charity:
+                    - lineNo: "1"
+                      bpMatchStatus: "01"
+                      organisationName: " "
+                      beneficiaryDiscretion: true
+                      beneficiaryShareOfIncome: "0"
+                      identification:
+                        utr: "0000000000"
+                        address:
+                          line1: "1344 Army Road"
+                          line2: "Suite 111"
+                          line3: "Telford"
+                          line4: "Telford"
+                          postCode: "TF1 5DR"
+                          country: "GB"
+                        safeId: "2222200000000"
+                      entityStart: "1520-02-29"
+                      countryOfResidence: "AD"
+                    unidentified:
+                    - lineNo: "1"
+                      bpMatchStatus: "01"
+                      description: "Reserve money"
+                      beneficiaryDiscretion: true
+                      beneficiaryShareOfIncome: "0"
+                      entityStart: "2017-02-28"
+                    large:
+                    - lineNo: "1"
+                      bpMatchStatus: "01"
+                      organisationName: "Nelson Ltd"
+                      description: "This is a must"
+                      description1: "This is a optional"
+                      description2: "This is a optional"
+                      description3: "This is a optional"
+                      description4: "This is a optional"
+                      numberOfBeneficiary: "0"
+                      identification:
+                        utr: "0000000000"
+                        address:
+                          line1: "1344 Army Road"
+                          line2: "Suite 111"
+                          line3: "Telford"
+                          line4: "Telford"
+                          postCode: "TF1 5DR"
+                          country: "GB"
+                        safeId: "2222200000000"
+                      beneficiaryDiscretion: true
+                      beneficiaryShareOfIncome: "0"
+                      entityStart: "2017-02-28"
+                      countryOfResidence: "GB"
+                    other:
+                    - lineNo: "1"
+                      bpMatchStatus: "01"
+                      description: " "
+                      address:
+                        line1: "1344 Army Road"
+                        line2: "Suite 111"
+                        line3: "Telford"
+                        line4: "Telford"
+                        postCode: "TF1 5DR"
+                        country: "GB"
+                      beneficiaryDiscretion: true
+                      beneficiaryShareOfIncome: "0"
+                      entityStart: "2017-02-28"
+                      countryOfResidence: "GB"
                   deceased:
                     lineNo: "1"
                     bpMatchStatus: "01"
@@ -6391,198 +6282,198 @@ components:
                     legallyIncapable: true
                     countryOfResidence: "AD"
                   trustees:
-                    - trusteeInd:
-                        lineNo: "1"
-                        bpMatchStatus: "01"
-                        name:
-                          firstName: "James"
-                          middleName: "Kingsley"
-                          lastName: "Bond"
-                        dateOfBirth: "1965-02-28"
-                        identification:
-                          nino: "AA000000"
-                          passport:
-                            number: "0"
-                            expirationDate: "1520-02-29"
-                            countryOfIssue: "GB"
-                          address:
-                            line1: "1344 Army Road"
-                            line2: "Suite 111"
-                            line3: "Telford"
-                            line4: "Telford"
-                            postCode: "TF1 5DR"
-                            country: "GB"
-                          safeId: "2222200000000"
-                        phoneNumber: "+447456788112"
-                        entityStart: "2017-02-28"
-                        countryOfResidence: "GB"
-                        nationality: "GB"
-                        legallyIncapable: true
-                      trusteeOrg:
-                        lineNo: "1"
-                        bpMatchStatus: "01"
-                        name:
-                          firstName: " "
-                          middleName: " "
-                          lastName: " "
-                        phoneNumber: "+447456788112"
-                        email: "jdoe@example.com"
-                        identification:
-                          utr: "0000000000"
-                          address:
-                            line1: "1344 Army Road"
-                            line2: "Suite 111"
-                            line3: "Telford"
-                            line4: "Telford"
-                            postCode: "TF1 5DR"
-                            country: "GB"
-                          safeId: "2222200000000"
-                        entityStart: "2017-02-28"
-                        countryOfResidence: "GB"
+                  - trusteeInd:
+                      lineNo: "1"
+                      bpMatchStatus: "01"
+                      name:
+                        firstName: "James"
+                        middleName: "Kingsley"
+                        lastName: "Bond"
+                      dateOfBirth: "1965-02-28"
+                      identification:
+                        nino: "AA000000"
+                        passport:
+                          number: "0"
+                          expirationDate: "1520-02-29"
+                          countryOfIssue: "GB"
+                        address:
+                          line1: "1344 Army Road"
+                          line2: "Suite 111"
+                          line3: "Telford"
+                          line4: "Telford"
+                          postCode: "TF1 5DR"
+                          country: "GB"
+                        safeId: "2222200000000"
+                      phoneNumber: "+447456788112"
+                      entityStart: "2017-02-28"
+                      countryOfResidence: "GB"
+                      nationality: "GB"
+                      legallyIncapable: true
+                    trusteeOrg:
+                      lineNo: "1"
+                      bpMatchStatus: "01"
+                      name:
+                        firstName: " "
+                        middleName: " "
+                        lastName: " "
+                      phoneNumber: "+447456788112"
+                      email: "jdoe@example.com"
+                      identification:
+                        utr: "0000000000"
+                        address:
+                          line1: "1344 Army Road"
+                          line2: "Suite 111"
+                          line3: "Telford"
+                          line4: "Telford"
+                          postCode: "TF1 5DR"
+                          country: "GB"
+                        safeId: "2222200000000"
+                      entityStart: "2017-02-28"
+                      countryOfResidence: "GB"
                   protectors:
                     protectors:
-                      - lineNo: "1"
-                        bpMatchStatus: "01"
-                        name:
-                          firstName: "James"
-                          middleName: "Kingsley"
-                          lastName: "Bond"
-                        dateOfBirth: "1520-02-29"
-                        identification:
-                          nino: "AA000000"
-                          passport:
-                            number: "0"
-                            expirationDate: "2017-02-28"
-                            countryOfIssue: "GB"
-                          address:
-                            line1: "1344 Army Road"
-                            line2: "Suite 111"
-                            line3: "Telford"
-                            line4: "Telford"
-                            postCode: "TF1 5DR"
-                            country: "GB"
-                          safeId: "2222200000000"
-                        entityStart: "1520-02-29"
-                        countryOfResidence: "GB"
-                        nationality: "GB"
-                        legallyIncapable: true
+                    - lineNo: "1"
+                      bpMatchStatus: "01"
+                      name:
+                        firstName: "James"
+                        middleName: "Kingsley"
+                        lastName: "Bond"
+                      dateOfBirth: "1520-02-29"
+                      identification:
+                        nino: "AA000000"
+                        passport:
+                          number: "0"
+                          expirationDate: "2017-02-28"
+                          countryOfIssue: "GB"
+                        address:
+                          line1: "1344 Army Road"
+                          line2: "Suite 111"
+                          line3: "Telford"
+                          line4: "Telford"
+                          postCode: "TF1 5DR"
+                          country: "GB"
+                        safeId: "2222200000000"
+                      entityStart: "1520-02-29"
+                      countryOfResidence: "GB"
+                      nationality: "GB"
+                      legallyIncapable: true
                     protectorCompany:
-                      - lineNo: "1"
-                        bpMatchStatus: "01"
-                        name:
-                          firstName: "James"
-                          middleName: "Kingsley"
-                          lastName: "Bond"
-                        identification:
-                          utr: "0000000000"
-                          address:
-                            line1: "1344 Army Road"
-                            line2: "Suite 111"
-                            line3: "Telford"
-                            line4: "Telford"
-                            postCode: "TF1 5DR"
-                            country: "GB"
-                          safeId: "2222200000000"
-                        entityStart: "2017-02-28"
-                        countryOfResidence: "GB"
+                    - lineNo: "1"
+                      bpMatchStatus: "01"
+                      name:
+                        firstName: "James"
+                        middleName: "Kingsley"
+                        lastName: "Bond"
+                      identification:
+                        utr: "0000000000"
+                        address:
+                          line1: "1344 Army Road"
+                          line2: "Suite 111"
+                          line3: "Telford"
+                          line4: "Telford"
+                          postCode: "TF1 5DR"
+                          country: "GB"
+                        safeId: "2222200000000"
+                      entityStart: "2017-02-28"
+                      countryOfResidence: "GB"
                   settlors:
                     settlor:
-                      - lineNo: "1"
-                        bpMatchStatus: "01"
-                        name:
-                          firstName: "James"
-                          middleName: "Kingsley"
-                          lastName: "Bond"
-                        dateOfBirth: "1965-02-28"
-                        identification:
-                          nino: "AA000000"
-                          passport:
-                            number: "0"
-                            expirationDate: "1520-02-29"
-                            countryOfIssue: "GB"
-                          address:
-                            line1: "1344 Army Road"
-                            line2: "Suite 111"
-                            line3: "Telford"
-                            line4: "Telford"
-                            postCode: "TF1 5DR"
-                            country: "GB"
-                          safeId: "2222200000000"
-                        entityStart: "1520-02-29"
-                        countryOfResidence: "GB"
-                        nationality: "GB"
-                        legallyIncapable: true
+                    - lineNo: "1"
+                      bpMatchStatus: "01"
+                      name:
+                        firstName: "James"
+                        middleName: "Kingsley"
+                        lastName: "Bond"
+                      dateOfBirth: "1965-02-28"
+                      identification:
+                        nino: "AA000000"
+                        passport:
+                          number: "0"
+                          expirationDate: "1520-02-29"
+                          countryOfIssue: "GB"
+                        address:
+                          line1: "1344 Army Road"
+                          line2: "Suite 111"
+                          line3: "Telford"
+                          line4: "Telford"
+                          postCode: "TF1 5DR"
+                          country: "GB"
+                        safeId: "2222200000000"
+                      entityStart: "1520-02-29"
+                      countryOfResidence: "GB"
+                      nationality: "GB"
+                      legallyIncapable: true
                     settlorCompany:
-                      - lineNo: "1"
-                        bpMatchStatus: "01"
-                        name: "Completors Limited"
-                        companyType: "Trading"
-                        companyTime: true
-                        identification:
-                          utr: "0000000000"
-                          address:
-                            line1: "1344 Army Road"
-                            line2: "Suite 111"
-                            line3: "Telford"
-                            line4: "Telford"
-                            postCode: "TF1 5DR"
-                            country: "GB"
-                          safeId: "2222200000000"
-                        entityStart: "2017-02-28"
-                        countryOfResidence: "GB"
+                    - lineNo: "1"
+                      bpMatchStatus: "01"
+                      name: "Completors Limited"
+                      companyType: "Trading"
+                      companyTime: true
+                      identification:
+                        utr: "0000000000"
+                        address:
+                          line1: "1344 Army Road"
+                          line2: "Suite 111"
+                          line3: "Telford"
+                          line4: "Telford"
+                          postCode: "TF1 5DR"
+                          country: "GB"
+                        safeId: "2222200000000"
+                      entityStart: "2017-02-28"
+                      countryOfResidence: "GB"
                 assets:
                   monetary:
-                    - assetMonetaryAmount: 0
+                  - assetMonetaryAmount: 0
                   propertyOrLand:
-                    - buildingLandName: "Tokyo Campus"
-                      address:
-                        line1: "10 Enderson Road"
-                        line2: "Cheapside"
-                        line3: "Riverside"
-                        line4: "Boston"
-                        postCode: "SN8 4DD"
-                        country: "GB"
-                      valueFull: 1892090
-                      valuePrevious: 1699000
+                  - buildingLandName: "Tokyo Campus"
+                    address:
+                      line1: "10 Enderson Road"
+                      line2: "Cheapside"
+                      line3: "Riverside"
+                      line4: "Boston"
+                      postCode: "SN8 4DD"
+                      country: "GB"
+                    valueFull: 1892090
+                    valuePrevious: 1699000
                   shares:
-                    - numberOfShares: "0"
-                      orgName: "Smart Estates"
-                      utr: "2134514321"
-                      shareClass: "Ordinary shares"
-                      typeOfShare: "Quoted"
-                      value: 9891828
+                  - numberOfShares: "0"
+                    orgName: "Smart Estates"
+                    utr: "2134514321"
+                    shareClass: "Ordinary shares"
+                    typeOfShare: "Quoted"
+                    value: 9891828
                   business:
-                    - orgName: "Lone Wolf Ltd"
-                      utr: "2134514321"
-                      businessDescription: "Travel Business"
-                      address:
-                        line1: "Suite 10"
-                        line2: "Wealthy Arena"
-                        line3: "Trafagar Square"
-                        line4: "London"
-                        postCode: "SE2 2HB"
-                        country: "GB"
-                      businessValue: 0
+                  - orgName: "Lone Wolf Ltd"
+                    utr: "2134514321"
+                    businessDescription: "Travel Business"
+                    address:
+                      line1: "Suite 10"
+                      line2: "Wealthy Arena"
+                      line3: "Trafagar Square"
+                      line4: "London"
+                      postCode: "SE2 2HB"
+                      country: "GB"
+                    businessValue: 0
                   partnerShip:
-                    - utr: "2134514321"
-                      description: "Real Estates partnership"
-                      partnershipStart: "2010-02-28"
+                  - utr: "2134514321"
+                    description: "Real Estates partnership"
+                    partnershipStart: "2010-02-28"
                   other:
-                    - description: "Jewelries"
-                      value: 781720
+                  - description: "Jewelries"
+                    value: 781720
                   nonEEABusiness:
-                    - lineNo: "1"
-                      orgName: "ABC Ltd"
-                      address:
-                        line1: "Line 1 address"
-                        line2: "Line 2 address"
-                        line3: "Line 3 address"
-                        line4: "Line 4 address"
-                        postCode: "TF3 4ER"
-                        country: "GB"
-                      govLawCountry: "GB"
-                      startDate: "2020-02-20"
-                      endDate: "2020-12-20"
+                  - lineNo: "1"
+                    orgName: "ABC Ltd"
+                    address:
+                      line1: "Line 1 address"
+                      line2: "Line 2 address"
+                      line3: "Line 3 address"
+                      line4: "Line 4 address"
+                      postCode: "TF3 4ER"
+                      country: "GB"
+                    govLawCountry: "GB"
+                    startDate: "2020-02-20"
+                    endDate: "2020-12-20"
               estate:
                 entities:
                   deceased:
@@ -6656,34 +6547,34 @@ components:
                 orgName: "A"
                 countryOfResidence: "PAKISTAN"
             trustees:
-              - trusteeIndividual:
-                  firstName: "A"
-                  middleName: "A"
-                  lastName: "A"
-                  dateOfBirth: "08/1957"
-                  nationality: "NEW CALEDONIA"
-                  countryOfResidence: "SWITZERLAND"
-              - trusteeCompany:
-                  name: "A"
-                  countryOfResidence: "WEST SAHARA"
+            - trusteeIndividual:
+                firstName: "A"
+                middleName: "A"
+                lastName: "A"
+                dateOfBirth: "08/1957"
+                nationality: "NEW CALEDONIA"
+                countryOfResidence: "SWITZERLAND"
+            - trusteeCompany:
+                name: "A"
+                countryOfResidence: "WEST SAHARA"
             naturalPerson:
+            - firstName: "A"
+              middleName: "A"
+              lastName: "A"
+              dateOfBirth: "08/1957"
+              nationality: "TURKEY"
+              countryOfResidence: "UTD.ARAB EMIR."
+            settlors:
+              settlorIndividual:
               - firstName: "A"
                 middleName: "A"
                 lastName: "A"
                 dateOfBirth: "08/1957"
-                nationality: "TURKEY"
+                nationality: "HEARD/MCDON.ISL"
                 countryOfResidence: "UTD.ARAB EMIR."
-            settlors:
-              settlorIndividual:
-                - firstName: "A"
-                  middleName: "A"
-                  lastName: "A"
-                  dateOfBirth: "08/1957"
-                  nationality: "HEARD/MCDON.ISL"
-                  countryOfResidence: "UTD.ARAB EMIR."
               settlorCompany:
-                - name: "A"
-                  countryOfResidence: "CHINA"
+              - name: "A"
+                countryOfResidence: "CHINA"
               deceased:
                 firstName: "A"
                 middleName: "A"
@@ -6693,45 +6584,45 @@ components:
                 countryOfResidence: "MAURETANIA"
             protectors:
               protectorIndividual:
-                - firstName: "A"
-                  middleName: "A"
-                  lastName: "A"
-                  dateOfBirth: "08/1957"
-                  nationality: "FINLAND"
-                  countryOfResidence: "LEBANON"
+              - firstName: "A"
+                middleName: "A"
+                lastName: "A"
+                dateOfBirth: "08/1957"
+                nationality: "FINLAND"
+                countryOfResidence: "LEBANON"
               protectorCompany:
-                - name: "A"
-                  countryOfResidence: "SINT MAARTEN"
+              - name: "A"
+                countryOfResidence: "SINT MAARTEN"
             beneficiary:
               individual:
-                - firstName: "A"
-                  middleName: "A"
-                  lastName: "A"
-                  dateOfBirth: "08/1957"
-                  nationality: "VIETNAM"
-                  countryOfResidence: "ST KITTS&NEVIS"
+              - firstName: "A"
+                middleName: "A"
+                lastName: "A"
+                dateOfBirth: "08/1957"
+                nationality: "VIETNAM"
+                countryOfResidence: "ST KITTS&NEVIS"
               company:
-                - name: "A"
-                  countryOfResidence: "PAP. NEW GUINEA"
-              trust:
-                - name: "A"
-                  countryOfResidence: "BOUVET ISLANDS"
+              - name: "A"
+                countryOfResidence: "PAP. NEW GUINEA"
+              trusts:
+              - name: "A"
+                countryOfResidence: "BOUVET ISLANDS"
               charity:
-                - name: "A"
-                  countryOfResidence: "GIBRALTAR"
+              - name: "A"
+                countryOfResidence: "GIBRALTAR"
               unidentified:
-                - beneficiaryDescription: "A"
+              - beneficiaryDescription: "A"
               large:
-                - beneficiaryDescription: "A"
-                  beneficiaryDescription1: "A"
-                  beneficiaryDescription2: "A"
-                  beneficiaryDescription3: "A"
-                  beneficiaryDescription4: "A"
-                  companyDetails:
-                    name: "A"
-                    countryOfResidence: "BELARUS"
+              - beneficiaryDescription: "A"
+                beneficiaryDescription1: "A"
+                beneficiaryDescription2: "A"
+                beneficiaryDescription3: "A"
+                beneficiaryDescription4: "A"
+                companyDetails:
+                  name: "A"
+                  countryOfResidence: "BELARUS"
               other:
-                - otherBeneficiaryDescription: "A"
+              - otherBeneficiaryDescription: "A"
     RegistrationRequest:
       value:
         matchData:
@@ -6754,8 +6645,8 @@ components:
         yearsReturns:
           taxReturnsNoDues: true
           returns:
-            - taxReturnYear: "20"
-              taxConsequence: true
+          - taxReturnYear: "20"
+            taxConsequence: true
         declaration:
           name:
             firstName: "I am the name string frst01"
@@ -6792,127 +6683,127 @@ components:
               efrbsStartDate: "1520-02-29"
             entities:
               naturalPerson:
+              - name:
+                  firstName: "I am the name string,frst11"
+                  middleName: "I am the name string,midd11"
+                  lastName: "I am the name string,last11"
+                dateOfBirth: "1957-08-13"
+                identification:
+                  nino: "AB130603"
+                countryOfResidence: "AD"
+                nationality: "AD"
+                legallyIncapable: false
+              - name:
+                  firstName: "James3"
+                  middleName: "Guar3"
+                  lastName: "Frioli3"
+                dateOfBirth: "1957-08-13"
+                identification:
+                  nino: "AB130604"
+                countryOfResidence: "AD"
+                nationality: "AD"
+                legallyIncapable: false
+              beneficiary:
+                individualDetails:
                 - name:
-                    firstName: "I am the name string,frst11"
-                    middleName: "I am the name string,midd11"
-                    lastName: "I am the name string,last11"
+                    firstName: "I am the name string,frst41"
+                    middleName: "I am the name string,midd41"
+                    lastName: "I am the name string,last41"
                   dateOfBirth: "1957-08-13"
-                  identification:
-                    nino: "AB130603"
-                  countryOfResidence: "AD"
-                  nationality: "AD"
-                  legallyIncapable: false
-                - name:
-                    firstName: "James3"
-                    middleName: "Guar3"
-                    lastName: "Frioli3"
-                  dateOfBirth: "1957-08-13"
+                  vulnerableBeneficiary: true
+                  beneficiaryType: "Director"
+                  beneficiaryDiscretion: true
+                  beneficiaryShareOfIncome: "0"
                   identification:
                     nino: "AB130604"
                   countryOfResidence: "AD"
                   nationality: "AD"
                   legallyIncapable: false
-              beneficiary:
-                individualDetails:
-                  - name:
-                      firstName: "I am the name string,frst41"
-                      middleName: "I am the name string,midd41"
-                      lastName: "I am the name string,last41"
-                    dateOfBirth: "1957-08-13"
-                    vulnerableBeneficiary: true
-                    beneficiaryType: "Director"
-                    beneficiaryDiscretion: true
-                    beneficiaryShareOfIncome: "0"
-                    identification:
-                      nino: "AB130604"
-                    countryOfResidence: "AD"
-                    nationality: "AD"
-                    legallyIncapable: false
-                  - name:
-                      firstName: "a"
-                      middleName: "b"
-                      lastName: "c"
-                    dateOfBirth: "1957-08-13"
-                    vulnerableBeneficiary: true
-                    beneficiaryType: "Director"
-                    beneficiaryDiscretion: true
-                    beneficiaryShareOfIncome: "0"
-                    identification:
-                      nino: "AB130603"
-                    countryOfResidence: "AD"
-                    nationality: "AD"
-                    legallyIncapable: false
+                - name:
+                    firstName: "a"
+                    middleName: "b"
+                    lastName: "c"
+                  dateOfBirth: "1957-08-13"
+                  vulnerableBeneficiary: true
+                  beneficiaryType: "Director"
+                  beneficiaryDiscretion: true
+                  beneficiaryShareOfIncome: "0"
+                  identification:
+                    nino: "AB130603"
+                  countryOfResidence: "AD"
+                  nationality: "AD"
+                  legallyIncapable: false
                 company:
-                  - organisationName: "a"
-                    beneficiaryDiscretion: true
-                    beneficiaryShareOfIncome: "0"
-                    identification:
-                      utr: "0000000000"
-                    countryOfResidence: "AD"
-                  - organisationName: "b"
-                    beneficiaryDiscretion: true
-                    beneficiaryShareOfIncome: "0"
-                    identification:
-                      utr: "0000000001"
-                    countryOfResidence: "AD"
+                - organisationName: "a"
+                  beneficiaryDiscretion: true
+                  beneficiaryShareOfIncome: "0"
+                  identification:
+                    utr: "0000000000"
+                  countryOfResidence: "AD"
+                - organisationName: "b"
+                  beneficiaryDiscretion: true
+                  beneficiaryShareOfIncome: "0"
+                  identification:
+                    utr: "0000000001"
+                  countryOfResidence: "AD"
                 trust:
-                  - organisationName: "I am a organization name which is lengthy ABCDEFGHIJKLMNOPQRSTUVZabcdefghijklmnopqrsxyz0123456702"
-                    beneficiaryDiscretion: true
-                    beneficiaryShareOfIncome: "0"
-                    identification:
-                      utr: "0000000000"
-                    countryOfResidence: "AD"
-                  - organisationName: "b"
-                    beneficiaryDiscretion: true
-                    beneficiaryShareOfIncome: "0"
-                    identification:
-                      utr: "0000000001"
-                    countryOfResidence: "AD"
+                - organisationName: "I am a organization name which is lengthy ABCDEFGHIJKLMNOPQRSTUVZabcdefghijklmnopqrsxyz0123456702"
+                  beneficiaryDiscretion: true
+                  beneficiaryShareOfIncome: "0"
+                  identification:
+                    utr: "0000000000"
+                  countryOfResidence: "AD"
+                - organisationName: "b"
+                  beneficiaryDiscretion: true
+                  beneficiaryShareOfIncome: "0"
+                  identification:
+                    utr: "0000000001"
+                  countryOfResidence: "AD"
                 charity:
-                  - organisationName: "c"
-                    beneficiaryDiscretion: true
-                    beneficiaryShareOfIncome: "0"
-                    identification:
-                      utr: "0000000000"
-                    countryOfResidence: "AD"
-                  - organisationName: "I am OrgCharity2"
-                    beneficiaryDiscretion: true
-                    beneficiaryShareOfIncome: "0"
-                    identification:
-                      utr: "1234512342"
-                    countryOfResidence: "AD"
+                - organisationName: "c"
+                  beneficiaryDiscretion: true
+                  beneficiaryShareOfIncome: "0"
+                  identification:
+                    utr: "0000000000"
+                  countryOfResidence: "AD"
+                - organisationName: "I am OrgCharity2"
+                  beneficiaryDiscretion: true
+                  beneficiaryShareOfIncome: "0"
+                  identification:
+                    utr: "1234512342"
+                  countryOfResidence: "AD"
                 unidentified:
-                  - description: "ABCDEFGHIJKLMNabcdefghijklm0123456789"
-                    beneficiaryDiscretion: true
-                    beneficiaryShareOfIncome: "0"
-                  - description: "a"
-                    beneficiaryDiscretion: true
-                    beneficiaryShareOfIncome: "0"
+                - description: "ABCDEFGHIJKLMNabcdefghijklm0123456789"
+                  beneficiaryDiscretion: true
+                  beneficiaryShareOfIncome: "0"
+                - description: "a"
+                  beneficiaryDiscretion: true
+                  beneficiaryShareOfIncome: "0"
                 large:
-                  - organisationName: "I am a organization name xyz"
-                    description: "ab"
-                    description1: "abc"
-                    description2: "abcd"
-                    description3: "abcde"
-                    description4: "abcdef"
-                    numberOfBeneficiary: "ABC9"
-                    identification:
-                      utr: "0000000000"
-                    beneficiaryDiscretion: true
-                    beneficiaryShareOfIncome: "0"
-                    countryOfResidence: "AD"
+                - organisationName: "I am a organization name xyz"
+                  description: "ab"
+                  description1: "abc"
+                  description2: "abcd"
+                  description3: "abcde"
+                  description4: "abcdef"
+                  numberOfBeneficiary: "ABC9"
+                  identification:
+                    utr: "0000000000"
+                  beneficiaryDiscretion: true
+                  beneficiaryShareOfIncome: "0"
+                  countryOfResidence: "AD"
                 other:
-                  - description: "ABCD"
-                    address:
-                      line1: "I am the address line,.()/&'- nu101"
-                      line2: "I am the address line,.()/&'- nu102"
-                      line3: "I am the address line,.()/&'- nu103"
-                      line4: "I am the address line,.()/&'- nu104"
-                      postCode: "pc"
-                      country: "GB"
-                    beneficiaryDiscretion: true
-                    beneficiaryShareOfIncome: "0"
-                    countryOfResidence: "AD"
+                - description: "ABCD"
+                  address:
+                    line1: "I am the address line,.()/&'- nu101"
+                    line2: "I am the address line,.()/&'- nu102"
+                    line3: "I am the address line,.()/&'- nu103"
+                    line4: "I am the address line,.()/&'- nu104"
+                    postCode: "pc"
+                    country: "GB"
+                  beneficiaryDiscretion: true
+                  beneficiaryShareOfIncome: "0"
+                  countryOfResidence: "AD"
               deceased:
                 name:
                   firstName: "I am the name string,frst51"
@@ -6938,152 +6829,152 @@ components:
                 nationality: "AD"
                 legallyIncapable: true
               trustees:
-                - trusteeInd:
-                    name:
-                      firstName: "Trust"
-                      middleName: "JohnJames"
-                      lastName: "O'Manroe"
-                    dateOfBirth: "1957-08-13"
-                    identification:
-                      nino: "AB130601"
-                    phoneNumber: "+44123456778"
-                    countryOfResidence: "AD"
-                    nationality: "AD"
-                    legallyIncapable: true
-                  trusteeOrg:
-                    name: "trustorg02"
-                    phoneNumber: "+999999999999999902"
-                    email: "abcdef@hmrc.co.uk"
-                    identification:
-                      utr: "1111111109"
-                    countryOfResidence: "VE"
+              - trusteeInd:
+                  name:
+                    firstName: "Trust"
+                    middleName: "JohnJames"
+                    lastName: "O'Manroe"
+                  dateOfBirth: "1957-08-13"
+                  identification:
+                    nino: "AB130601"
+                  phoneNumber: "+44123456778"
+                  countryOfResidence: "AD"
+                  nationality: "AD"
+                  legallyIncapable: true
+                trusteeOrg:
+                  name: "trustorg02"
+                  phoneNumber: "+999999999999999902"
+                  email: "abcdef@hmrc.co.uk"
+                  identification:
+                    utr: "1111111109"
+                  countryOfResidence: "VE"
               protectors:
                 protector:
-                  - name:
-                      firstName: "Protecting"
-                      middleName: "Superman"
-                      lastName: "X-X-X"
-                    dateOfBirth: "1957-08-13"
-                    identification:
-                      nino: "AZ842011D"
+                - name:
+                    firstName: "Protecting"
+                    middleName: "Superman"
+                    lastName: "X-X-X"
+                  dateOfBirth: "1957-08-13"
+                  identification:
+                    nino: "AZ842011D"
                 protectorCompany:
-                  - name: "I am a organization name 0123456703"
-                    identification:
-                      utr: "0000000000"
+                - name: "I am a organization name 0123456703"
+                  identification:
+                    utr: "0000000000"
               settlors:
                 settlor:
-                  - name:
-                      firstName: "SettlorFNAME"
-                      middleName: "SMName"
-                      lastName: "SLName"
-                    dateOfBirth: "1957-08-13"
-                    identification:
-                      nino: "AB130603"
-                    countryOfResidence: "AD"
-                    nationality: "AD"
-                    legallyIncapable: false
+                - name:
+                    firstName: "SettlorFNAME"
+                    middleName: "SMName"
+                    lastName: "SLName"
+                  dateOfBirth: "1957-08-13"
+                  identification:
+                    nino: "AB130603"
+                  countryOfResidence: "AD"
+                  nationality: "AD"
+                  legallyIncapable: false
                 settlorCompany:
-                  - name: "abcdefghijklmnopqrs"
-                    companyType: "Trading"
-                    companyTime: false
-                    identification:
-                      utr: "1306130602"
-                    countryOfResidence: "MO"
+                - name: "abcdefghijklmnopqrs"
+                  companyType: "Trading"
+                  companyTime: false
+                  identification:
+                    utr: "1306130602"
+                  countryOfResidence: "MO"
             assets:
               monetary:
-                - assetMonetaryAmount: 999999999991
+              - assetMonetaryAmount: 999999999991
               propertyOrLand:
-                - buildingLandName: "ABCDEFGHIJKLMNabcdefghijklm0123456789"
-                  address:
-                    line1: "1344 Army Road"
-                    line2: "ABC Hall"
-                    line3: "Suite 333"
-                    line4: "surge County"
-                    postCode: "abcdefg"
-                    country: "GB"
-                  valueFull: 999999999992
-                  valuePrevious: 999999999993
-                - buildingLandName: " "
-                  address:
-                    line1: "134443Army Road"
-                    line2: "Suite 1113"
-                    line3: "Right Wing3"
-                    line4: "Joshpoor3"
-                    postCode: "TF3 7FX"
-                    country: "GB"
-                  valueFull: 1333338
-                  valuePrevious: 888888
+              - buildingLandName: "ABCDEFGHIJKLMNabcdefghijklm0123456789"
+                address:
+                  line1: "1344 Army Road"
+                  line2: "ABC Hall"
+                  line3: "Suite 333"
+                  line4: "surge County"
+                  postCode: "abcdefg"
+                  country: "GB"
+                valueFull: 999999999992
+                valuePrevious: 999999999993
+              - buildingLandName: " "
+                address:
+                  line1: "134443Army Road"
+                  line2: "Suite 1113"
+                  line3: "Right Wing3"
+                  line4: "Joshpoor3"
+                  postCode: "TF3 7FX"
+                  country: "GB"
+                valueFull: 1333338
+                valuePrevious: 888888
               shares:
-                - numberOfShares: "012345678912"
-                  orgName: "I am an organization name which is lengthy ABCDE"
-                  utr: "1231712342"
-                  shareClass: "Other"
-                  typeOfShare: "Quoted"
-                  value: 999999999904
-                - numberOfShares: "33"
-                  orgName: "Mock Org LTD3"
-                  utr: "1231712343"
-                  shareClass: "Non-voting shares"
-                  typeOfShare: "Unquoted"
-                  value: 4584543
+              - numberOfShares: "012345678912"
+                orgName: "I am an organization name which is lengthy ABCDE"
+                utr: "1231712342"
+                shareClass: "Other"
+                typeOfShare: "Quoted"
+                value: 999999999904
+              - numberOfShares: "33"
+                orgName: "Mock Org LTD3"
+                utr: "1231712343"
+                shareClass: "Non-voting shares"
+                typeOfShare: "Unquoted"
+                value: 4584543
               business:
-                - orgName: "I am an organization name which is lengthy 012345607"
-                  utr: "1231766666"
-                  businessDescription: "ABCDEFGHIJKLMNabcdefghijklm0123456789"
-                  address:
-                    line1: "1345 Army Road"
-                    line2: "ABCD Hall"
-                    line3: "Suite 334"
-                    line4: "surge County-23"
-                    postCode: "aaaaaaa"
-                    country: "GB"
-                  businessValue: 0
-                - orgName: "Business Org LTD2"
-                  utr: "0000000000"
-                  businessDescription: "xxxx"
-                  address:
-                    line1: "134443Army Road"
-                    line2: "Suite 1113"
-                    line3: "Right Wing3"
-                    line4: "Joshpoor3"
-                    postCode: "TF3 7FX"
-                    country: "GB"
-                  businessValue: 0
+              - orgName: "I am an organization name which is lengthy 012345607"
+                utr: "1231766666"
+                businessDescription: "ABCDEFGHIJKLMNabcdefghijklm0123456789"
+                address:
+                  line1: "1345 Army Road"
+                  line2: "ABCD Hall"
+                  line3: "Suite 334"
+                  line4: "surge County-23"
+                  postCode: "aaaaaaa"
+                  country: "GB"
+                businessValue: 0
+              - orgName: "Business Org LTD2"
+                utr: "0000000000"
+                businessDescription: "xxxx"
+                address:
+                  line1: "134443Army Road"
+                  line2: "Suite 1113"
+                  line3: "Right Wing3"
+                  line4: "Joshpoor3"
+                  postCode: "TF3 7FX"
+                  country: "GB"
+                businessValue: 0
               partnerShip:
-                - utr: "5456456221"
-                  description: "ABCDEFGHIJKLMNabcdefghijklm0123456789"
-                  partnershipStart: "2008-01-23"
-                - utr: "5456456223"
-                  description: "Partnership Trade3"
-                  partnershipStart: "2003-03-23"
+              - utr: "5456456221"
+                description: "ABCDEFGHIJKLMNabcdefghijklm0123456789"
+                partnershipStart: "2008-01-23"
+              - utr: "5456456223"
+                description: "Partnership Trade3"
+                partnershipStart: "2003-03-23"
               other:
-                - description: "qqqq"
-                  value: 0
-                - description: "Other small business3"
-                  value: 3453456
+              - description: "qqqq"
+                value: 0
+              - description: "Other small business3"
+                value: 3453456
               nonEEABusiness:
-                - orgName: "abcdefgh"
-                  address:
-                    line1: "abcdefghijklm"
-                    line2: "abcdefgh"
-                    line3: "abcdefghijklmnop"
-                    line4: "abcdefghijklmnop"
-                    postCode: "TF3 4NT"
-                    country: "GB"
-                  govLawCountry: "AD"
-                  startDate: "2001-09-09"
-                  endDate: "2009-09-09"
-                - orgName: "abcdefghxxxxxx"
-                  address:
-                    line1: "abcdefghijklmxxxxx"
-                    line2: "abcdefghxxxxxx"
-                    line3: "abcdefghijklmnopxxxxx"
-                    line4: "abcdefghijklmnopxxxxx"
-                    postCode: "TF3 4NA"
-                    country: "GB"
-                  govLawCountry: "AD"
-                  startDate: "2001-09-09"
-                  endDate: "2009-09-09"
+              - orgName: "abcdefgh"
+                address:
+                  line1: "abcdefghijklm"
+                  line2: "abcdefgh"
+                  line3: "abcdefghijklmnop"
+                  line4: "abcdefghijklmnop"
+                  postCode: "TF3 4NT"
+                  country: "GB"
+                govLawCountry: "AD"
+                startDate: "2001-09-09"
+                endDate: "2009-09-09"
+              - orgName: "abcdefghxxxxxx"
+                address:
+                  line1: "abcdefghijklmxxxxx"
+                  line2: "abcdefghxxxxxx"
+                  line3: "abcdefghijklmnopxxxxx"
+                  line4: "abcdefghijklmnopxxxxx"
+                  postCode: "TF3 4NA"
+                  country: "GB"
+                govLawCountry: "AD"
+                startDate: "2001-09-09"
+                endDate: "2009-09-09"
         agentDetails:
           arn: "AARN1234567"
           agentName: "abcdef"
@@ -7158,64 +7049,64 @@ components:
               efrbsStartDate: "2001-01-01"
             entities:
               naturalPerson:
+              - name:
+                  firstName: "John"
+                  middleName: "William"
+                  lastName: "O'Connor"
+                dateOfBirth: "1956-02-12"
+                identification:
+                  nino: "KC287812"
+                entityStart: "1998-02-12"
+                countryOfResidence: "GB"
+                nationality: "GB"
+                legallyIncapable: false
+              - name:
+                  firstName: "John2"
+                  middleName: "William2"
+                  lastName: "O'Connor2"
+                dateOfBirth: "1956-02-12"
+                identification:
+                  nino: "KC287912"
+                entityStart: "1998-02-12"
+                countryOfResidence: "GB"
+                nationality: "GB"
+                legallyIncapable: false
+              beneficiary:
+                individualDetails:
                 - name:
                     firstName: "John"
                     middleName: "William"
                     lastName: "O'Connor"
-                  dateOfBirth: "1956-02-12"
+                  dateOfBirth: "2001-01-01"
+                  vulnerableBeneficiary: true
+                  beneficiaryType: "Director"
+                  beneficiaryDiscretion: true
+                  beneficiaryShareOfIncome: "100"
                   identification:
-                    nino: "KC287812"
-                  entityStart: "1998-02-12"
-                  countryOfResidence: "GB"
-                  nationality: "GB"
-                  legallyIncapable: false
-                - name:
-                    firstName: "John2"
-                    middleName: "William2"
-                    lastName: "O'Connor2"
-                  dateOfBirth: "1956-02-12"
-                  identification:
-                    nino: "KC287912"
-                  entityStart: "1998-02-12"
-                  countryOfResidence: "GB"
-                  nationality: "GB"
-                  legallyIncapable: false
-              beneficiary:
-                individualDetails:
-                  - name:
-                      firstName: "John"
-                      middleName: "William"
-                      lastName: "O'Connor"
-                    dateOfBirth: "2001-01-01"
-                    vulnerableBeneficiary: true
-                    beneficiaryType: "Director"
-                    beneficiaryDiscretion: true
-                    beneficiaryShareOfIncome: "100"
-                    identification:
-                      passport:
-                        number: "abcdefgh"
-                        expirationDate: "2001-01-01"
-                        countryOfIssue: "GB"
-                      address:
-                        line1: "1344 Army Road"
-                        line2: "Suite 111"
-                        line4: "Telford"
-                        postCode: "TF1 5DR"
-                        country: "GB"
-                    entityStart: "1998-02-12"
-                    countryOfResidence: "GB"
-                    nationality: "GB"
-                    legallyIncapable: false
-                other:
-                  - address:
+                    passport:
+                      number: "abcdefgh"
+                      expirationDate: "2001-01-01"
+                      countryOfIssue: "GB"
+                    address:
                       line1: "1344 Army Road"
                       line2: "Suite 111"
                       line4: "Telford"
                       postCode: "TF1 5DR"
                       country: "GB"
-                    description: "Lorem ipsum"
-                    entityStart: "1998-02-12"
-                    countryOfResidence: "GB"
+                  entityStart: "1998-02-12"
+                  countryOfResidence: "GB"
+                  nationality: "GB"
+                  legallyIncapable: false
+                other:
+                - address:
+                    line1: "1344 Army Road"
+                    line2: "Suite 111"
+                    line4: "Telford"
+                    postCode: "TF1 5DR"
+                    country: "GB"
+                  description: "Lorem ipsum"
+                  entityStart: "1998-02-12"
+                  countryOfResidence: "GB"
               deceased:
                 name:
                   firstName: "John"
@@ -7229,85 +7120,85 @@ components:
                 countryOfResidence: "GB"
                 nationality: "GB"
               leadTrustees:
-                - leadTrusteeOrg:
-                    orgName: "Trust Services LTD"
-                    phoneNumber: "0754545454"
-                    email: "me@you.com"
-                    identification:
-                      utr: "5465416546"
-                    entityStart: "1998-02-12"
-                    countryOfResidence: "GB"
+              - leadTrusteeOrg:
+                  orgName: "Trust Services LTD"
+                  phoneNumber: "0754545454"
+                  email: "me@you.com"
+                  identification:
+                    utr: "5465416546"
+                  entityStart: "1998-02-12"
+                  countryOfResidence: "GB"
               trustees:
-                - trusteeInd:
-                    name:
-                      firstName: "John"
-                      middleName: "William"
-                      lastName: "O'Connor"
-                    dateOfBirth: "1956-02-12"
-                    identification:
-                      nino: "ST123456"
-                    phoneNumber: "0121546546"
-                    entityStart: "1998-02-12"
-                    countryOfResidence: "GB"
-                    nationality: "GB"
-                    legallyIncapable: false
+              - trusteeInd:
+                  name:
+                    firstName: "John"
+                    middleName: "William"
+                    lastName: "O'Connor"
+                  dateOfBirth: "1956-02-12"
+                  identification:
+                    nino: "ST123456"
+                  phoneNumber: "0121546546"
+                  entityStart: "1998-02-12"
+                  countryOfResidence: "GB"
+                  nationality: "GB"
+                  legallyIncapable: false
               settlors:
                 settlor:
-                  - name:
-                      firstName: "abcdefghijkl"
-                      middleName: "abcdefghijklmn"
-                      lastName: "abcde"
-                    dateOfBirth: "2001-01-01"
-                    identification:
-                      nino: "ST019091"
-                    entityStart: "1998-02-12"
-                    countryOfResidence: "GB"
-                    nationality: "GB"
-                    legallyIncapable: false
+                - name:
+                    firstName: "abcdefghijkl"
+                    middleName: "abcdefghijklmn"
+                    lastName: "abcde"
+                  dateOfBirth: "2001-01-01"
+                  identification:
+                    nino: "ST019091"
+                  entityStart: "1998-02-12"
+                  countryOfResidence: "GB"
+                  nationality: "GB"
+                  legallyIncapable: false
                 settlorCompany:
-                  - name: "abcdefghijklmnopqr"
-                    companyType: "Trading"
-                    companyTime: false
-                    identification:
-                      utr: "5465416546"
-                    entityStart: "1998-02-12"
-                    countryOfResidence: "GB"
+                - name: "abcdefghijklmnopqr"
+                  companyType: "Trading"
+                  companyTime: false
+                  identification:
+                    utr: "5465416546"
+                  entityStart: "1998-02-12"
+                  countryOfResidence: "GB"
             assets:
               monetary:
-                - assetMonetaryAmount: 100000
+              - assetMonetaryAmount: 100000
               propertyOrLand:
-                - buildingLandName: "ACB House"
-                  address:
-                    line1: "1344 Army Road"
-                    line2: "Suite 111"
-                    line4: "Telford"
-                    postCode: "TF1 5DR"
-                    country: "GB"
-                  valueFull: 1000000
-                  valuePrevious: 200000
+              - buildingLandName: "ACB House"
+                address:
+                  line1: "1344 Army Road"
+                  line2: "Suite 111"
+                  line4: "Telford"
+                  postCode: "TF1 5DR"
+                  country: "GB"
+                valueFull: 1000000
+                valuePrevious: 200000
               shares:
-                - numberOfShares: "100"
-                  orgName: "Mock Org LTD"
-                  utr: "5465416546"
-                  shareClass: "Ordinary shares"
-                  typeOfShare: "Quoted"
-                  value: 4584545
+              - numberOfShares: "100"
+                orgName: "Mock Org LTD"
+                utr: "5465416546"
+                shareClass: "Ordinary shares"
+                typeOfShare: "Quoted"
+                value: 4584545
               partnerShip:
-                - utr: "5456456221"
-                  description: "Partnership Trade"
-                  partnershipStart: "2001-01-01"
+              - utr: "5456456221"
+                description: "Partnership Trade"
+                partnershipStart: "2001-01-01"
               other:
-                - description: "Lorem ipsum anum"
-                  value: 1982372
+              - description: "Lorem ipsum anum"
+                value: 1982372
               nonEEABusiness:
-                - orgName: "ABC Ltd"
-                  address:
-                    line1: "Line 1 address"
-                    line2: "Line 2 address"
-                    postCode: "TF3 4ER"
-                    country: "GB"
-                  govLawCountry: "GB"
-                  startDate: "2020-02-20"
+              - orgName: "ABC Ltd"
+                address:
+                  line1: "Line 1 address"
+                  line2: "Line 2 address"
+                  postCode: "TF3 4ER"
+                  country: "GB"
+                govLawCountry: "GB"
+                startDate: "2020-02-20"
         submissionDate: "2020-06-09"
         agentDetails:
           arn: "AARN1234567"
