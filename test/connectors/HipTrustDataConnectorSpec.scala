@@ -16,9 +16,12 @@
 
 package connectors
 
+import com.github.tomakehurst.wiremock.client.WireMock.{equalTo, getRequestedFor, matching, urlEqualTo}
+import config.Constants.{HIP_CORRELATION_ID, X_ORIGINATING_SYSTEM, X_RECEIPT_DATE, X_TRANSMITTING_SYSTEM}
 import helpers.ConnectorSpecHelper
 import helpers.JsonHelper.*
 import models.*
+import play.api.http.HeaderNames.AUTHORIZATION
 import play.api.http.Status.*
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
@@ -36,12 +39,19 @@ class HipTrustDataConnectorSpec extends ConnectorSpecHelper {
   private val hipJson: JsValue       = getJsonValueFromFile("valid-hip.json")
   private val hipSuccessBody: String = Json.stringify(hipJson)
 
+  private val uuidPattern        = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+  private val receiptDatePattern = "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z" // pattern from OAS spec
+
+  private val expectedAuthorization = "Basic dGVzdC1jbGllbnQtaWQ6dGVzdC1jbGllbnQtc2VjcmV0" // Base64 encoding of test client id & secret above
+
   override def applicationBuilder(): GuiceApplicationBuilder =
     super
       .applicationBuilder()
       .configure(
         Seq(
-          "microservice.services.hip.obliged-entities.port" -> server.port()
+          "microservice.services.hip.obliged-entities.port" -> server.port(),
+          "microservice.services.hip.clientId"              -> "test-client-id",
+          "microservice.services.hip.secret"                -> "test-client-secret"
         )*
       )
 
@@ -70,20 +80,23 @@ class HipTrustDataConnectorSpec extends ConnectorSpecHelper {
         }
       }
 
-      "return InternalServerErrorTrustDataResponse" when {
+      "send the headers required by the HIP specification" in {
 
-        "200 OK with a body that fails HIP schema validation" in {
+        stubForGet(url = url(utrIdentifier), responseStatus = OK, responseBody = hipSuccessBody)
 
-          stubForGet(
-            url = url(utrIdentifier),
-            responseStatus = OK,
-            responseBody = Json.stringify(getJsonValueFromFile("nrs-request-body.json"))
+        whenReady(connector.getTrustJson(utrIdentifier)) { _ =>
+          server.verify(
+            getRequestedFor(urlEqualTo(url(utrIdentifier)))
+              .withHeader(HIP_CORRELATION_ID, matching(uuidPattern))
+              .withHeader(X_ORIGINATING_SYSTEM, equalTo("TRS"))
+              .withHeader(X_TRANSMITTING_SYSTEM, equalTo("HIP"))
+              .withHeader(X_RECEIPT_DATE, matching(receiptDatePattern))
+              .withHeader(AUTHORIZATION, equalTo(expectedAuthorization))
           )
-
-          whenReady(connector.getTrustJson(utrIdentifier)) { response =>
-            response mustBe InternalServerErrorTrustDataResponse
-          }
         }
+      }
+
+      "return InternalServerErrorTrustDataResponse" when {
 
         "500 response received" in {
 

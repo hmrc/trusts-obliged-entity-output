@@ -38,6 +38,7 @@ import repositories.NrsLockRepository
 import services.{
   AuditService, LocalDateTimeService, TrustDataService, TrustsValidationError, ValidationService, Validator
 }
+import utils.NrsRequestMapper
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
@@ -163,8 +164,7 @@ class PdfControllerSpec extends SpecBase {
                 eqTo(NRS_DATA_RECEIVED),
                 eqTo(FileDetails(fileName, PDF, contentLength))
               )(using any(), any())
-              verify(mockNrsConnector).getPdf(eqTo(hipJson))(using any())
-              verifyNoInteractions(mockValidationService)
+              verify(mockNrsConnector).getPdf(eqTo(NrsRequestMapper.toNrsRequest(hipJson)))(using any())
             }
           }
         }
@@ -517,6 +517,37 @@ class PdfControllerSpec extends SpecBase {
             }
 
             // Restore default behaviour for other tests
+            when(defaultValidator.validate(any[String]())).thenReturn(Right(()))
+          }
+
+          "validation fails for the HIP payload" in {
+
+            val hipJson: JsValue = getJsonValueFromFile("valid-hip.json")
+
+            val hipController = applicationBuilder()
+              .configure("features.hip.obligedEntities" -> true)
+              .build()
+              .injector
+              .instanceOf[PdfController]
+
+            reset(mockAuditService, mockValidationService)
+            reset(defaultValidator)
+
+            when(mockValidationService.get(any())).thenReturn(defaultValidator)
+            when(defaultValidator.validate(any[String]()))
+              .thenReturn(Left(List(TrustsValidationError("schema error", "/correspondence/address"))))
+
+            when(mockNrsConnector.ping()(using any())).thenReturn(Future.successful(true))
+            when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(false))
+            when(mockTrustDataService.getTrustJson(any()))
+              .thenReturn(Future.successful(SuccessfulHipTrustDataResponse(hipJson)))
+
+            whenReady(hipController.getPdf(identifier)(FakeRequest())) { result =>
+              result.header.status mustBe INTERNAL_SERVER_ERROR
+
+              verify(mockAuditService).audit(eqTo(HIP_DATA_RECEIVED), eqTo(hipJson))(using any(), any())
+            }
+
             when(defaultValidator.validate(any[String]())).thenReturn(Right(()))
           }
         }

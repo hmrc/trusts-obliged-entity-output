@@ -26,20 +26,13 @@ import javax.inject.Inject
 import models.*
 import play.api.Logging
 import play.api.http.HeaderNames
-import play.api.http.Status.OK
-import services.ValidationService
-import uk.gov.hmrc.http.HttpReads.Implicits.*
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.http.client.HttpClientV2
 import utils.Session
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class HipTrustDataConnector @Inject() (
-  http: HttpClientV2,
-  config: AppConfig,
-  validationService: ValidationService
-)(using ec: ExecutionContext)
+class HipTrustDataConnector @Inject() (http: HttpClientV2, config: AppConfig)(using ec: ExecutionContext)
     extends TrustDataConnector with Logging {
 
   private val receiptDateFormatter: DateTimeFormatter =
@@ -64,24 +57,7 @@ class HipTrustDataConnector @Inject() (
 
     http
       .get(url"$url")
-      .execute[HttpResponse]
-      .map(mapHipResponse(identifier))
+      .execute[TrustDataResponse](using TrustDataResponse.hipHttpReads(identifier), ec)
   }
-
-  private def mapHipResponse(identifier: Identifier)(response: HttpResponse): TrustDataResponse =
-    response.status match {
-      case OK =>
-        validationService.get(config.trustsHipObligedEntityDataSchema).validate(response.body) match {
-          case Right(_)     =>
-            TrustDataResponse.hipHttpReads(identifier).read("GET", "", response)
-          case Left(errors) =>
-            logger.error(
-              s"[UTR/URN: ${identifier.value}] HIP response failed schema validation - $errors - ${response.body}."
-            )
-            InternalServerErrorTrustDataResponse
-        }
-      case _  =>
-        TrustDataResponse.hipHttpReads(identifier).read("GET", "", response)
-    }
 
 }

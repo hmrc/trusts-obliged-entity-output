@@ -31,7 +31,7 @@ import play.api.mvc.*
 import repositories.NrsLockRepository
 import services.{AuditService, TrustDataService, ValidationService}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import utils.PdfFileNameGenerator
+import utils.{NrsRequestMapper, PdfFileNameGenerator}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -89,25 +89,19 @@ class PdfController @Inject() (
   private def dataErrorEvent: String =
     if (config.useHipObligedEntities) HIP_ERROR else IF_ERROR
 
+  private def dataSchema: String =
+    if (config.useHipObligedEntities) config.trustsHipObligedEntityDataSchema
+    else config.trustsIfsObligedEntityDataSchema
+
   private def downstreamPlatformName: String =
-    if (config.useHipObligedEntities) HIP_NAME else IFS_NAME
+    if (config.useHipObligedEntities) HIP_NAME else IF_NAME
 
   private def getTrustJson(identifier: String)(using request: IdentifierRequest[AnyContent]): Future[Result] =
     trustDataService.getTrustJson(request.identifier).flatMap {
       case SuccessfulIfsTrustDataResponse(payload) =>
-        auditService.audit(dataReceivedEvent, payload)
-        validationService.get(config.trustsIfsObligedEntityDataSchema).validate(payload.toString()) match {
-          case Right(_)               =>
-            processValidatedPayload(identifier, payload)
-          case Left(validationErrors) =>
-            logger.warn(
-              s"[PdfController][getTrustJson][Session ID: ${request.sessionId}] problem with payload: $validationErrors"
-            )
-            Future.successful(InternalServerError)
-        }
+        auditAndProcessPayload(identifier, payload, mapForNrs = false)
       case SuccessfulHipTrustDataResponse(payload) =>
-        auditService.audit(dataReceivedEvent, payload)
-        processValidatedPayload(identifier, payload)
+        auditAndProcessPayload(identifier, payload, mapForNrs = true)
       case e                                       =>
         auditService.audit(dataErrorEvent, JsString(s"$e"))
         e match {
@@ -120,16 +114,27 @@ class PdfController @Inject() (
         }
     }
 
-  private def processValidatedPayload(identifier: String, payload: JsValue)(using
+  private def auditAndProcessPayload(identifier: String, payload: JsValue, mapForNrs: Boolean)(using
+    request: IdentifierRequest[AnyContent]
+  ): Future[Result] = {
+    auditService.audit(dataReceivedEvent, payload)
+    validationService.get(dataSchema).validate(payload.toString()) match {
+      case Right(_)               =>
+        val nrsPayload = if (mapForNrs) NrsRequestMapper.toNrsRequest(payload) else payload
+        generatePdf(identifier, nrsPayload)
+      case Left(validationErrors) =>
+        logger.warn(
+          s"[PdfController][auditAndProcessPayload][Session ID: ${request.sessionId}] problem with downstream response: $validationErrors"
+        )
+        Future.successful(InternalServerError)
+    }
+  }
+
+  private def generatePdf(identifier: String, payload: JsValue)(using
     request: IdentifierRequest[AnyContent]
   ): Future[Result] = {
     val fileName = pdfFileNameGenerator.generate(identifier)
-    generatePdf(identifier, payload, fileName)
-  }
 
-  private def generatePdf(identifier: String, payload: JsValue, fileName: String)(using
-    request: IdentifierRequest[AnyContent]
-  ): Future[Result] =
     nrsConnector.getPdf(payload).flatMap {
       case response: SuccessfulResponse =>
         auditService.auditFileDetails(NRS_DATA_RECEIVED, FileDetails(fileName, PDF, response.length))
@@ -152,6 +157,7 @@ class PdfController @Inject() (
             Future.successful(InternalServerError)
         }
     }
+  }
 
   private def pdf(fileName: String, response: SuccessfulResponse): Result =
     Result(

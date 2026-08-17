@@ -17,10 +17,10 @@
 package config
 
 object Constants {
-  
+
   val HIP_NAME = "HIP"
-  
-  val IFS_NAME = "IF"
+
+  val IF_NAME = "IF"
 
   val X_API_KEY = "X-API-Key"
 

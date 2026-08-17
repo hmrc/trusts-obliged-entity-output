@@ -63,7 +63,7 @@ object TrustDataResponse extends Logging {
           logger.error(s"[UTR/URN: ${identifier.value}] Resource not found for the provided identifier.")
           NotFoundTrustDataResponse
         case _                    =>
-          logger.error(s"[UTR/URN: ${identifier.value}] Internal server error response from IF.")
+          logger.error(s"[UTR/URN: ${identifier.value}] Internal server error response from IF. - ${response.body}")
           InternalServerErrorTrustDataResponse
       }
 
@@ -77,11 +77,11 @@ object TrustDataResponse extends Logging {
           BadRequestTrustDataResponse
         case UNAUTHORIZED         =>
           logger.error(
-            s"[UTR/URN: ${identifier.value}] No Authorization header (bearer token) provided or it is invalid."
+            s"[UTR/URN: ${identifier.value}] Authentication credentials missing or invalid."
           )
           UnauthorisedTrustDataResponse
         case FORBIDDEN            =>
-          logger.error(s"[UTR/URN: ${identifier.value}] No Environment header provided or it is invalid.")
+          logger.error(s"[UTR/URN: ${identifier.value}] Not authorized.")
           ForbiddenTrustDataResponse
         case NOT_FOUND            =>
           logger.error(s"[UTR/URN: ${identifier.value}] Resource not found for the provided identifier.")

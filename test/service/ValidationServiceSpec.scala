@@ -30,7 +30,7 @@ class ValidationServiceSpec extends SpecBase with EitherValues {
 
   private lazy val trustHipValidator: Validator =
     validationService.get(
-      "/resources/schemas/hip/ObligedEntitiesSuccessResponse_EPID1755_TRS_openapi_v0.1.4.json"
+      "/resources/schemas/hip/ObligedEntitiesSuccessResponse_EPID1755_TRS_openapi_v0.1.7.json"
     )
 
   "ValidationService " should {
