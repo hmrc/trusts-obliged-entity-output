@@ -42,7 +42,8 @@ class HipTrustDataConnectorSpec extends ConnectorSpecHelper {
   private val uuidPattern        = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
   private val receiptDatePattern = "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z" // pattern from OAS spec
 
-  private val expectedAuthorization = "Basic dGVzdC1jbGllbnQtaWQ6dGVzdC1jbGllbnQtc2VjcmV0" // Base64 encoding of test client id & secret above
+  private val expectedAuthorization =
+    "Basic dGVzdC1jbGllbnQtaWQ6dGVzdC1jbGllbnQtc2VjcmV0" // Base64 encoding of test client id & secret above
 
   override def applicationBuilder(): GuiceApplicationBuilder =
     super
