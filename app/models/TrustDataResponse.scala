@@ -21,9 +21,12 @@ import play.api.http.Status.*
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
+import scala.util.Try
+
 trait TrustDataResponse
 
-case class SuccessfulTrustDataResponse(body: JsValue) extends TrustDataResponse
+case class SuccessfulIfsTrustDataResponse(body: JsValue) extends TrustDataResponse
+case class SuccessfulHipTrustDataResponse(body: JsValue) extends TrustDataResponse
 case object BadRequestTrustDataResponse extends TrustDataResponse
 case object UnprocessableEntityTrustDataResponse extends TrustDataResponse
 case object ServiceUnavailableTrustDataResponse extends TrustDataResponse
@@ -34,11 +37,11 @@ case object InternalServerErrorTrustDataResponse extends TrustDataResponse
 
 object TrustDataResponse extends Logging {
 
-  def httpReads(identifier: Identifier): HttpReads[TrustDataResponse] =
+  def ifsHttpReads(identifier: Identifier): HttpReads[TrustDataResponse] =
     (_: String, _: String, response: HttpResponse) =>
       response.status match {
         case OK                   =>
-          SuccessfulTrustDataResponse(Json.parse(response.body))
+          SuccessfulIfsTrustDataResponse(Json.parse(response.body))
         case BAD_REQUEST          =>
           logger.error(s"[UTR/URN: ${identifier.value}] Invalid identifier - ${response.body}.")
           BadRequestTrustDataResponse
@@ -60,8 +63,53 @@ object TrustDataResponse extends Logging {
           logger.error(s"[UTR/URN: ${identifier.value}] Resource not found for the provided identifier.")
           NotFoundTrustDataResponse
         case _                    =>
-          logger.error(s"[UTR/URN: ${identifier.value}] Internal server error response from IF.")
+          logger.error(s"[UTR/URN: ${identifier.value}] Internal server error response from IF. - ${response.body}")
           InternalServerErrorTrustDataResponse
       }
+
+  def hipHttpReads(identifier: Identifier): HttpReads[TrustDataResponse] =
+    (_: String, _: String, response: HttpResponse) =>
+      response.status match {
+        case OK                   =>
+          SuccessfulHipTrustDataResponse(Json.parse(response.body))
+        case BAD_REQUEST          =>
+          logger.error(s"[UTR/URN: ${identifier.value}] Invalid identifier - ${response.body}.")
+          BadRequestTrustDataResponse
+        case UNAUTHORIZED         =>
+          logger.error(
+            s"[UTR/URN: ${identifier.value}] Authentication credentials missing or invalid."
+          )
+          UnauthorisedTrustDataResponse
+        case FORBIDDEN            =>
+          logger.error(s"[UTR/URN: ${identifier.value}] Not authorized.")
+          ForbiddenTrustDataResponse
+        case NOT_FOUND            =>
+          logger.error(s"[UTR/URN: ${identifier.value}] Resource not found for the provided identifier.")
+          NotFoundTrustDataResponse
+        case UNPROCESSABLE_ENTITY =>
+          mapHipUnprocessableEntity(identifier, response)
+        case _                    =>
+          logger.error(s"[UTR/URN: ${identifier.value}] Internal server error response from HIP - ${response.body}.")
+          InternalServerErrorTrustDataResponse
+      }
+
+  private def mapHipUnprocessableEntity(identifier: Identifier, response: HttpResponse): TrustDataResponse =
+    Try(response.json.as[HipCustomErrResponse].error.errorId).fold(
+      _ => {
+        logger.error(s"[UTR/URN: ${identifier.value}] Unprocessable HIP response - ${response.body}.")
+        InternalServerErrorTrustDataResponse
+      },
+      {
+        case "000" =>
+          logger.error(s"[UTR/URN: ${identifier.value}] Resource not found for the provided identifier.")
+          NotFoundTrustDataResponse
+        case "003" =>
+          logger.error(s"[UTR/URN: ${identifier.value}] Could not be processed - ${response.body}.")
+          UnprocessableEntityTrustDataResponse
+        case code  =>
+          logger.error(s"[UTR/URN: ${identifier.value}] HIP errorId $code - ${response.body}.")
+          UnprocessableEntityTrustDataResponse
+      }
+    )
 
 }

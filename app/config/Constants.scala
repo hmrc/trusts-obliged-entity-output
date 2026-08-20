@@ -18,6 +18,10 @@ package config
 
 object Constants {
 
+  val HIP_NAME = "HIP"
+
+  val IF_NAME = "IF"
+
   val X_API_KEY = "X-API-Key"
 
   val PDF = "application/pdf"
@@ -27,5 +31,13 @@ object Constants {
   val CORRELATION_ID = "CorrelationId"
 
   val CONTENT_TYPE_JSON = "application/json; charset=utf-8"
+
+  val HIP_CORRELATION_ID = "correlationid"
+
+  val X_ORIGINATING_SYSTEM = "X-Originating-System"
+
+  val X_RECEIPT_DATE = "X-Receipt-Date"
+
+  val X_TRANSMITTING_SYSTEM = "X-Transmitting-System"
 
 }

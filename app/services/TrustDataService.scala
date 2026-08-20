@@ -14,13 +14,32 @@
  * limitations under the License.
  */
 
-package connectors
+package services
 
-import models.{Identifier, TrustDataResponse}
+import com.google.inject.{ImplementedBy, Inject}
+import config.AppConfig
+import connectors.{HipTrustDataConnector, IfsTrustDataConnector}
+import models.*
 
 import scala.concurrent.Future
 
-trait TrustDataConnector {
+class TrustDataServiceImpl @Inject() (
+  ifsTrustDataConnector: IfsTrustDataConnector,
+  hipTrustDataConnector: HipTrustDataConnector,
+  config: AppConfig
+) extends TrustDataService {
+
+  override def getTrustJson(identifier: Identifier): Future[TrustDataResponse] =
+    if (config.useHipObligedEntities) {
+      hipTrustDataConnector.getTrustJson(identifier)
+    } else {
+      ifsTrustDataConnector.getTrustJson(identifier)
+    }
+
+}
+
+@ImplementedBy(classOf[TrustDataServiceImpl])
+trait TrustDataService {
 
   def getTrustJson(identifier: Identifier): Future[TrustDataResponse]
 

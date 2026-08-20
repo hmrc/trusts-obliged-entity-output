@@ -17,7 +17,7 @@
 package controllers
 
 import base.SpecBase
-import connectors.{NrsConnector, TrustDataConnector}
+import connectors.NrsConnector
 import helpers.JsonHelper.getJsonValueFromFile
 import models.*
 import models.auditing.Events.*
@@ -35,7 +35,7 @@ import scala.concurrent.Future
 
 class PdfControllerLogNRSFalseSpec extends SpecBase {
 
-  private val mockTrustDataConnector: TrustDataConnector     = mock(classOf[TrustDataConnector])
+  private val mockTrustDataService: TrustDataService         = mock(classOf[TrustDataService])
   private val mockNrsConnector: NrsConnector                 = mock(classOf[NrsConnector])
   private val mockNrsLockRepository: NrsLockRepository       = mock(classOf[NrsLockRepository])
   private val mockAuditService: AuditService                 = mock(classOf[AuditService])
@@ -54,7 +54,7 @@ class PdfControllerLogNRSFalseSpec extends SpecBase {
         )*
       )
       .overrides(
-        bind[TrustDataConnector].toInstance(mockTrustDataConnector),
+        bind[TrustDataService].toInstance(mockTrustDataService),
         bind[NrsConnector].toInstance(mockNrsConnector),
         bind[NrsLockRepository].toInstance(mockNrsLockRepository),
         bind[AuditService].toInstance(mockAuditService),
@@ -64,13 +64,16 @@ class PdfControllerLogNRSFalseSpec extends SpecBase {
 
   private val identifier: String = "1234567890"
 
-  private val trustJson: JsValue = getJsonValueFromFile("nrs-request-body.json")
-
-  private val controller: PdfController = injector.instanceOf[PdfController]
-
   "PdfController" when {
     ".getPdf" when {
-      "there is no lock in mongo" must {
+      "using IF connector & there is no lock in mongo" must {
+
+        val trustIfsJson: JsValue = getJsonValueFromFile("nrs-request-body.json")
+        val ifController          = applicationBuilder()
+          .configure("features.hip.obligedEntities" -> false)
+          .build()
+          .injector
+          .instanceOf[PdfController]
         "return an InternalServerError" when {
 
           "bad request returned from NRS with logging disabled" in {
@@ -82,15 +85,52 @@ class PdfControllerLogNRSFalseSpec extends SpecBase {
             when(defaultValidator.validate(any[String]())).thenReturn(Right(()))
             when(mockNrsConnector.ping()(using any())).thenReturn(Future.successful(true))
             when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(false))
-            when(mockTrustDataConnector.getTrustJson(any()))
-              .thenReturn(Future.successful(SuccessfulTrustDataResponse(trustJson)))
+            when(mockTrustDataService.getTrustJson(any()))
+              .thenReturn(Future.successful(SuccessfulIfsTrustDataResponse(trustIfsJson)))
             when(mockNrsConnector.getPdf(any())(using any()))
               .thenReturn(Future.successful(BadRequestResponse("Invalid request body")))
 
-            whenReady(controller.getPdf(identifier)(FakeRequest())) { result =>
+            whenReady(ifController.getPdf(identifier)(FakeRequest())) { result =>
               result.header.status mustBe INTERNAL_SERVER_ERROR
 
-              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(trustJson))(using any(), any())
+              verify(mockAuditService).audit(eqTo(IF_DATA_RECEIVED), eqTo(trustIfsJson))(using any(), any())
+              verify(mockAuditService).audit(
+                eqTo(NRS_ERROR),
+                eqTo(JsString("BadRequestResponse(Invalid request body)"))
+              )(using any(), any())
+            }
+          }
+
+        }
+      }
+
+      "using HIP connector & there is no lock in mongo" must {
+        val trustHipJson: JsValue = getJsonValueFromFile("valid-hip.json")
+        val hipController         = applicationBuilder()
+          .configure("features.hip.obligedEntities" -> true)
+          .build()
+          .injector
+          .instanceOf[PdfController]
+        "return an InternalServerError" when {
+
+          "bad request returned from NRS with logging disabled" in {
+
+            reset(mockAuditService)
+
+            when(mockNrsLockRepository.setLock(any())).thenReturn(Future.successful(true))
+            when(mockValidationService.get(any())).thenReturn(defaultValidator)
+            when(defaultValidator.validate(any[String]())).thenReturn(Right(()))
+            when(mockNrsConnector.ping()(using any())).thenReturn(Future.successful(true))
+            when(mockNrsLockRepository.getLock(any(), any())).thenReturn(Future.successful(false))
+            when(mockTrustDataService.getTrustJson(any()))
+              .thenReturn(Future.successful(SuccessfulHipTrustDataResponse(trustHipJson)))
+            when(mockNrsConnector.getPdf(any())(using any()))
+              .thenReturn(Future.successful(BadRequestResponse("Invalid request body")))
+
+            whenReady(hipController.getPdf(identifier)(FakeRequest())) { result =>
+              result.header.status mustBe INTERNAL_SERVER_ERROR
+
+              verify(mockAuditService).audit(eqTo(HIP_DATA_RECEIVED), eqTo(trustHipJson))(using any(), any())
               verify(mockAuditService).audit(
                 eqTo(NRS_ERROR),
                 eqTo(JsString("BadRequestResponse(Invalid request body)"))

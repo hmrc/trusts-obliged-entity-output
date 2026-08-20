@@ -25,29 +25,48 @@ class ValidationServiceSpec extends SpecBase with EitherValues {
 
   private lazy val validationService: ValidationService = new ValidationService()
 
-  private lazy val trustValidator: Validator =
-    validationService.get("/resources/schemas/get-trust-obliged-entities-data-schema-v1.2.0.json")
+  private lazy val trustIfsValidator: Validator =
+    validationService.get("/resources/schemas/ifs/get-trust-obliged-entities-data-schema-v1.2.0.json")
 
-  "a validator " should {
+  private lazy val trustHipValidator: Validator =
+    validationService.get(
+      "/resources/schemas/hip/ObligedEntitiesSuccessResponse_EPID1755_TRS_openapi_v0.1.7.json"
+    )
+
+  "ValidationService " should {
     "return an empty list of errors when " when {
-      "Json having all required fields" in {
-        val jsonString = JsonUtils.getJsonFromFile("valid.json")
+      "Ifs Json having all required fields" in {
+        val jsonString = JsonUtils.getJsonFromFile("valid-ifs.json")
 
-        trustValidator.validate(jsonString).isRight mustBe true
+        trustIfsValidator.validate(jsonString).isRight mustBe true
+      }
+
+      "HIP Json having all required fields" in {
+        val jsonString = JsonUtils.getJsonFromFile("valid-hip.json")
+
+        trustHipValidator.validate(jsonString).isRight mustBe true
       }
     }
 
     "return errors" when {
-      "the json is invalid" in {
-        val jsonString = JsonUtils.getJsonFromFile("invalid.json")
+      "the Ifs json is invalid" in {
+        val jsonString = JsonUtils.getJsonFromFile("invalid-ifs.json")
 
-        val result = trustValidator.validate(jsonString)
+        val result = trustIfsValidator.validate(jsonString)
         result.isLeft                   mustBe true
         result.left.value.head.location mustBe "/correspondence/address"
       }
 
+      "the HIP json is invalid" in {
+        val jsonString = JsonUtils.getJsonFromFile("invalid-hip.json")
+
+        val result = trustHipValidator.validate(jsonString)
+        result.isLeft                   mustBe true
+        result.left.value.head.location mustBe "/success/correspondence/address"
+      }
+
       "an exception is thrown" in {
-        trustValidator.validate("{").isLeft mustBe true
+        trustIfsValidator.validate("{").isLeft mustBe true
       }
     }
   }

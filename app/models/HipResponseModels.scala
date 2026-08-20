@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package models.auditing
+package models
 
-object Events {
+import play.api.libs.json.{Json, OFormat}
 
-  val IF_DATA_RECEIVED   = "IntegrationFrameworkDataReceived"
-  val HIP_DATA_RECEIVED  = "HipDataReceived"
-  val NRS_DATA_RECEIVED  = "NonRepudiationStoreDataReceived"
-  val IF_ERROR           = "IntegrationFrameworkError"
-  val HIP_ERROR          = "HipError"
-  val NRS_ERROR          = "NonRepudiationStoreError"
-  val EXCESSIVE_REQUESTS = "ExcessiveRequests"
+case class HipCustomErr(processingDate: String, errorId: String, text: String)
 
+object HipCustomErr {
+  given OFormat[HipCustomErr] = Json.format[HipCustomErr]
+}
+
+case class HipCustomErrResponse(error: HipCustomErr)
+
+object HipCustomErrResponse {
+  given OFormat[HipCustomErrResponse] = Json.format[HipCustomErrResponse]
 }
