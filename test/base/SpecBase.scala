@@ -47,7 +47,8 @@ class SpecBase
         Seq(
           "metrics.enabled"                -> false,
           "auditing.enabled"               -> false,
-          "features.logNRS400ResponseBody" -> true
+          "features.logNRS400ResponseBody" -> true,
+          "features.hip.obligedEntities"   -> false
         )*
       )
       .overrides(
