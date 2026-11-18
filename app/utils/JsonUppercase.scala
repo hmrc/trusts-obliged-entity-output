@@ -43,13 +43,9 @@ object JsonUppercase {
       case Nil    => json
       case h :: t =>
         uppercaseFieldsInArrayAtPath(
-          json.transform(uppercaseTransformerFieldsInArray(h._1, h._2)).getOrElse {
-            logger.warn(s"field ${h._2} not at path ${h._1}, should it be?")
-            json
-          },
+          json.transform(uppercaseTransformerFieldsInArray(h._1, h._2)).getOrElse(json),
           t*
         )
-
     }
 
   @tailrec
@@ -58,7 +54,10 @@ object JsonUppercase {
     case h :: t =>
       uppercaseStringAtPath(
         json.transform(uppercaseTransformer(h)).getOrElse {
-          logger.warn(s"not at path $h, should it be?")
+          logger.warn(
+            s"path $h not found when trying to uppercase a value, probably the field is not required, " +
+              s"check your use case to see if you think it should be there"
+          )
           json
         },
         t*

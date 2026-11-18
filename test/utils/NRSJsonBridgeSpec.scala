@@ -64,14 +64,9 @@ class NRSJsonBridgeSpec extends ConnectorSpecHelper with Logging {
         assert(uppercaseJson.toString.contains("TITLECASE"))
         assert(!uppercaseJson.toString.contains("Titlecase"))
 
-        validate(NrsRequestMapper.toNrsRequest(uppercaseJson)) match {
-          case Left(errors) =>
-            errors.map(error => println(error))
-        }
-
-//         assert(
-//           validate((uppercaseJson \ "success").get).isRight
-//         )
+        assert(
+          validate(NrsRequestMapper.toNrsRequest(uppercaseJson)).isRight
+        )
       }
     }
   }

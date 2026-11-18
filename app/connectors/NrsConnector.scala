@@ -39,7 +39,7 @@ class NrsConnector @Inject() (ws: WSClient, config: AppConfig, validationService
     validationService.get(config.nrsPdfGeneratorTrustSchema).validate(payload.toString) match {
       case Left(errors) =>
         errors.foreach(error => logger.error(error.message))
-        throw IllegalStateException("payload for NRS not valid")
+        throw Exception("payload for NRS not valid")
       case _            =>
         lazy val url: String = s"${config.nrsUrl}/generate-pdf/template/trusts-5mld-1-2-0/signed-pdf"
 
