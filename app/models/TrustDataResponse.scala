@@ -20,6 +20,7 @@ import play.api.Logging
 import play.api.http.Status.*
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
+import utils.NRSJsonBridge.RichJsObject
 
 import scala.util.Try
 
@@ -71,7 +72,7 @@ object TrustDataResponse extends Logging {
     (_: String, _: String, response: HttpResponse) =>
       response.status match {
         case OK                   =>
-          SuccessfulHipTrustDataResponse(Json.parse(response.body))
+          SuccessfulHipTrustDataResponse(Json.parse(response.body).transformForNRS)
         case BAD_REQUEST          =>
           logger.error(s"[UTR/URN: ${identifier.value}] Invalid identifier - ${response.body}.")
           BadRequestTrustDataResponse
