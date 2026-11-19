@@ -52,18 +52,6 @@ class NrsConnectorSpec extends ConnectorSpecHelper {
         }
       }
 
-      "throw exception when payload invalid for NRS" in {
-        val headers: HttpHeaders = new HttpHeaders(
-          new HttpHeader(CONTENT_LENGTH, "1887445")
-        )
-
-        stubForPost(url = url, requestBody = Json.stringify(json), responseStatus = OK, responseHeaders = headers)
-
-        intercept[Exception] {
-          connector.getPdf(Json.parse("""{ "badJson":"BAD!"}"""))
-        }
-      }
-
       "return BadRequestResponse" when {
         "400 (BAD_REQUEST) response received" in {
           stubForPost(url = url, requestBody = Json.stringify(json), responseStatus = BAD_REQUEST)

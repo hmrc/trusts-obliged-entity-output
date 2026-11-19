@@ -26,33 +26,25 @@ import play.api.http.Status.OK
 import play.api.libs.json.JsValue
 import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 import play.api.libs.ws.WSClient
-import services.ValidationService
 import uk.gov.hmrc.http.HttpVerbs.{GET, POST}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class NrsConnector @Inject() (ws: WSClient, config: AppConfig, validationService: ValidationService) extends Logging {
+class NrsConnector @Inject() (ws: WSClient, config: AppConfig) extends Logging {
 
   def getPdf(payload: JsValue)(using ec: ExecutionContext): Future[NrsResponse] =
 
-    validationService.get(config.nrsPdfGeneratorTrustSchema).validate(payload.toString) match {
-      case Left(errors) =>
-        errors.foreach(error => logger.error(error.message))
-        throw Exception("payload for NRS not valid")
-      case _            =>
-        lazy val url: String = s"${config.nrsUrl}/generate-pdf/template/trusts-5mld-1-2-0/signed-pdf"
+    lazy val url: String = s"${config.nrsUrl}/generate-pdf/template/trusts-5mld-1-2-0/signed-pdf"
 
-        lazy val nrsHeaders: Seq[(String, String)] =
-          Seq(
-            X_API_KEY    -> s"${config.nrsToken}",
-            CONTENT_TYPE -> JSON
-          )
+    lazy val nrsHeaders: Seq[(String, String)] =
+      Seq(
+        X_API_KEY    -> s"${config.nrsToken}",
+        CONTENT_TYPE -> JSON
+      )
 
-        ws.url(url).withMethod(POST).withHttpHeaders(nrsHeaders*).withBody(payload).stream().map { response =>
-          response.body[NrsResponse]
-        }
-
+    ws.url(url).withMethod(POST).withHttpHeaders(nrsHeaders*).withBody(payload).stream().map { response =>
+      response.body[NrsResponse]
     }
 
   def ping()(using ec: ExecutionContext): Future[Boolean] = {

@@ -40,7 +40,7 @@ class NRSJsonBridgeSpec extends ConnectorSpecHelper with Logging {
     "supplied json file " must {
       "contain all fields we need to uppercase" in
         (trusteesPath ++ arrPathsToUppercase ++ objPathsToUppercase).map { path =>
-          hipJson.validateOpt(path.json.pick).get.nonEmpty
+          assert(hipJson.validateOpt(path.json.pick).get.nonEmpty)
         }
     }
 
