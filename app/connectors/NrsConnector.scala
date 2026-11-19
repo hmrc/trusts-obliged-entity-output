@@ -18,22 +18,23 @@ package connectors
 
 import config.AppConfig
 import config.Constants.X_API_KEY
-import play.api.http.HeaderNames.*
-import javax.inject.Inject
 import models.NrsResponse
 import play.api.Logging
 import play.api.http.ContentTypes.JSON
+import play.api.http.HeaderNames.*
 import play.api.http.Status.OK
 import play.api.libs.json.JsValue
 import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 import play.api.libs.ws.WSClient
 import uk.gov.hmrc.http.HttpVerbs.{GET, POST}
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class NrsConnector @Inject() (ws: WSClient, config: AppConfig) extends Logging {
 
-  def getPdf(payload: JsValue)(using ec: ExecutionContext): Future[NrsResponse] = {
+  def getPdf(payload: JsValue)(using ec: ExecutionContext): Future[NrsResponse] =
+
     lazy val url: String = s"${config.nrsUrl}/generate-pdf/template/trusts-5mld-1-2-0/signed-pdf"
 
     lazy val nrsHeaders: Seq[(String, String)] =
@@ -45,7 +46,6 @@ class NrsConnector @Inject() (ws: WSClient, config: AppConfig) extends Logging {
     ws.url(url).withMethod(POST).withHttpHeaders(nrsHeaders*).withBody(payload).stream().map { response =>
       response.body[NrsResponse]
     }
-  }
 
   def ping()(using ec: ExecutionContext): Future[Boolean] = {
     lazy val url: String = s"${config.nrsUrl}/generate-pdf/ping"

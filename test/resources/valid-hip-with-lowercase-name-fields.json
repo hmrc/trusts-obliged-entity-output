@@ -1,0 +1,178 @@
+{
+  "success": {
+    "submissionDate": "29/02/1520",
+    "trustName": "Trust1234567890123456789012345678901234567890",
+    "identifiers": {
+      "utr": "1234567890",
+      "urn": "XATRUST80000001"
+    },
+    "trustStartDate": "13/08/1957",
+    "correspondence": {
+      "address": {
+        "line1": "AddressLine123456789011",
+        "line2": "AddressLine123456789012",
+        "line3": "AddressLine123456789013",
+        "line4": "AddressLine123456789014",
+        "country": "UNITED KINGDOM",
+        "postCode": "TF1 000"
+      },
+      "welsh": false,
+      "braille": false
+    },
+    "entities": {
+      "leadTrustee": {
+        "leadTrusteeIndividual": {
+          "firstName": "LEAD TRUSTEE firstname",
+          "middleName": "LEAD TRUSTEE middlename",
+          "lastName": "LEAD TRUSTEE lastname",
+          "dateOfBirth": "12/1500",
+          "nationality": "UNITED KINGDOM",
+          "countryOfResidence": "CURAÇAO"
+        }
+      },
+      "trustees": [
+        {
+          "trusteeIndividual": {
+            "firstName": "Adam",
+            "middleName": "George",
+            "lastName": "Ant",
+            "dateOfBirth": "08/1957",
+            "nationality": "NEW CALEDONIA",
+            "countryOfResidence": "SWITZERLAND"
+          }
+        },
+        {
+          "trusteeIndividual": {
+            "firstName": "TRUSTEE IND 2 firstname",
+            "lastName": "TRUSTEE IND 2 lastname"
+          }
+        },
+        {
+          "trusteeCompany": {
+            "name": "A",
+            "countryOfResidence": "WEST SAHARA"
+          }
+        }
+      ],
+      "naturalPerson": [
+        {
+          "firstName": "Adam",
+          "middleName": "George",
+          "lastName": "Ant",
+          "dateOfBirth": "08/1957",
+          "nationality": "TURKEY",
+          "countryOfResidence": "UTD.ARAB EMIR."
+        }
+      ],
+      "settlors": {
+        "settlorIndividual": [
+          {
+            "firstName": "Adam",
+            "middleName": "George",
+            "lastName": "Ant",
+            "dateOfBirth": "08/1957",
+            "nationality": "HEARD/MCDON.ISL",
+            "countryOfResidence": "UTD.ARAB EMIR."
+          },
+          {
+            "firstName": "SETTLOR IND 2 firstname",
+            "lastName": "SETTLOR IND 2 lastname"
+          }
+        ],
+        "settlorCompany": [
+          {
+            "name": "A",
+            "countryOfResidence": "CHINA"
+          }
+        ],
+        "deceased": {
+          "firstName": "Adam",
+          "middleName": "Titlecase",
+          "lastName": "Ant",
+          "dateOfBirth": "08/1957",
+          "nationality": "MALDIVES",
+          "countryOfResidence": "MAURETANIA"
+        }
+      },
+      "protectors": {
+        "protectorIndividual": [
+          {
+            "firstName": "Adam",
+            "middleName": "George",
+            "lastName": "Ant",
+            "dateOfBirth": "08/1957",
+            "nationality": "FINLAND",
+            "countryOfResidence": "LEBANON"
+          },
+          {
+            "firstName": "PROTECTOR IND 2 FIRSTname",
+            "lastName": "PROTECTOR IND 2 LASTname"
+          }
+        ],
+        "protectorCompany": [
+          {
+            "name": "A",
+            "countryOfResidence": "SINT MAARTEN"
+          }
+        ]
+      },
+      "beneficiary": {
+        "individual": [
+          {
+            "firstName": "Adam",
+            "middleName": "George",
+            "lastName": "Ant",
+            "dateOfBirth": "08/1957",
+            "nationality": "VIETNAM",
+            "countryOfResidence": "ST KITTS&NEVIS"
+          },
+          {
+            "firstName": "BENEFICIARY IND 2 FIRSTname",
+            "lastName": "BENEFICIARY IND 2 LASTNAME"
+          }
+        ],
+        "company": [
+          {
+            "name": "A",
+            "countryOfResidence": "PAP. NEW GUINEA"
+          }
+        ],
+        "trusts": [
+          {
+            "name": "A",
+            "countryOfResidence": "BOUVET ISLANDS"
+          }
+        ],
+        "charity": [
+          {
+            "name": "A",
+            "countryOfResidence": "GIBRALTAR"
+          }
+        ],
+        "unidentified": [
+          {
+            "beneficiaryDescription": "A"
+          }
+        ],
+        "large": [
+          {
+            "beneficiaryDescription": "A",
+            "beneficiaryDescription1": "A",
+            "beneficiaryDescription2": "A",
+            "beneficiaryDescription3": "A",
+            "beneficiaryDescription4": "A",
+            "companyDetails": {
+              "name": "A",
+              "countryOfResidence": "BELARUS"
+            }
+          }
+        ],
+        "other": [
+          {
+            "otherBeneficiaryDescription": "A"
+          }
+        ]
+      }
+    }
+  }
+}
